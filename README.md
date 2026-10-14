@@ -652,7 +652,9 @@ Harness được design cho mọi Android/CMP product consume qua overlay. Chưa
 
 ## License
 
-TBD — add LICENSE file khi public open-source.
+[MIT License](./LICENSE) — Copyright © 2026 huypqapero.
+
+Free for commercial + private use. Attribution appreciated nhưng không required.
 
 ## Contributing
 

@@ -4,6 +4,15 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.10.1] — 2026-10-14
+
+### Added
+- **LICENSE** — MIT License, clarify commercial + private use allowed.
+- README license section updated.
+
+### Rationale
+Public repo without LICENSE file ambiguous về quyền sử dụng. MIT là standard cho tooling + lowest friction cho adopter.
+
 ## [0.10.0] — 2026-10-14
 
 ### Added — Factory stack pack (R1-R5)
