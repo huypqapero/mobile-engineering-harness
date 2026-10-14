@@ -26,7 +26,7 @@ priority: P0
 
 1. `.harness/knowledge/coroutines/essentials.md` — full patterns + anti-patterns
 2. `.harness/constitution/concurrency-rules.md` — CORO-001..010
-3. `BaseRepository` pattern trong `{{MODULE_DATA}}/core/`
+3. `.harness/knowledge/data/network.md §ApiResult contract` — network call main-safe, cancellation rethrow ở adapter/converter
 
 ## Execution procedure
 

@@ -163,7 +163,7 @@ class BookRepositoryImplTest {
     }
     private val client = HttpClient(mockEngine) { install(ContentNegotiation) { json() } }
     private val api = BookApi(client)
-    private val repo = BookRepositoryImpl(api, ioDispatcher = UnconfinedTestDispatcher())
+    private val repo = BookRepositoryImpl(api)   // BookApi trả ApiResult qua safeRequest
 
     @Test
     fun `getBook success maps DTO to domain`() = runTest {

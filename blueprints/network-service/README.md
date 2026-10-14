@@ -45,27 +45,30 @@ internal data class PagedItemsDto(
 // {{MODULE_DATA}}/remote/CatalogApi.kt
 internal class CatalogApi(private val client: HttpClient) {
 
-    suspend fun getItems(cursor: String? = null, pageSize: Int = 20): PagedItemsDto =
-        client.get(PATH) {
+    suspend fun getItems(cursor: String? = null, pageSize: Int = 20): ApiResult<PagedItemsDto> =
+        client.safeRequest {
+            url(PATH)
             cursor?.let { parameter("cursor", it) }
             parameter("page_size", pageSize)
-        }.body()
+        }
 
-    suspend fun getItem(id: String): ItemDto =
-        client.get("$PATH/$id").body()
+    suspend fun getItem(id: String): ApiResult<ItemDto> =
+        client.safeRequest { url("$PATH/$id") }
 
-    suspend fun search(query: String, filter: String? = null): List<ItemDto> =
-        client.get("$PATH/search") {
+    suspend fun search(query: String, filter: String? = null): ApiResult<List<ItemDto>> =
+        client.safeRequest {
+            url("$PATH/search")
             parameter("q", query)
             filter?.let { parameter("filter", it) }
-        }.body()
+        }
 
-    suspend fun setBookmark(id: String, bookmarked: Boolean) {
-        client.put("$PATH/$id/bookmark") {
+    suspend fun setBookmark(id: String, bookmarked: Boolean): ApiResult<Unit> =
+        client.safeRequest {
+            method = HttpMethod.Put
+            url("$PATH/$id/bookmark")
             contentType(ContentType.Application.Json)
             setBody(mapOf("bookmarked" to bookmarked))
         }
-    }
 
     companion object {
         private const val PATH = "/v1/catalog"
@@ -100,24 +103,19 @@ internal object CatalogMapper {
 // {{MODULE_DATA}}/repository/CatalogRepositoryImpl.kt
 internal class CatalogRepositoryImpl(
     private val api: CatalogApi,
-    ioDispatcher: CoroutineDispatcher,
-) : BaseRepository(ioDispatcher), CatalogRepository {
+) : CatalogRepository {
 
-    override suspend fun getItems(cursor: String?): ApiResult<Paged<Item>> = apiCall {
-        api.getItems(cursor).toDomain()
-    }
+    override suspend fun getItems(cursor: String?): ApiResult<Paged<Item>> =
+        api.getItems(cursor).map { it.toDomain() }
 
-    override suspend fun getItem(id: String): ApiResult<Item> = apiCall {
-        api.getItem(id).toDomain()
-    }
+    override suspend fun getItem(id: String): ApiResult<Item> =
+        api.getItem(id).map { it.toDomain() }
 
-    override suspend fun search(query: String): ApiResult<List<Item>> = apiCall {
-        api.search(query).map { it.toDomain() }
-    }
+    override suspend fun search(query: String): ApiResult<List<Item>> =
+        api.search(query).map { dtos -> dtos.map { it.toDomain() } }
 
-    override suspend fun setBookmark(id: String, bookmarked: Boolean): ApiResult<Unit> = apiCall {
+    override suspend fun setBookmark(id: String, bookmarked: Boolean): ApiResult<Unit> =
         api.setBookmark(id, bookmarked)
-    }
 }
 ```
 
@@ -138,7 +136,7 @@ interface CatalogRepository {
 ```kotlin
 // {{MODULE_DATA}}/di/DataModule.kt
 single { CatalogApi(get()) }
-single<CatalogRepository> { CatalogRepositoryImpl(get(), get(named("io"))) }
+single<CatalogRepository> { CatalogRepositoryImpl(get()) }
 ```
 
 ## 7. Unit test với MockEngine
@@ -168,7 +166,7 @@ class CatalogRepositoryImplTest {
         install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
         expectSuccess = true
     }
-    private val repo = CatalogRepositoryImpl(CatalogApi(client), UnconfinedTestDispatcher())
+    private val repo = CatalogRepositoryImpl(CatalogApi(client))
 
     @Test
     fun `getItem success maps dto`() = runTest {
@@ -213,7 +211,8 @@ class CatalogRepositoryImplTest {
 - [ ] DTO `internal`, `@Serializable`, nullable field có default
 - [ ] API class `internal`, path constants trong `companion object`
 - [ ] Mapper `object` + extension functions (ARCH-005)
-- [ ] Repository impl extend `BaseRepository`, dùng `apiCall { }`
+- [ ] API class trả `ApiResult<Dto>` qua `safeRequest` (Ktor) / CallAdapter (Retrofit) / Converter (Ktorfit)
+- [ ] Repository impl không kế thừa base class, chỉ `map` DTO → domain (ARCH-004)
 - [ ] Interface ở `domain/`, impl ở `data/`
 - [ ] DI binding: API = `single`, Repository = `single<Interface>`
 - [ ] Test MockEngine ≥ 3 scenarios (success, 404, edge)

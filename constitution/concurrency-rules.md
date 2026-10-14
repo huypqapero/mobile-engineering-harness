@@ -17,7 +17,8 @@ Coroutines + Flow trong Compose Multiplatform. Áp dụng cho `commonMain` + pla
 
 - **Severity**: MUST
 - **Rules**:
-  - IO blocking (file, network, DB): `withContext(ioDispatcher)` ở `BaseRepository`
+  - Network suspend call (Retrofit / Ktor / Ktorfit): đã main-safe, **không** bọc `withContext(ioDispatcher)`
+  - IO blocking thật (file, query DB đồng bộ như SQLDelight): `withContext(ioDispatcher)` tại local source sở hữu IO đó
   - CPU-bound (parse lớn, mapping heavy): `withContext(defaultDispatcher)`
   - UI update: Compose state đã thread-safe, không cần `Main` explicit
 - **FORBIDDEN**: hardcode `Dispatchers.IO` trong `commonMain` của `domain/presenter` (phải inject qua interface để test được)

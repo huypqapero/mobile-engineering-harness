@@ -46,7 +46,7 @@ Checklist (tick → +item score):
 - [ ] ARCH-001 `domain` thuần, no platform import — **BLOCKER if violated**
 - [ ] ARCH-002 `presenter` không import `data.*` — **BLOCKER**
 - [ ] ARCH-003 ViewModel chỉ UseCase hoặc Repository interface — **BLOCKER**
-- [ ] ARCH-004 Repository impl extend `BaseRepository` — HIGH
+- [ ] ARCH-004 Repository impl không kế thừa base class; API service trả `ApiResult` qua CallAdapter / Converter / `safeRequest` — HIGH
 - [ ] ARCH-005 Mapper là `object` + extension — HIGH
 - [ ] ARCH-006 Feature package self-contained — HIGH
 - [ ] ARCH-007 ViewModel extend `BaseViewModel` — **BLOCKER**

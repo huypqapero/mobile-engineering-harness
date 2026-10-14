@@ -41,8 +41,8 @@ Thứ tự chuẩn (từ `android-feature` skill):
 
 1. Domain model + Repository interface (nếu mới)
 2. DTO + Mapper
-3. API service (Ktor)
-4. Repository impl (extend `BaseRepository`)
+3. API service (trả `ApiResult<Dto>`)
+4. Repository impl (implement interface, không kế thừa base class — ARCH-004)
 5. UseCase (nếu plan says yes)
 6. DI binding (3 modules)
 7. Contract (State + Intent + Effect)

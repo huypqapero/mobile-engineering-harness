@@ -20,21 +20,24 @@ Rules bắt buộc: xem `constitution/concurrency-rules.md` (CORO-001..010).
 ## Dispatcher strategy
 
 ```kotlin
-// BaseRepository
-abstract class BaseRepository(
-    protected val ioDispatcher: CoroutineDispatcher,
+// Network: suspend call của Retrofit / Ktor / Ktorfit đã main-safe → không withContext
+override suspend fun getBook(id: String): ApiResult<Book> =
+    api.getBook(id).map { it.toDomain() }
+
+// IO blocking thật (query SQLDelight đồng bộ, file) → local source tự chuyển dispatcher
+internal class BookLocalSource(
+    private val queries: BookQueries,
+    private val ioDispatcher: CoroutineDispatcher,
 ) {
-    protected suspend fun <T> apiCall(block: suspend () -> T): ApiResult<T> =
-        withContext(ioDispatcher) {
-            try { ApiResult.Success(block()) }
-            catch (e: CancellationException) { throw e }
-            catch (e: Exception) { ApiResult.Error(mapError(e)) }
-        }
+    suspend fun getById(id: String): BookEntity? = withContext(ioDispatcher) {
+        queries.getById(id).executeAsOneOrNull()
+    }
 }
 ```
 
 **Rules:**
-- IO work → `withContext(ioDispatcher)`
+- Network suspend call → không bọc `withContext` (CORO-002)
+- IO blocking work (file, DB đồng bộ) → `withContext(ioDispatcher)` tại nơi blocking
 - CPU heavy → `withContext(defaultDispatcher)`
 - UI update → không cần explicit (`StateFlow` → Compose đã handle)
 - Test → inject `TestDispatcher` qua constructor
@@ -210,4 +213,4 @@ class HomeViewModelTest {
 - [Kotlin Coroutines guide](https://kotlinlang.org/docs/coroutines-guide.html)
 - [Flow guide](https://kotlinlang.org/docs/flow.html)
 - [Android: Coroutines best practices](https://developer.android.com/kotlin/coroutines/coroutines-best-practices)
-- `data/core/BaseRepository.kt`
+- `knowledge/data/network.md §ApiResult contract` (error mapping + cancellation ở tầng network)

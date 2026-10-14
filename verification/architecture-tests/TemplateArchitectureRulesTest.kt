@@ -93,6 +93,37 @@ class ArchitectureRulesTest {
             }
     }
 
+    // ARCH-004 — Repository impl không kế thừa base class
+    @Test
+    fun `ARCH-004 repository impl does not extend base repository`() {
+        if (!shouldRun("ARCH-004")) return
+        Konsist
+            .scopeFromModule("{{MODULE_DATA}}")
+            .classes()
+            .withNameEndingWith("RepositoryImpl")
+            .assertFalse { clazz ->
+                clazz.hasParent { parent -> parent.name.endsWith("BaseRepository") }
+            }
+    }
+
+    // ARCH-004 — API service trong remote/ trả ApiResult (CallAdapter / Converter / safeRequest)
+    @Test
+    fun `ARCH-004 remote api suspend functions return ApiResult`() {
+        if (!shouldRun("ARCH-004")) return
+        Konsist
+            .scopeFromModule("{{MODULE_DATA}}")
+            .functions()
+            .filter { fn ->
+                fn.path.contains("/remote/") &&
+                    fn.path.endsWith("Api.kt") &&
+                    fn.hasSuspendModifier &&
+                    !fn.hasPrivateModifier
+            }
+            .assertTrue { fn ->
+                fn.returnType?.name?.startsWith("ApiResult") == true
+            }
+    }
+
     // ARCH-005 — Mapper là object
     @Test
     fun `ARCH-005 mappers are objects`() {

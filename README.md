@@ -625,6 +625,7 @@ Mỗi version một dòng. Chi tiết đầy đủ xem [`CHANGELOG.md`](./CHANGE
 - **v0.9.0**: agent orchestration gồm 4 mode: single, team, parallel-features, auto
 - **v0.10.0**: Factory pack gồm task YAML contract, build 4 level, auto-fix có fingerprint, phân loại lỗi, chọn model theo tier
 - **v0.10.1 và v0.10.2**: MIT LICENSE và `CONTRIBUTING.md`
+- **v0.11.0**: ARCH-004 mới, Repository không kế thừa `BaseRepository`, API trả `ApiResult` qua CallAdapter (Retrofit) / Converter (Ktorfit) / `safeRequest` (Ktor)
 
 **Sắp tới — v1.0.0**: Production proof, có từ 3 product trở lên dùng trong production và đo được ROI.
 

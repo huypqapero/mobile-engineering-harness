@@ -82,7 +82,7 @@ Dùng `skills/android-code-review/SKILL.md` làm checklist chi tiết. Shortened
 
 **G. Error handling**
 - `ApiResult` / `DomainError` dùng, không throw raw
-- Error mapping ở `BaseRepository`
+- Error mapping ở `ErrorMapper` (CallAdapter / Converter / `safeRequest`), Repository impl không kế thừa base class
 
 **H. Security**
 - No secret hardcoded

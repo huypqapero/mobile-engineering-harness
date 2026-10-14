@@ -41,7 +41,7 @@ Pattern + procedure chung mọi lib (tiếp theo). Lib-specific code snippet tro
 1. `.harness/knowledge/data/network.md`
 2. `.harness/knowledge/coroutines/essentials.md §Retry pattern`
 3. `.harness/constitution/concurrency-rules.md §CORO-008`
-4. `BaseRepository` + `ApiResult` + `DomainError` trong `{{MODULE_DATA}}/core/`
+4. `ApiResult` + `DomainError` trong `{{MODULE_DOMAIN}}/core/`; `ErrorMapper` + adapter/converter trong `{{MODULE_DATA}}/core/network/` (Step 4)
 
 ## Execution procedure
 
@@ -76,21 +76,22 @@ Lib-specific. Chọn theo `stack.network`.
 - API class/interface `internal` — không expose cross-module
 - Path constants trong `companion object` hoặc `const val` top-level
 - Suspend functions, không callback
-- Non-2xx response throw exception → caught ở `BaseRepository.apiCall { }`
+- Function trả `ApiResult<Dto>` — non-2xx / IO / parse error được map sang `DomainError` ngay tầng network (Step 4), không exception nào lọt lên Repository
 
 #### Variant A — Ktor Client (KMP/CMP)
 
 ```kotlin
 // {{MODULE_DATA}}/remote/BookApi.kt
 internal class BookApi(private val client: HttpClient) {
-    suspend fun getBook(id: String): BookDto =
-        client.get("$BOOKS_PATH/$id").body()
+    suspend fun getBook(id: String): ApiResult<BookDto> =
+        client.safeRequest { url("$BOOKS_PATH/$id") }
 
-    suspend fun searchBooks(query: String, filter: String? = null): List<BookDto> =
-        client.get("$BOOKS_PATH/search") {
+    suspend fun searchBooks(query: String, filter: String? = null): ApiResult<List<BookDto>> =
+        client.safeRequest {
+            url("$BOOKS_PATH/search")
             parameter("q", query)
             filter?.let { parameter("filter", it) }
-        }.body()
+        }
 
     companion object { private const val BOOKS_PATH = "/v1/books" }
 }
@@ -101,13 +102,13 @@ internal class BookApi(private val client: HttpClient) {
 ```kotlin
 internal interface BookApi {
     @GET("/v1/books/{id}")
-    suspend fun getBook(@Path("id") id: String): BookDto
+    suspend fun getBook(@Path("id") id: String): ApiResult<BookDto>
 
     @GET("/v1/books/search")
     suspend fun searchBooks(
         @Query("q") query: String,
         @Query("filter") filter: String? = null,
-    ): List<BookDto>
+    ): ApiResult<List<BookDto>>
 }
 ```
 
@@ -118,7 +119,7 @@ Interface giống Retrofit, generator tạo impl:
 ```kotlin
 internal interface BookApi {
     @GET("/v1/books/{id}")
-    suspend fun getBook(@Path("id") id: String): BookDto
+    suspend fun getBook(@Path("id") id: String): ApiResult<BookDto>
 }
 ```
 
@@ -126,7 +127,7 @@ Chi tiết + builder config + DI binding: xem `.harness/knowledge/data/network.m
 
 ### Step 3 — Configure client
 
-Example dưới là **Ktor** (KMP). Retrofit builder config + Ktorfit `Ktorfit.Builder()` xem `knowledge/data/network.md §Option 2/3`.
+Example dưới là **Ktor** (KMP). Retrofit builder config + Ktorfit `Ktorfit.Builder()` xem `knowledge/data/network.md §Option 2/3`; đăng ký adapter/converter ở Step 4.
 
 ```kotlin
 // {{MODULE_DATA}}/di/DataModule.kt
@@ -178,64 +179,238 @@ single<HttpClient> {
 ```
 
 **Rules**:
-- `expectSuccess = true` ép throw cho 4xx/5xx → consistent error path
+- `expectSuccess = true` ép throw cho 4xx/5xx → `safeCall` / converter map qua `ErrorMapper` (khi `false`, helper tự check status — kết quả `ApiResult` như nhau)
 - `ignoreUnknownKeys = true` cho backward compat khi API add field
 - `coerceInputValues` tolerant null → default
 - `Logging` sanitize sensitive header (token, api key)
 - Timeout cụ thể, không default infinite
 
-### Step 4 — Error mapping ở Repository
+### Step 4 — ApiResult tại tầng network (ErrorMapper + adapter)
+
+Contract: API service trả `ApiResult<Dto>`; exception → `DomainError` map **một lần** ở `ErrorMapper`. Bảng mapping đầy đủ + variant Retrofit của `ErrorMapper`: `.harness/knowledge/data/network.md §ApiResult contract`.
+
+`ApiResult` + extension (domain):
 
 ```kotlin
-// {{MODULE_DATA}}/core/BaseRepository.kt (đã có)
-abstract class BaseRepository(
-    protected val ioDispatcher: CoroutineDispatcher,
-) {
-    protected suspend fun <T> apiCall(block: suspend () -> T): ApiResult<T> =
-        withContext(ioDispatcher) {
-            try {
-                ApiResult.Success(block())
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                ApiResult.Error(mapError(e))
-            }
-        }
+// {{MODULE_DOMAIN}}/core/ApiResult.kt — pure Kotlin, dùng được trong domain interface
+sealed interface ApiResult<out T> {
+    data class Success<out T>(val data: T) : ApiResult<T>
+    data class Error(val cause: DomainError) : ApiResult<Nothing>
+}
 
-    private fun mapError(e: Throwable): DomainError = when (e) {
-        is IOException            -> DomainError.Network.Offline
-        is HttpRequestTimeoutException -> DomainError.Network.Timeout
-        is ClientRequestException -> when (e.response.status.value) {
-            401 -> DomainError.Auth.Unauthenticated
-            403 -> DomainError.Auth.Forbidden
-            404 -> DomainError.NotFound
-            else -> DomainError.Client(e.response.status.value)
-        }
-        is ServerResponseException -> DomainError.Server(e.response.status.value)
-        is SerializationException -> DomainError.Parse(e.message ?: "Parse error")
-        else -> DomainError.Unknown(e.message ?: "Unknown")
+inline fun <T, R> ApiResult<T>.map(transform: (T) -> R): ApiResult<R> = when (this) {
+    is ApiResult.Success -> ApiResult.Success(transform(data))
+    is ApiResult.Error -> this
+}
+
+inline fun <T, R> ApiResult<T>.flatMap(transform: (T) -> ApiResult<R>): ApiResult<R> = when (this) {
+    is ApiResult.Success -> transform(data)
+    is ApiResult.Error -> this
+}
+
+inline fun <T> ApiResult<T>.onSuccess(action: (T) -> Unit): ApiResult<T> {
+    if (this is ApiResult.Success) action(data)
+    return this
+}
+
+fun <T> ApiResult<T>.getOrNull(): T? = (this as? ApiResult.Success)?.data
+```
+
+`ErrorMapper` — variant `ktor` / `ktorfit` (variant `retrofit`: `InterruptedIOException` → Timeout, `IOException` → Offline, `HttpException` → `fromStatus`, xem knowledge):
+
+```kotlin
+// {{MODULE_DATA}}/core/network/ErrorMapper.kt — stack.network = ktor | ktorfit
+internal object ErrorMapper {
+
+    fun fromStatus(code: Int): DomainError = when (code) {
+        401 -> DomainError.Auth.Unauthenticated
+        403 -> DomainError.Auth.Forbidden
+        404 -> DomainError.NotFound
+        in 400..499 -> DomainError.Client(code)
+        in 500..599 -> DomainError.Server(code)
+        else -> DomainError.Unknown("HTTP $code")
+    }
+
+    fun fromThrowable(e: Throwable): DomainError = when (e) {
+        is HttpRequestTimeoutException,
+        is ConnectTimeoutException,
+        is SocketTimeoutException -> DomainError.Network.Timeout          // trước IOException
+        is ResponseException -> fromStatus(e.response.status.value)       // expectSuccess = true
+        is ContentConvertException -> DomainError.Parse(e.message.orEmpty())
+        is SerializationException -> DomainError.Parse(e.message.orEmpty())
+        is IOException -> DomainError.Network.Offline                     // kotlinx.io.IOException
+        else -> DomainError.Unknown(e.message ?: e::class.simpleName.orEmpty())
     }
 }
 ```
 
+#### 4A — Ktor Client: `safeCall` / `safeRequest`
+
+```kotlin
+// {{MODULE_DATA}}/core/network/SafeCall.kt
+internal inline fun <T> safeCall(block: () -> T): ApiResult<T> = try {
+    ApiResult.Success(block())
+} catch (e: CancellationException) {
+    throw e                                   // CORO-004: không nuốt cancellation
+} catch (e: Exception) {
+    ApiResult.Error(ErrorMapper.fromThrowable(e))
+}
+
+internal suspend inline fun <reified T> HttpClient.safeRequest(
+    block: HttpRequestBuilder.() -> Unit,
+): ApiResult<T> = safeCall {
+    val response = request(block)
+    if (!response.status.isSuccess()) {
+        return ApiResult.Error(ErrorMapper.fromStatus(response.status.value)) // khi expectSuccess = false
+    }
+    response.body<T>()
+}
+```
+
+#### 4B — Retrofit: `ApiResultCallAdapterFactory`
+
+```kotlin
+// {{MODULE_DATA}}/core/network/ApiResultCallAdapterFactory.kt
+internal class ApiResultCallAdapterFactory : CallAdapter.Factory() {
+    override fun get(returnType: Type, annotations: Array<out Annotation>, retrofit: Retrofit): CallAdapter<*, *>? {
+        if (getRawType(returnType) != Call::class.java || returnType !is ParameterizedType) return null
+        val callType = getParameterUpperBound(0, returnType)
+        if (getRawType(callType) != ApiResult::class.java || callType !is ParameterizedType) return null
+        return ApiResultCallAdapter<Any>(successType = getParameterUpperBound(0, callType))
+    }
+}
+
+private class ApiResultCallAdapter<T : Any>(
+    private val successType: Type,
+) : CallAdapter<T, Call<ApiResult<T>>> {
+    override fun responseType(): Type = successType
+    override fun adapt(call: Call<T>): Call<ApiResult<T>> = ApiResultCall(call, successType)
+}
+
+private class ApiResultCall<T : Any>(
+    private val delegate: Call<T>,
+    private val successType: Type,
+) : Call<ApiResult<T>> {
+
+    override fun enqueue(callback: Callback<ApiResult<T>>) {
+        delegate.enqueue(object : Callback<T> {
+            override fun onResponse(call: Call<T>, response: Response<T>) {
+                callback.onResponse(this@ApiResultCall, Response.success(response.toApiResult()))
+            }
+
+            override fun onFailure(call: Call<T>, t: Throwable) {
+                // IOException (kể cả OkHttp callTimeout), SerializationException từ converter, ...
+                // Coroutine bị cancel: Retrofit đã resume continuation bằng cancellation, callback này bị bỏ qua
+                callback.onResponse(this@ApiResultCall, Response.success(ApiResult.Error(ErrorMapper.fromThrowable(t))))
+            }
+        })
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun Response<T>.toApiResult(): ApiResult<T> {
+        if (!isSuccessful) return ApiResult.Error(ErrorMapper.fromStatus(code()))
+        val body = body()
+        return when {
+            body != null -> ApiResult.Success(body)
+            successType == Unit::class.java -> ApiResult.Success(Unit as T)   // 204 / 205
+            else -> ApiResult.Error(DomainError.Parse("Empty body"))
+        }
+    }
+
+    override fun clone(): Call<ApiResult<T>> = ApiResultCall(delegate.clone(), successType)
+    override fun execute(): Response<ApiResult<T>> =
+        throw UnsupportedOperationException("ApiResultCall chỉ hỗ trợ suspend fun")
+    override fun isExecuted(): Boolean = delegate.isExecuted
+    override fun cancel() = delegate.cancel()
+    override fun isCanceled(): Boolean = delegate.isCanceled
+    override fun request(): Request = delegate.request()
+    override fun timeout(): Timeout = delegate.timeout()
+}
+```
+
+Đăng ký vào builder:
+
+```kotlin
+Retrofit.Builder()
+    .baseUrl(BuildConfig.BASE_URL)
+    .client(okHttp)
+    .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+    .addCallAdapterFactory(ApiResultCallAdapterFactory())
+    .build()
+```
+
+#### 4C — Ktorfit: `ApiResultConverterFactory`
+
+```kotlin
+// {{MODULE_DATA}}/core/network/ApiResultConverterFactory.kt
+internal class ApiResultConverterFactory : Converter.Factory {
+
+    override fun suspendResponseConverter(
+        typeData: TypeData,
+        ktorfit: Ktorfit,
+    ): Converter.SuspendResponseConverter<HttpResponse, *>? {
+        if (typeData.typeInfo.type != ApiResult::class) return null
+        val successType = typeData.typeArgs.first().typeInfo
+
+        return object : Converter.SuspendResponseConverter<HttpResponse, ApiResult<Any?>> {
+            override suspend fun convert(result: KtorfitResult): ApiResult<Any?> = when (result) {
+                is KtorfitResult.Failure -> {
+                    val error = result.throwable
+                    // Ktorfit bọc MỌI exception (kể cả CancellationException) vào Failure → phải rethrow
+                    if (error is CancellationException) throw error
+                    ApiResult.Error(ErrorMapper.fromThrowable(error))
+                }
+                is KtorfitResult.Success -> try {
+                    val response = result.response
+                    if (response.status.isSuccess()) {
+                        ApiResult.Success(response.body(successType))
+                    } else {
+                        ApiResult.Error(ErrorMapper.fromStatus(response.status.value)) // khi expectSuccess = false
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    ApiResult.Error(ErrorMapper.fromThrowable(e))                // body parse lỗi → Parse
+                }
+            }
+        }
+    }
+}
+```
+
+Đăng ký vào builder:
+
+```kotlin
+Ktorfit.Builder()
+    .httpClient(httpClient)
+    .baseUrl(BuildConfig.BASE_URL)
+    .converterFactories(ApiResultConverterFactory())
+    .build()
+```
+
+**Rules**:
+- `CancellationException` luôn rethrow (CORO-004) — Ktorfit bọc cả cancellation vào `KtorfitResult.Failure`, nên dòng rethrow trong converter là bắt buộc
+- Không `withContext(ioDispatcher)` quanh network call — suspend call của Retrofit / Ktor / Ktorfit đã main-safe
+
 ### Step 5 — Repository impl
+
+Impl là class thuần, chỉ implement interface domain và map DTO → domain (ARCH-004):
 
 ```kotlin
 // {{MODULE_DATA}}/repository/BookRepositoryImpl.kt
 internal class BookRepositoryImpl(
     private val api: BookApi,
-    ioDispatcher: CoroutineDispatcher,
-) : BaseRepository(ioDispatcher), BookRepository {
+) : BookRepository {
 
-    override suspend fun getBooks(page: Int): ApiResult<List<Book>> = apiCall {
-        api.getBooks(page).map { it.toDomain() }
-    }
+    override suspend fun getBook(id: String): ApiResult<Book> =
+        api.getBook(id).map { it.toDomain() }
 
-    override suspend fun searchBooks(query: String): ApiResult<List<Book>> = apiCall {
-        api.searchBooks(query).map { it.toDomain() }
-    }
+    override suspend fun searchBooks(query: String): ApiResult<List<Book>> =
+        api.searchBooks(query).map { dtos -> dtos.map { it.toDomain() } }
 }
 ```
+
+Kết hợp nhiều call: `flatMap` (call sau phụ thuộc call trước), `onSuccess` (ghi cache local).
 
 ### Step 6 — Test
 
@@ -243,38 +418,56 @@ Chọn mock tool theo lib:
 - Ktor / Ktorfit → `MockEngine` (Ktor built-in)
 - Retrofit → `MockWebServer` (OkHttp lib)
 
-Example dưới là **Ktor MockEngine**. MockWebServer snippet xem `knowledge/data/network.md §Testing với MockWebServer`.
+Test contract lỗi ở **tầng API** (assert `ApiResult.Error(DomainError.X)`); Repository test chỉ cần fake API trả `ApiResult`. Example dưới là **Ktor MockEngine**. MockWebServer snippet xem `knowledge/data/network.md §Testing với MockWebServer`.
 
 ```kotlin
-class BookRepositoryImplTest {
-    private val mockEngine = MockEngine { request ->
-        when (request.url.encodedPath) {
-            "/v1/books/book-1" -> respond(
-                content = """{"id":"book-1","title":"Atomic","author":"Clear","cover_url":"x","duration":1000}""",
-                headers = headersOf(HttpHeaders.ContentType, "application/json"),
-            )
-            "/v1/books/missing" -> respond("", status = HttpStatusCode.NotFound)
-            else -> respond("", status = HttpStatusCode.NotFound)
-        }
+val bookMockEngine = MockEngine { request ->
+    when (request.url.encodedPath) {
+        "/v1/books/book-1" -> respond(
+            content = """{"id":"book-1","title":"Atomic","author":"Clear","cover_url":"x","duration":1000}""",
+            headers = headersOf(HttpHeaders.ContentType, "application/json"),
+        )
+        "/v1/books/offline" -> throw IOException("offline")
+        else -> respond("", status = HttpStatusCode.NotFound)
     }
-    private val client = HttpClient(mockEngine) {
+}
+
+class BookApiTest {
+    private val client = HttpClient(bookMockEngine) {
         install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
         expectSuccess = true
     }
-    private val repo = BookRepositoryImpl(BookApi(client), UnconfinedTestDispatcher())
+    private val api = BookApi(client)
 
     @Test
-    fun `getBook success maps dto to domain`() = runTest {
-        val result = repo.getBook("book-1")
-        assertTrue(result is ApiResult.Success)
-        assertEquals("Atomic", result.data.title)
+    fun `getBook success`() = runTest {
+        val result = api.getBook("book-1")
+        assertEquals("Atomic", (result as ApiResult.Success).data.title)
     }
 
     @Test
     fun `getBook 404 returns NotFound`() = runTest {
-        val result = repo.getBook("missing")
-        assertTrue(result is ApiResult.Error)
-        assertTrue((result as ApiResult.Error).cause is DomainError.NotFound)
+        assertEquals(ApiResult.Error(DomainError.NotFound), api.getBook("missing"))
+    }
+
+    @Test
+    fun `getBook io failure returns Offline`() = runTest {
+        assertEquals(ApiResult.Error(DomainError.Network.Offline), api.getBook("offline"))
+    }
+}
+
+class BookRepositoryImplTest {
+    // BookApi (Ktor) là class final → dùng lại MockEngine; Retrofit/Ktorfit API là interface → có thể fake trực tiếp
+    private val repo = BookRepositoryImpl(BookApi(HttpClient(bookMockEngine) { install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) } }))
+
+    @Test
+    fun `getBook maps dto to domain`() = runTest {
+        assertEquals("Atomic", (repo.getBook("book-1") as ApiResult.Success).data.title)
+    }
+
+    @Test
+    fun `getBook error passes through unchanged`() = runTest {
+        assertEquals(ApiResult.Error(DomainError.NotFound), repo.getBook("missing"))
     }
 }
 ```
@@ -282,6 +475,7 @@ class BookRepositoryImplTest {
 ## Required policies
 
 - ARCH-010 Ktor platform engine chỉ ở `data/{androidMain,iosMain}/` qua `expect`
+- ARCH-004 Repository impl không kế thừa base class; API trả `ApiResult`
 - ARCH-005 Mapper object + extension
 - ARCH-013 Null-safe mapping
 - CORO-004 cancellation preservation
@@ -314,16 +508,18 @@ sealed interface DomainError {
 ### Pagination
 
 ```kotlin
-suspend fun getBooks(cursor: String? = null, pageSize: Int = 20): ApiResult<Paged<Book>> = apiCall {
-    val response = api.getBooks(cursor, pageSize)
-    Paged(items = response.items.map { it.toDomain() }, nextCursor = response.nextCursor)
-}
+// Repository impl — API trả ApiResult<PagedResponse<BookDto>>
+suspend fun getBooks(cursor: String? = null, pageSize: Int = 20): ApiResult<Paged<Book>> =
+    api.getBooks(cursor, pageSize).map { response ->
+        Paged(items = response.items.map { it.toDomain() }, nextCursor = response.nextCursor)
+    }
 ```
 
 ### Multipart upload
 
 ```kotlin
-suspend fun uploadAvatar(bytes: ByteArray, mime: String): ApiResult<Unit> = apiCall {
+// API class (remote/) — request không đi qua safeRequest → bọc safeCall
+suspend fun uploadAvatar(bytes: ByteArray, mime: String): ApiResult<Unit> = safeCall {
     client.submitFormWithBinaryData(
         url = "/v1/upload",
         formData = formData {
@@ -339,11 +535,10 @@ suspend fun uploadAvatar(bytes: ByteArray, mime: String): ApiResult<Unit> = apiC
 ### Stream download
 
 ```kotlin
-suspend fun downloadFile(url: String, dest: Path): ApiResult<Long> = apiCall {
+// API class (remote/)
+suspend fun downloadFile(url: String, dest: Path): ApiResult<Unit> = safeCall {
     client.prepareGet(url).execute { response ->
-        var bytesRead = 0L
         response.bodyAsChannel().copyAndClose(dest.sink())
-        bytesRead
     }
 }
 ```
@@ -352,7 +547,9 @@ suspend fun downloadFile(url: String, dest: Path): ApiResult<Long> = apiCall {
 
 | Mistake | Fix |
 |---|---|
-| `expectSuccess = false` (default) → không throw cho 4xx | Set `true`, catch ở BaseRepository |
+| API class trả DTO thô (`client.get(...).body()`) → exception lọt lên Repository | Trả `ApiResult<Dto>` qua `safeRequest` / CallAdapter / Converter |
+| Quên rethrow `CancellationException` trong converter/helper | Rethrow trước khi map (CORO-004) |
+| Bọc network call bằng `withContext(ioDispatcher)` | Bỏ — suspend call của Retrofit/Ktor/Ktorfit đã main-safe |
 | Expose `BookDto` ra ngoài data module | Map sang `Book` domain trước khi return |
 | Log token/password trong Logging interceptor | `sanitizeHeader` cho Authorization + API key |
 | `!!` ở mapper DTO → NullPointerException runtime | Default value hoặc Result/sealed |
@@ -365,9 +562,10 @@ suspend fun downloadFile(url: String, dest: Path): ApiResult<Long> = apiCall {
 - API class `internal` trong `data/remote/`
 - DTO với `@Serializable`, default values, `@SerialName`
 - Mapper object + extension function
-- Repository impl extend `BaseRepository`, dùng `apiCall { }`
+- API service trả `ApiResult<Dto>` (Retrofit `ApiResultCallAdapterFactory` / Ktorfit `ApiResultConverterFactory` / Ktor `safeRequest`), mapping ở `ErrorMapper`
+- Repository impl không kế thừa base class, chỉ `api.x().map { it.toDomain() }` (ARCH-004)
 - HttpClient singleton qua Koin
-- Unit test với `MockEngine` cho ít nhất: happy path, 404, network error
+- Unit test API với `MockEngine` / `MockWebServer` cho ít nhất: happy path, 404, network error — assert `ApiResult.Error(DomainError.X)`
 
 ## Anti-patterns bị cấm
 

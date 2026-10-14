@@ -4,6 +4,24 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.11.0] — 2026-10-14
+
+### Changed
+- **ARCH-004** viết lại: Repository impl không kế thừa base class; API service trả `ApiResult<Dto>` qua `ApiResultCallAdapterFactory` (Retrofit), `ApiResultConverterFactory` (Ktorfit) hoặc `HttpClient.safeRequest` / `safeCall` (Ktor thuần). Rubric giữ severity HIGH.
+- **CORO-002**: network suspend call không bọc `withContext(ioDispatcher)`; chỉ IO blocking thật (file, query DB đồng bộ) chuyển dispatcher tại local source.
+- Knowledge, skills (`android-network`, `android-database`, `android-feature`, `android-coroutines`, `android-code-review`, `android-testing`), blueprints, agents, workflows cập nhật theo contract mới; bỏ hết hướng dẫn `BaseRepository` / `apiCall`.
+- `evaluations/templates/e05-test-quality-audit.md`: expected rewrite chấm theo contract mới (Repository không nhận dispatcher, fake API trả `ApiResult`).
+
+### Added
+- `knowledge/data/network.md §ApiResult contract`: định nghĩa `ApiResult` + extension `map` / `flatMap` / `onSuccess` / `getOrNull`, `ErrorMapper` dùng chung (bảng mapping Ktor + Retrofit, timeout match trước `IOException`), snippet adapter/converter/helper kèm đăng ký builder, `CancellationException` luôn rethrow.
+- `knowledge/data/network.md §Migration từ BaseRepository` + ranh giới lỗi local DB.
+- Konsist template: `ARCH-004 repository impl does not extend base repository`, `ARCH-004 remote api suspend functions return ApiResult`.
+
+**Breaking** (minor): product đang theo pattern `BaseRepository` + `apiCall` sẽ fail Konsist ARCH-004 sau khi update. Fix: làm theo `§Migration từ BaseRepository`, hoặc tạm disable ARCH-004 qua `rule_overrides` (kèm rationale).
+
+### Rationale
+Kế thừa base class chỉ để dùng chung error mapping gây coupling, và mỗi method phải tự bọc `apiCall` — quên bọc là exception thô lọt ra. Retrofit và Ktorfit có cơ chế chính thức để trả `ApiResult` ngay tầng network, nên mapping lỗi chỉ cần viết một lần.
+
 ## [0.10.2] — 2026-10-14
 
 ### Added
