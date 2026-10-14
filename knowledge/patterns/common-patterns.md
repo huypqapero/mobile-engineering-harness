@@ -24,7 +24,7 @@ fun createHttpClient(engine: HttpClientEngine, isDebug: Boolean): HttpClient =
 
 **Cost**: 1 indirection; không scale khi factory logic nhiều variant → sealed hierarchy.
 
-**Trong AudioBookApp**: Koin `single { }` / `factory { }` block là factory implicit — không cần tạo factory class riêng.
+**Example use case**: Koin `single { }` / `factory { }` block là factory implicit — không cần tạo factory class riêng.
 
 ### Builder (DSL)
 
@@ -54,7 +54,7 @@ class SearchConfig private constructor(
 // Call site
 val config = SearchConfig {
     query = "harry"
-    filter = Filter.Audiobook
+    filter = Filter.MediaType
     sortBy = SortBy.Rating
 }
 ```
@@ -103,7 +103,7 @@ suspend fun playerPrepare(player: ExoPlayer): Unit = suspendCancellableCoroutine
 }
 ```
 
-**Trong AudioBookApp**: adapter 3rd-party (ExoPlayer callback → coroutine), legacy Java API → suspend.
+**Example use case**: adapter 3rd-party (ExoPlayer callback → coroutine), legacy Java API → suspend.
 
 ### Facade
 
@@ -122,7 +122,7 @@ object AnalyticsFacade {
 }
 ```
 
-**Trong AudioBookApp**: `AnalyticsTracker` interface là facade cho 3rd-party trackers.
+**Example use case**: `AnalyticsTracker` interface là facade cho 3rd-party trackers.
 
 ### Decorator
 
@@ -171,7 +171,7 @@ fun List<Book>.sortedBy(strategy: SortStrategy): List<Book> = when (strategy) {
 enum class SortStrategy { ByTitle, ByRating, Recent }
 ```
 
-**Trong AudioBookApp**: `CatalogFilter` enum + extension function là strategy pattern lite.
+**Example use case**: `CatalogFilter` enum + extension function là strategy pattern lite.
 
 ### Observer
 
@@ -237,7 +237,7 @@ sealed interface UiIntent {
 fun handle(intent: UiIntent) = when (intent) { ... }
 ```
 
-**Trong AudioBookApp**: MVI Intent là Command pattern — mỗi user action = 1 Command object.
+**Example use case**: MVI Intent là Command pattern — mỗi user action = 1 Command object.
 
 ### Chain of Responsibility
 

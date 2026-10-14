@@ -82,7 +82,7 @@ private fun SettingsContent(
 @Preview
 @Composable
 private fun SettingsContentPreview() {
-    AudiobookTheme {
+    AppTheme {
         SettingsContent(
             state = SettingsState(theme = Theme.Light, locale = AppLocale.VI),
             onIntent = {},
@@ -93,7 +93,7 @@ private fun SettingsContentPreview() {
 @Preview
 @Composable
 private fun SettingsContentDarkPreview() {
-    AudiobookTheme(darkTheme = true) {
+    AppTheme(darkTheme = true) {
         SettingsContent(
             state = SettingsState(theme = Theme.Dark, locale = AppLocale.EN),
             onIntent = {},

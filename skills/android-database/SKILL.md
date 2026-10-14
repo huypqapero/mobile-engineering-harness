@@ -80,7 +80,7 @@ DELETE FROM Book WHERE updated_at < :threshold AND is_bookmarked = 0;
 ```kotlin
 // {{MODULE_DATA}}/mapper/BookEntityMapper.kt
 internal object BookEntityMapper {
-    fun Book.toDomain(): com.audiobook.domain.model.Book = com.audiobook.domain.model.Book(
+    fun Book.toDomain(): {{PACKAGE_ROOT}}.{{MODULE_DOMAIN}}.model.Book = {{PACKAGE_ROOT}}.{{MODULE_DOMAIN}}.model.Book(
         id = id,
         title = title,
         author = author,
@@ -89,7 +89,7 @@ internal object BookEntityMapper {
         isBookmarked = is_bookmarked,
     )
 
-    fun com.audiobook.domain.model.Book.toEntity(now: Long): Book = Book(
+    fun {{PACKAGE_ROOT}}.{{MODULE_DOMAIN}}.model.Book.toEntity(now: Long): Book = Book(
         id = id,
         title = title,
         author = author,

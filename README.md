@@ -257,7 +257,7 @@ mobile-engineering-harness/
 1. **Semver bump** rõ (breaking? feature? patch?)
 2. **CHANGELOG entry** với rationale
 3. **Backward compat check** — overlay cũ còn work?
-4. **Test với AudioBookApp overlay** — regression check
+4. **Test với 1 overlay thực** — regression check trước khi tag
 5. **Tag + GitHub Release** — reproducible pin point
 
 ### Agent interaction patterns
@@ -565,7 +565,7 @@ v1.0.0 □ Production proof: 3+ products using in production, measured ROI
 
 ### Related
 
-- [AudioBookApp overlay example](https://github.com/huypqapero/mobile-engineering-harness) (private — reference consumer)
+Harness được design cho mọi Android/CMP product consume qua overlay. Chưa có public reference consumer repo.
 
 ---
 
@@ -580,4 +580,4 @@ Issue + PR welcome. Khi contribute:
 2. Follow rule trong constitution/
 3. Add Konsist/Detekt rule đi kèm nếu add rule mới
 4. Update CHANGELOG + bump version
-5. Test regression với AudioBookApp overlay nếu có
+5. Test regression với ít nhất 1 real overlay nếu có

@@ -66,7 +66,7 @@ Target: ≥ 30% improvement về Architecture compliance + MVI correctness.
 ## Customization cho product
 
 Overlay copy template này vào `.harness-overlay/evaluations/tasks/e01-create-mvi-feature.md` và điền:
-- `<FEATURE_NAME>` cụ thể product (ví dụ AudioBookApp: `CollectionDetail`)
+- `<FEATURE_NAME>` cụ thể product (ví dụ: `CollectionDetail`, `OrderList`, `UserProfile`)
 - `<DESCRIPTION>` business context
 - API shape thực tế
 - Interactions liệt kê

@@ -130,7 +130,7 @@ val state by viewModel.state.collectAsStateWithLifecycle()
 
 ## Theming
 
-- Design token ở `presenter/theme/AudiobookColors.kt`, `AudiobookTypography.kt`, `AudiobookSpacingShape.kt`
+- Design token ở `{{MODULE_PRESENTER}}/theme/{{THEME_PREFIX}}Colors.kt`, `{{THEME_PREFIX}}Typography.kt`, `{{THEME_PREFIX}}SpacingShape.kt`
 - `{{THEME_CLASS}} { ... }` wrap root; truy cập qua `{{THEME_CLASS}}.colors`, `{{THEME_CLASS}}.typography`
 - Dark mode: single source `isSystemInDarkTheme()` + override thủ công
 

@@ -150,15 +150,15 @@ Khi đọc file upstream, các placeholder dưới đây sẽ được resolve t
 
 | Placeholder | Nguồn | Ví dụ |
 |---|---|---|
-| `{{PRODUCT_NAME}}` | `product.name` | AudioBookApp |
-| `{{PACKAGE_ROOT}}` | `product.package` | com.audiobook |
-| `{{PACKAGE_ROOT_PATH}}` | derive từ package | com/audiobook |
+| `{{PRODUCT_NAME}}` | `product.name` | YourProduct |
+| `{{PACKAGE_ROOT}}` | `product.package` | com.example.product |
+| `{{PACKAGE_ROOT_PATH}}` | derive từ package | com/example/product |
 | `{{MODULE_APP}}` | `modules.app` | composeApp |
 | `{{MODULE_PRESENTER}}` | `modules.presenter` | presenter |
 | `{{MODULE_DOMAIN}}` | `modules.domain` | domain |
 | `{{MODULE_DATA}}` | `modules.data` | data |
-| `{{THEME_CLASS}}` | `ui.theme_class` | AudiobookTheme |
-| `{{THEME_PREFIX}}` | `ui.theme_prefix` | Audiobook |
+| `{{THEME_CLASS}}` | `ui.theme_class` | AppTheme |
+| `{{THEME_PREFIX}}` | `ui.theme_prefix` | App |
 | `{{MVI_BASE_CLASS}}` | derive hoặc `stack.mvi` | BaseViewModel |
 | `{{DI_FRAMEWORK}}` | `stack.di` | koin |
 | `{{UI_FRAMEWORK}}` | `stack.ui` | compose-multiplatform |

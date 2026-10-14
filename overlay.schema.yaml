@@ -5,7 +5,7 @@
 harness_version: ">=0.1.0"            # REQUIRED. Semver range cho upstream version.
 
 product:
-  name: ""                            # REQUIRED. CamelCase, ví dụ: AudioBookApp
+  name: ""                            # REQUIRED. CamelCase, ví dụ: YourProduct
   package: ""                         # REQUIRED. Reverse-DNS, ví dụ: com.yourcompany.product
   app_display_name: ""                # Optional. Hiển thị user-facing, default = product.name
 
@@ -16,8 +16,8 @@ modules:
   data: data                          # Repo impl + DTO + mapper module
 
 ui:
-  theme_prefix: ""                    # REQUIRED. Ví dụ: Audiobook → sinh ra AudiobookColors, AudiobookTypography...
-  theme_class: ""                     # REQUIRED. Ví dụ: AudiobookTheme (object/composable wrapper)
+  theme_prefix: ""                    # REQUIRED. Ví dụ: Acme → sinh ra AcmeColors, AcmeTypography...
+  theme_class: ""                     # REQUIRED. Ví dụ: AcmeTheme (object/composable wrapper)
 
 stack:
   ui: compose-multiplatform           # Options: compose-multiplatform | compose-android | xml-android
