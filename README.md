@@ -610,20 +610,23 @@ Chi tiết: `knowledge/agent-orchestration/essentials.md`.
 
 ---
 
-## Phase roadmap
+## Release history
 
-```
-v0.1.0 ✓ Initial 2-layer harness extraction
-v0.2.0 ✓ Lifecycle CLI (init/install/update/uninstall + manifest)
-v0.3.0 ✓ Bootstrap one-liner (mehcli self-update)
-v0.4.0 ✓ P0 content fill (kotlin-conventions, coroutines skill, bug/review workflows, agents)
-v0.5.0 ✓ P1 content fill (network/db skills, refactor/release workflows, data knowledge, detekt)
-v0.6.0 ✓ P2 complete reference blueprint (3 more skills, 3 blueprints, 3 knowledge, rubrics/regression/lint)
-         ─── Current: structural completeness ───
-v0.7.0 □ Evidence-driven refinement (eval runs + telemetry + rule tune)
-v0.8.0 □ Custom Konsist/Detekt rules từ evidence
-v1.0.0 □ Production proof: 3+ products using in production, measured ROI
-```
+Mỗi version một dòng. Chi tiết đầy đủ xem [`CHANGELOG.md`](./CHANGELOG.md).
+
+- **v0.1.0**: harness 2 lớp đầu tiên, gồm 14 rule ARCH, 10 rule CORO, 5 skill, blueprint `ItemCatalog`, Konsist và `verify.sh`
+- **v0.2.0**: CLI quản lý vòng đời (`init`/`install`/`update`/`uninstall`), manifest, `--dry-run`/`--yes`
+- **v0.3.0**: cài đặt một lệnh qua `bootstrap.sh`, thêm `mehcli self-update` và `mehcli version`
+- **v0.4.0**: `kotlin-conventions` (12 rule KOT), skill coroutines, workflow fix-bug và review-PR, các role trong `agents/`
+- **v0.5.0**: skill network và database, workflow refactor và release, knowledge/data, Detekt
+- **v0.6.0**: skill refactor, debug và performance, 3 blueprint, knowledge patterns/security/performance, rubrics/regression, Lint
+- **v0.7.0**: data layer nhiều lựa chọn: Ktor/Ktorfit/Retrofit và SQLDelight/Room
+- **v0.8.0**: `architecture.profile`, `rule_overrides` (lý do từ 50 ký tự trở lên), `enforcement.mode`
+- **v0.9.0**: agent orchestration gồm 4 mode: single, team, parallel-features, auto
+- **v0.10.0**: Factory pack gồm task YAML contract, build 4 level, auto-fix có fingerprint, phân loại lỗi, chọn model theo tier
+- **v0.10.1 và v0.10.2**: MIT LICENSE và `CONTRIBUTING.md`
+
+**Sắp tới — v1.0.0**: Production proof, có từ 3 product trở lên dùng trong production và đo được ROI.
 
 ---
 
