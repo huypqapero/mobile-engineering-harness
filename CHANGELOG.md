@@ -4,6 +4,14 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.10.2] — 2026-10-14
+
+### Added
+- **CONTRIBUTING.md** — guidelines cho external contributors: scope boundary (in/out upstream), dev setup, PR process, rule/skill contribution checklist, commit convention.
+
+### Rationale
+Public repo thiếu CONTRIBUTING → external contributor không rõ workflow. Add template giảm friction + align contribution style.
+
 ## [0.10.1] — 2026-10-14
 
 ### Added
