@@ -27,6 +27,8 @@ Context project (resolve từ `overlay.yaml`):
 | Build/sửa Compose UI | `android-compose` |
 | Thiết kế UiState/Intent/Effect, reducer, side-effect | `android-mvi` |
 | Async / Flow / cancellation / concurrency | `android-coroutines` |
+| API integration, Ktor service, DTO + mapper | `android-network` |
+| Local DB SQLDelight, schema, migration, offline-first | `android-database` |
 | Review PR, diff, module | `android-code-review` |
 | Viết unit/UI/integration test | `android-testing` |
 
@@ -39,6 +41,8 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 | `workflows/feature-development.md` | Implement feature mới end-to-end (5 stages: inspect → plan → implement → verify → report) |
 | `workflows/fix-bug.md` | Debug + fix bug (reproduce → isolate → cause → fix → verify) |
 | `workflows/review-pull-request.md` | Review PR / diff theo 10 dimensions với evidence-based findings |
+| `workflows/refactor-module.md` | Preserve behavior refactor (baseline → plan → refactor → compare → verify) |
+| `workflows/release-validation.md` | Release candidate validation (preflight → build → smoke → artifact → regression → sign-off) |
 
 ## Agent roles
 
@@ -82,22 +86,32 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `knowledge/compose/essentials.md`
 - `knowledge/mvi/essentials.md`
 - `knowledge/coroutines/essentials.md`
+- `knowledge/data/repository-pattern.md`
+- `knowledge/data/network.md`
+- `knowledge/data/persistence.md`
+- `knowledge/data/caching.md`
 - `skills/android-feature/SKILL.md`
 - `skills/android-compose/SKILL.md`
 - `skills/android-mvi/SKILL.md`
 - `skills/android-coroutines/SKILL.md`
+- `skills/android-network/SKILL.md`
+- `skills/android-database/SKILL.md`
 - `skills/android-code-review/SKILL.md`
 - `skills/android-testing/SKILL.md`
 - `blueprints/reference-feature/README.md`
+- `blueprints/network-service/README.md`
 - `workflows/feature-development.md`
 - `workflows/fix-bug.md`
 - `workflows/review-pull-request.md`
+- `workflows/refactor-module.md`
+- `workflows/release-validation.md`
 - `agents/architect.md`
 - `agents/implementer.md`
 - `agents/reviewer.md`
 - `agents/test-engineer.md`
 - `verification/architecture-tests/TemplateArchitectureRulesTest.kt`
 - `verification/scripts/verify.sh.template`
+- `verification/detekt/README.md` + `detekt-config-template.yml`
 - `evaluations/templates/e01..e05.md`
 
 ## Report format

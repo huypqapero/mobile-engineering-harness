@@ -1,0 +1,251 @@
+# Detekt config template for Mobile Engineering Harness consumers.
+# Copy to <project-root>/detekt.yml and customize per product.
+#
+# Rule selection enforces constitution/kotlin-conventions.md + concurrency-rules.md.
+# Thresholds tuned for Compose Multiplatform codebases.
+
+build:
+  maxIssues: 0           # fail CI khi có violation ngoài baseline
+  excludeCorrectable: false
+  weights:
+    complexity: 2
+    LongParameterList: 1
+    style: 1
+    comments: 1
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+processors:
+  active: true
+
+console-reports:
+  active: true
+
+output-reports:
+  active: true
+
+comments:
+  active: true
+  CommentOverPrivateFunction:
+    active: false
+  EndOfSentenceFormat:
+    active: false
+  UndocumentedPublicClass:
+    active: false        # KOT-012 preferred nhưng không bắt buộc toàn bộ
+  UndocumentedPublicFunction:
+    active: false
+  UndocumentedPublicProperty:
+    active: false
+
+complexity:
+  active: true
+  CognitiveComplexMethod:
+    active: true
+    threshold: 15
+  ComplexCondition:
+    active: true
+    threshold: 4
+  LargeClass:
+    active: true
+    threshold: 400       # ARCH-012: file < 400 lines
+  LongMethod:
+    active: true
+    threshold: 50        # function < 50 lines (soft)
+  LongParameterList:
+    active: true
+    functionThreshold: 6
+    constructorThreshold: 8   # tolerant hơn cho constructor DI
+    ignoreDefaultParameters: true
+    ignoreDataClasses: true
+    ignoreAnnotatedParameter: ['@Inject', '@Composable']
+  TooManyFunctions:
+    active: true
+    thresholdInClasses: 15
+    thresholdInObjects: 15
+    ignorePrivate: true
+    ignoreOverridden: true
+
+coroutines:
+  active: true
+  GlobalCoroutineUsage:        # CORO-001
+    active: true
+  InjectDispatcher:            # CORO-002
+    active: true
+    dispatcherNames: ['IO', 'Default', 'Unconfined']
+  RedundantSuspendModifier:
+    active: true
+  SleepInsteadOfDelay:
+    active: true
+  SuspendFunWithFlowReturnType:
+    active: true
+  SuspendFunSwallowedCancellation:  # CORO-004
+    active: true
+
+empty-blocks:
+  active: true
+  EmptyCatchBlock:
+    active: true
+    allowedExceptionNameRegex: '_|(ignore|expected).*'
+  EmptyFunctionBlock:
+    active: true
+    ignoreOverridden: true
+
+exceptions:
+  active: true
+  ExceptionRaisedInUnexpectedLocation:
+    active: true
+  InstanceOfCheckForException:
+    active: true
+  NotImplementedDeclaration:
+    active: true
+  PrintStackTrace:
+    active: true
+  RethrowCaughtException:
+    active: true
+  ReturnFromFinally:
+    active: true
+  SwallowedException:                   # CORO-004 + KOT-009
+    active: true
+  ThrowingExceptionFromFinally:
+    active: true
+  ThrowingExceptionInMain:
+    active: true
+  ThrowingExceptionsWithoutMessageOrCause:
+    active: true
+    exceptions: ['IllegalArgumentException', 'IllegalStateException', 'IOException']
+  TooGenericExceptionCaught:            # KOT-009
+    active: true
+    exceptionNames: ['ArrayIndexOutOfBoundsException', 'Error', 'Exception', 'IllegalMonitorStateException', 'NullPointerException', 'IndexOutOfBoundsException', 'RuntimeException', 'Throwable']
+  TooGenericExceptionThrown:
+    active: true
+    exceptionNames: ['Error', 'Exception', 'RuntimeException', 'Throwable']
+
+naming:
+  active: true
+  ClassNaming:
+    active: true
+    classPattern: '[A-Z][a-zA-Z0-9]*'
+  FunctionNaming:
+    active: true
+    functionPattern: '[a-z][a-zA-Z0-9]*'
+    excludeClassPattern: '$^'
+    # Compose composables are PascalCase. Suppress at call site or configure exclude.
+    excludes: ['**/compose/**', '**/*Composable*.kt']
+  FunctionParameterNaming:
+    active: true
+  PackageNaming:
+    active: true
+    packagePattern: '[a-z]+(\.[a-z][A-Za-z0-9]*)*'
+  VariableNaming:
+    active: true
+    variablePattern: '[a-z][A-Za-z0-9]*'
+
+performance:
+  active: true
+  ArrayPrimitive:
+    active: true
+  CouldBeSequence:
+    active: true
+    threshold: 3
+  ForEachOnRange:
+    active: true
+  SpreadOperator:
+    active: true
+  UnnecessaryTemporaryInstantiation:
+    active: true
+
+potential-bugs:
+  active: true
+  AvoidReferentialEquality:
+    active: true
+  CastToNullableType:
+    active: true
+  Deprecation:
+    active: true
+  DontDowncastCollectionTypes:
+    active: true
+  ExitOutsideMain:
+    active: true
+  HasPlatformType:
+    active: true
+  IgnoredReturnValue:
+    active: true
+  ImplicitDefaultLocale:
+    active: true
+  LateinitUsage:
+    active: true
+    ignoreOnClassesPattern: '.*Test(s)?'
+  NullableToStringCall:
+    active: true
+  UnreachableCode:
+    active: true
+  UnsafeCallOnNullableType:            # KOT-002
+    active: true
+  UnsafeCast:
+    active: true
+  UselessPostfixExpression:
+    active: true
+
+style:
+  active: true
+  CollapsibleIfStatements:
+    active: true
+  EqualsOnSignatureLine:
+    active: true
+  ExplicitItLambdaParameter:
+    active: true
+  ForbiddenComment:
+    active: true
+    comments: ['TODO:', 'FIXME:', 'STOPSHIP:']
+    allowedPatterns: 'TODO\\(#\\d+\\)|FIXME\\(#\\d+\\)'   # Allow TODO linked to issue
+  ForbiddenImport:
+    active: true
+    imports: ['kotlinx.coroutines.GlobalScope']            # CORO-001
+  MagicNumber:
+    active: true
+    ignoreNumbers: ['-1', '0', '1', '2', '100', '1000']
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotation: true
+    ignoreNamedArgument: true
+    ignoreEnums: true
+    ignoreHashCodeFunction: true
+    ignoreConstantDeclaration: true
+  MaxLineLength:
+    active: true
+    maxLineLength: 140
+    excludePackageStatements: true
+    excludeImportStatements: true
+    excludeCommentStatements: true
+  NewLineAtEndOfFile:
+    active: true
+  NoTabs:
+    active: true
+  PreferToOverPairSyntax:
+    active: true
+  RedundantVisibilityModifierRule:
+    active: true
+  ReturnCount:
+    active: true
+    max: 3
+    excludedFunctions: ['equals']
+  UnnecessaryAbstractClass:
+    active: true
+  UnnecessaryApply:
+    active: true
+  UnnecessaryLet:
+    active: true
+  UseCheckOrError:
+    active: true
+  UseIfInsteadOfWhen:
+    active: true
+  UseRequire:
+    active: true
+  UseRequireNotNull:
+    active: true
+  UtilityClassWithPublicConstructor:
+    active: true
+  WildcardImport:
+    active: true
