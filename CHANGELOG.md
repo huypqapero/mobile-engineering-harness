@@ -4,6 +4,40 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.6.0] — 2026-10-14
+
+### Added — P2 reference blueprint completion
+
+#### Skills (3 more)
+- **`skills/android-refactor/SKILL.md`** — Preserve-behavior refactor patterns: P-01 extract function, P-02 extract class, P-03 inline, P-04 move cross-layer, P-05 rename, P-06 split file, P-07 extract feature module. Pair với `workflows/refactor-module.md`.
+- **`skills/android-debug/SKILL.md`** — Diagnose Android bugs: D-01 reproduce deterministic, D-02 isolate scope, D-03 logging/breakpoint, D-04 prove root cause, D-05 platform-specific (adb/Xcode), D-06 common bug patterns, D-07 coroutine debug, D-08 Compose recomposition debug.
+- **`skills/android-performance/SKILL.md`** — Measure-first optimization: P-01 startup (baseline profile, lazy init), P-02 Compose recomposition, P-03 lazy list, P-04 memory, P-05 network, P-06 DB query, P-07 battery. SLO baseline table.
+
+#### Blueprints (3 more)
+- **`blueprints/compose-screen/README.md`** — standalone Compose screen pattern (route stateful + content stateless). Dùng khi feature đơn giản không warrant full feature stack.
+- **`blueprints/repository/README.md`** — standalone Repository (domain interface + data impl với remote + local source + sync).
+- **`blueprints/usecase/README.md`** — standalone UseCase (orchestrate multi-source, validation+action, Flow transformation). Decision tree "khi nào cần UseCase".
+
+#### Knowledge (3 more domains)
+- **`knowledge/patterns/common-patterns.md`** — Design patterns thực dùng trong Kotlin/Android (Factory, Builder DSL, Singleton via DI, Adapter, Facade, Decorator, Strategy, Observer via Flow, State sealed, Command via Intent, Chain of Responsibility). Patterns to AVOID. Rule: pattern chỉ áp dụng khi có problem cụ thể.
+- **`knowledge/security/essentials.md`** — Threat model baseline + 10 security sections (SEC-01..10): secret storage (KeyStore/Keychain), network (TLS, cert pinning), PII, platform integrity, input validation, dependency security, WebView, backup, build config, analytics.
+- **`knowledge/performance/essentials.md`** — SLO targets table + startup/Compose/memory/lazy list/network/DB/battery optimization patterns. Profiling workflow: measure → hypothesize → optimize → re-measure.
+
+#### Evaluations (2 subfolders)
+- **`evaluations/rubrics/README.md`** — Shared scoring rubric: score scale (90-100 → <40), dimension weights (default), severity classification per rule. Baseline vs harness comparison format.
+- **`evaluations/regression/README.md`** — Trend tracking across harness versions + model variants. YAML record format, alert thresholds, model matrix.
+
+#### Verification (1 subfolder)
+- **`verification/lint/README.md`** — Android Lint setup + custom rule roadmap. Scaffold `lint.xml`, baseline strategy, Compose Lint rules, custom rule example skeleton. Hoãn custom rule tới khi evidence.
+
+### Changed
+- `AGENTS.md`: task routing + 3 new skills; file index refreshed cho tất cả P2 additions.
+
+### Rationale
+P2 completes the reference blueprint structural match: 11 skills (match reference), 5 blueprints (match reference), 5 workflows (match reference), knowledge covering all 7 reference domains (architecture + presentation gộp vào mvi/compose + coroutines + data + patterns + security + performance), full verification 3-tool stack (Konsist + Detekt + Lint), evaluations 3-subfolder (templates + rubrics + regression).
+
+Harness upstream v0.6.0 ≈ 100% reference blueprint coverage. Chuyển sang evidence-driven refinement.
+
 ## [0.5.0] — 2026-10-14
 
 ### Added — P1 content catch-up

@@ -29,6 +29,9 @@ Context project (resolve từ `overlay.yaml`):
 | Async / Flow / cancellation / concurrency | `android-coroutines` |
 | API integration, Ktor service, DTO + mapper | `android-network` |
 | Local DB SQLDelight, schema, migration, offline-first | `android-database` |
+| Refactor module preserve-behavior | `android-refactor` |
+| Debug crash / ANR / memory leak / flaky | `android-debug` |
+| Performance profile + optimize startup/UI/memory/network | `android-performance` |
 | Review PR, diff, module | `android-code-review` |
 | Viết unit/UI/integration test | `android-testing` |
 
@@ -90,16 +93,25 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `knowledge/data/network.md`
 - `knowledge/data/persistence.md`
 - `knowledge/data/caching.md`
+- `knowledge/patterns/common-patterns.md`
+- `knowledge/security/essentials.md`
+- `knowledge/performance/essentials.md`
 - `skills/android-feature/SKILL.md`
 - `skills/android-compose/SKILL.md`
 - `skills/android-mvi/SKILL.md`
 - `skills/android-coroutines/SKILL.md`
 - `skills/android-network/SKILL.md`
 - `skills/android-database/SKILL.md`
+- `skills/android-refactor/SKILL.md`
+- `skills/android-debug/SKILL.md`
+- `skills/android-performance/SKILL.md`
 - `skills/android-code-review/SKILL.md`
 - `skills/android-testing/SKILL.md`
 - `blueprints/reference-feature/README.md`
 - `blueprints/network-service/README.md`
+- `blueprints/compose-screen/README.md`
+- `blueprints/repository/README.md`
+- `blueprints/usecase/README.md`
 - `workflows/feature-development.md`
 - `workflows/fix-bug.md`
 - `workflows/review-pull-request.md`
@@ -112,7 +124,10 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `verification/architecture-tests/TemplateArchitectureRulesTest.kt`
 - `verification/scripts/verify.sh.template`
 - `verification/detekt/README.md` + `detekt-config-template.yml`
+- `verification/lint/README.md`
 - `evaluations/templates/e01..e05.md`
+- `evaluations/rubrics/README.md` — scoring rubric chung
+- `evaluations/regression/README.md` — trend tracking qua versions
 
 ## Report format
 
