@@ -46,65 +46,72 @@ mobile-engineering-harness/
     └── templates/                   ← scenario templates per-product
 ```
 
-## Cài đặt cho sản phẩm mới
+## CLI usage
 
-### Bước 1 — Tạo overlay folder trong project
-
-```bash
-cd /path/to/your/android-project
-mkdir -p .harness-overlay
-```
-
-### Bước 2 — Tạo `overlay.yaml`
-
-Copy template từ `overlay.schema.yaml` và điền giá trị:
-
-```yaml
-product:
-  name: YourProduct
-  package: com.yourcompany.product
-  app_display_name: Your Product
-
-modules:
-  app: composeApp         # tên module entry
-  presenter: presenter
-  domain: domain
-  data: data
-
-ui:
-  theme_prefix: YourProduct
-  theme_class: YourProductTheme
-
-stack:
-  ui: compose-multiplatform
-  mvi: BaseViewModel
-  di: koin
-  network: ktor
-  database: sqldelight
-
-features_root: feature
-
-platform_sdks:
-  - androidx.media3
-  - platform.AVFoundation
-  - com.google.firebase
-
-reference_blueprint:
-  feature_name: ""        # trỏ feature live khi có; để trống dùng generic demo
-  path: ""
-```
-
-### Bước 3 — Symlink hoặc clone upstream
+Script `install.sh` có 4 subcommands + flags chung (`--dry-run`, `--yes`):
 
 ```bash
-# Option A (dev local, nhanh):
-ln -s /Users/kohuyn/StudioProjects/mobile-engineering-harness .harness-overlay/upstream
-
-# Option B (CI friendly):
-git submodule add https://... .harness-overlay/upstream
+./install.sh init      --project <path>              # scaffold overlay + schema template
+./install.sh install   --overlay <path>              # render templates + write manifest
+./install.sh update    --overlay <path>              # idempotent re-render (alias install)
+./install.sh uninstall --overlay <path> [--purge]    # remove rendered; --purge xóa toàn bộ overlay
+./install.sh help
 ```
 
-### Bước 4 — Chạy install
+### Quick start cho product mới (3 lệnh)
+
+```bash
+# 1. Scaffold overlay (tự tạo symlink upstream)
+/path/to/mobile-engineering-harness/install.sh init --project /path/to/your/android-project
+
+# 2. Edit .harness-overlay/overlay.yaml — fill product vars (xem overlay.schema.yaml)
+
+# 3. Render templates + create manifest
+/path/to/mobile-engineering-harness/install.sh install --overlay /path/to/your/android-project/.harness-overlay
+```
+
+Setup time ~15 phút gồm điền `overlay.yaml`.
+
+### Chi tiết subcommand
+
+**`init`** — scaffold overlay structure:
+- Tạo `.harness-overlay/` trong project
+- Copy `overlay.schema.yaml` → `.harness-overlay/overlay.yaml`
+- Symlink `.harness-overlay/upstream` → upstream repo
+- KHÔNG render; đợi user điền overlay.yaml xong
+
+**`install`** — render templates:
+- Đọc `overlay.yaml`, validate required fields
+- Render 4 files: `verification/architecture-tests/ArchitectureRulesTest.kt`, `verification/scripts/verify.sh`, `harness.yaml`, `README.md`
+- Ghi `.manifest.yaml` track rendered files + upstream commit
+- Idempotent — chạy lại OK (re-render)
+
+**`update`** — alias của `install`. Dùng khi upstream pull version mới hoặc `overlay.yaml` thay đổi.
+
+**`uninstall`** — remove rendered artifacts:
+- Default: xóa 4 rendered files + `.manifest.yaml`; **preserve** `overlay.yaml`, `constitution/`, `blueprints/`, `upstream` symlink
+- `--purge`: xóa toàn bộ `.harness-overlay/` (require 2x confirm)
+- Konsist test đã copy sang `<module>/src/jvmTest/...` phải xóa thủ công (ngoài scope)
+
+### Flags chung
+
+| Flag | Hiệu lực |
+|---|---|
+| `--dry-run` | Print actions, không execute |
+| `--yes`, `-y` | Skip confirmation (cho CI) |
+
+### Submodule thay vì symlink (cho CI)
+
+Nếu product cần CI friendly, thay symlink bằng submodule sau khi `init`:
+
+```bash
+cd /path/to/your/android-project/.harness-overlay
+rm upstream
+cd ..
+git submodule add https://github.com/huypqapero/mobile-engineering-harness.git .harness-overlay/upstream
+```
+
+### Legacy manual flow (không khuyến nghị)
 
 ```bash
 /Users/kohuyn/StudioProjects/mobile-engineering-harness/install.sh \
