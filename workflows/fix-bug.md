@@ -177,6 +177,46 @@ Follow-up:
 - (optional) related bug Y vẫn open
 ```
 
+## Auto-fix loop (R-03)
+
+Khi gate fail trong Stage 5 (Verify), agent có thể auto-fix với **limit**:
+
+```
+Loop:
+  1. Compute failure fingerprint (xem knowledge/auto-fix/essentials.md)
+  2. Classify failure (xem skills/android-debug §Failure classifier)
+  3. Check attempts tracked in plans/<date>/fix-attempts.yaml
+     - If fingerprint lặp without progress → ESCALATE (stop loop)
+     - If current_attempts >= max_fix_attempts (default 3) → ESCALATE
+  4. If classification routes to USER (device/infra/env) → ESCALATE không retry
+  5. Else apply fix per routing
+  6. Rerun gate
+  7. If PASS → EXIT; else back to step 1
+```
+
+### Rules
+
+- **MUST** compute fingerprint before each attempt
+- **MUST** cap attempts (default 3, max 5 per task contract)
+- **MUST** classify trước retry — không retry mù
+- **FORBIDDEN** modify test assertion để "make it pass" (test fail → review correctness)
+- **FORBIDDEN** `@Ignore` test → fake pass
+- **FORBIDDEN** retry device/infra/env failures (escalate ngay)
+
+### Escalation output
+
+```yaml
+# plans/reports/escalation-<date>-<task-id>.md
+Status: ESCALATED
+Reason: fingerprint_loop | attempts_exceeded | classification_route_to_user
+Classification: build | code | test | device | infra | env
+Last error: ...
+Attempts history: ...
+Suggested next step: ...
+```
+
+User (hoặc orchestrator) decide: continue manually, change scope, abort task.
+
 ## Anti-patterns bị cấm
 
 - "Fix" bằng try/catch nuốt exception

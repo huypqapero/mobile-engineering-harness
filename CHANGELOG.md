@@ -4,6 +4,58 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.10.0] — 2026-10-14
+
+### Added — Factory stack pack (R1-R5)
+
+Addresses ChatGPT "Android AI Development Factory" model: task contract chuẩn, multi-level build, auto-fix limit, failure classifier, model tier.
+
+#### R-01 Task YAML contract
+- **`blueprints/task-contract/template.yaml`** + **`README.md`** — standardized task schema v1 với fields: id, type, priority, scope, acceptance_criteria, execution (max_parallel_agents, max_fix_attempts, orchestration_mode), verification (4 levels), model_tier, delivery, dependencies, risks, open_questions.
+- **`mehcli task validate --plan <path>`** subcommand: validate YAML schema (required fields, enum values, warn on runaway configs). Support YAML frontmatter trong markdown.
+
+#### R-02 Multi-level build strategy
+- **`knowledge/build-strategy/essentials.md`** — 4 levels: Fast checks (seconds), Targeted tests (minutes), APK + smoke (5-10 min), Regression (20+ min). Level selection decision tree, Gradle optimizations baseline, device lock pattern.
+
+#### R-03 Auto-fix loop với fingerprint
+- **`knowledge/auto-fix/essentials.md`** — Failure fingerprint (hash normalized stack), attempt tracking (`plans/<date>/fix-attempts.yaml`), progress detection, escalation path. Cap default 3, max 5 per task.
+- **`workflows/fix-bug.md`** — new "Auto-fix loop" section với rules + escalation output template.
+- **`agents/orchestrator.md`** — enforce `max_fix_attempts` + fingerprint check + classification routing.
+
+#### R-04 Failure classifier
+- **`skills/android-debug/SKILL.md`** — new "Failure classifier" section với 6 categories (build/code/test/device/infra/env), routing matrix per category, classification procedure với examples. Device/infra/env auto-escalate (user responsibility, not code fix).
+
+#### R-05 Model tier routing
+- **`knowledge/agent-orchestration/model-tier.md`** — 3 tiers (lite/balanced/deep), default routing per role, decision criteria, config override, cost estimation per task, multi-provider mapping (Claude/OpenAI/Google/local).
+
+### Changed
+
+- `overlay.schema.yaml`: thêm `orchestration.auto_fix.*` + `orchestration.model_tier.*` sections với inline guidance.
+- `install.sh`: new `task` dispatcher subcommand với `validate` operation. Python-based schema validator.
+- `AGENTS.md`: file index refresh for 5 new knowledge/blueprint files.
+
+### Rationale
+
+ChatGPT "Factory" model proposes 4 layers (content/orchestration/verification/infrastructure). Harness v0.9 cover ~60% core (content + orchestration). v0.10 fills gap trong orchestration (task contract, auto-fix limit) + verification (multi-level build) + runtime (model tier). Infrastructure layer (Maestro/device/VPS) remains out of harness scope — user integrates via CI tool chuyên.
+
+### Migration from 0.9.0
+
+Zero manual migration. New fields optional, backward compat preserved.
+
+**New capability**: User có thể migrate plan.md free-form sang YAML contract gradually. Agent sẽ consume cả 2 format (YAML frontmatter trong markdown recommended cho hybrid).
+
+### Usage examples
+
+```bash
+# Validate task before start
+mehcli task validate --plan plans/FEAT-104.yaml
+
+# Example output on invalid:
+# ❌ Validation FAILED:
+#   - ERROR: Missing REQUIRED field: acceptance_criteria
+#   - ERROR: type 'xyz' invalid. Options: feature | bugfix | refactor | release | spike
+```
+
 ## [0.9.0] — 2026-10-14
 
 ### Added — Agent orchestration pack

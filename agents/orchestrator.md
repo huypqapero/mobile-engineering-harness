@@ -157,6 +157,9 @@ Write `plans/reports/orchestration-<date>.md` theo template `workflows/parallel-
 - Isolation check fail → stop ngay, không "optimistic spawn"
 - Handoff doc incomplete → request fix, không auto-infer
 - Subagent BLOCKED → surface user, không retry blind
+- **Enforce `max_fix_attempts`** từ task contract (default 3): track trong `plans/<date>/fix-attempts.yaml`
+- **Fingerprint check**: nếu failure fingerprint lặp without progress → ESCALATE, không retry
+- **Classification routing**: nếu failure class là device/infra/env → ESCALATE user, không spawn fixer subagent
 
 ### Cost awareness
 

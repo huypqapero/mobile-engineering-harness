@@ -89,7 +89,10 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `constitution/kotlin-conventions.md` — KOT-001..012
 - `constitution/definition-of-done.md`
 - `knowledge/agent-orchestration/essentials.md` — orchestration modes + Claude Code Task tool patterns
+- `knowledge/agent-orchestration/model-tier.md` — model tier routing (lite/balanced/deep)
 - `knowledge/architecture/architecture-profiles.md` — profile cmp/kmp/android-only + migration
+- `knowledge/build-strategy/essentials.md` — 4-level build strategy (fast → regression)
+- `knowledge/auto-fix/essentials.md` — auto-fix loop + fingerprint + attempt limit
 - `knowledge/architecture/clean-mvi.md`
 - `knowledge/compose/essentials.md`
 - `knowledge/mvi/essentials.md`
@@ -118,6 +121,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `blueprints/compose-screen/README.md`
 - `blueprints/repository/README.md`
 - `blueprints/usecase/README.md`
+- `blueprints/task-contract/README.md` + `template.yaml` — standardized task YAML
 - `workflows/feature-development.md`
 - `workflows/fix-bug.md`
 - `workflows/review-pull-request.md`

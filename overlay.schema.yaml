@@ -121,6 +121,25 @@ orchestration:
   handoff:
     report_dir: "plans/handoff"       # Mỗi subagent write handoff doc
     aggregate_report: true            # Orchestrator write final aggregate report
+  auto_fix:                           # R-03 Auto-fix loop controls
+    default_max_attempts: 3           # Task contract có thể override (cap 5)
+    fingerprint_normalize: true       # Strip line number → detect same-error loop
+    escalate_on_classification:       # Auto-escalate không retry (user responsibility)
+      - device
+      - infra
+      - env
+  model_tier:                         # R-05 Model tier routing (optional)
+                                      # Document intent; actual model selection platform-dependent (Claude Code auto-pick)
+    default:
+      architect: deep                 # deep | balanced | lite
+      orchestrator: balanced
+      implementer: balanced
+      test_engineer: balanced
+      reviewer: deep                  # Independent audit — depth matter
+      debugger: balanced
+      classifier: lite
+    # Task-level override trong plans/<task-id>.yaml §model_tier
+    # Chi tiết: knowledge/agent-orchestration/model-tier.md
 
 detekt:
   enabled: true

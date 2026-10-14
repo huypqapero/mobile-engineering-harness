@@ -167,7 +167,109 @@ Compose compiler report:
 
 Sinh file `*-stability.txt` show class stability. Unstable → wrap `@Stable` hoặc convert sang data class immutable.
 
-## Decision guides
+## Failure classifier (R-04)
+
+Trước khi start fix, **classify failure**. Classification wrong → wrong fix path.
+
+### Categories
+
+| Category | Pattern | Who fixes | Example |
+|---|---|---|---|
+| **build** | Compile error, dep conflict, Gradle config | Implementer | Missing import, type mismatch, Gradle sync fail |
+| **code** | Logic bug, NPE, race, wrong state | Implementer + Test Engineer | Null leak, concurrency, UI not update |
+| **test** | Flaky, wrong assertion, test setup bug | Test Engineer + Reviewer | `assertEquals("expected", actualDifferent)`, flaky timing |
+| **device** | ADB offline, emulator timeout, device busy | **User (infra)** | `adb: device not found`, device lock conflict |
+| **infra** | OOM, disk full, network timeout CI | **User (infra)** | Gradle OOM, no space left, DNS fail |
+| **env** | JDK/Kotlin/SDK version mismatch | **User (setup)** | `Unsupported Kotlin version`, SDK path missing |
+
+### Fingerprint
+
+Hash cho detect "same error loop" (xem `knowledge/auto-fix/essentials.md`):
+
+```python
+fingerprint = sha1(f"{task_name}:{exception_class}:{stack_top_3_frames_normalized}")
+```
+
+Normalize = strip line number, keep class + method name.
+
+### Routing matrix
+
+```yaml
+# Routing per classification
+build:
+  retry_tier: implementer
+  retry_strategy: fix_immediate_error → check_surrounding_context
+  max_attempts: 3
+code:
+  retry_tier: implementer + test_engineer
+  retry_strategy: fix_cause → add_regression_test
+  max_attempts: 3
+test:
+  retry_tier: test_engineer + reviewer
+  retry_strategy: REVIEW_ASSERTION_CORRECTNESS_FIRST (not "make it pass")
+  max_attempts: 2
+device:
+  retry_tier: NONE                  # Not code fix
+  escalate: user
+  pattern: "Please restart ADB / reconnect device"
+infra:
+  retry_tier: NONE
+  escalate: user
+  pattern: "Clean disk / scale VPS / check network"
+env:
+  retry_tier: NONE
+  escalate: user
+  pattern: "Update toolchain to <version>"
+```
+
+### Classification procedure
+
+1. Read error message + stack trace + context
+2. Match pattern:
+   - "cannot find symbol" / "unresolved reference" → **build**
+   - "NullPointerException" / "IllegalStateException" / "race" / "deadlock" → **code**
+   - Test fail với clear expected/actual → **test**
+   - `adb: no devices` / "emulator timeout" → **device**
+   - "OutOfMemoryError" / "No space left" / connection timeout → **infra**
+   - "Unsupported Java version" / "SDK not found" → **env**
+3. Compute fingerprint
+4. Check `plans/<date>/fix-attempts.yaml`:
+   - If fingerprint lặp without progress → ESCALATE
+   - If `current_attempts >= max_fix_attempts` → ESCALATE
+5. Else apply classification routing + append attempt
+
+### Example classification
+
+```
+STACK:
+java.lang.NullPointerException: Attempt to invoke virtual method 'getUser' on null
+	at BookDetailViewModel.loadBook(BookDetailViewModel.kt:42)
+	at BookDetailViewModel$loadBook$1.invokeSuspend(BookDetailViewModel.kt:40)
+
+CLASSIFY: code (NPE, business logic layer)
+FINGERPRINT: sha1("BookDetailViewModel.loadBook:NullPointerException:...")
+ROUTE: implementer (fix cause: null check or non-null contract) + test-engineer (regression test)
+```
+
+```
+STACK:
+Execution failed for task ':composeApp:compileDebugKotlin'.
+> Compilation error. See log for more details.
+e: file:///.../LoginScreen.kt:15 unresolved reference: LoginState
+
+CLASSIFY: build (compile error, missing import or new file not visible)
+ROUTE: implementer (add import or create missing file)
+```
+
+```
+STACK:
+adb: no devices/emulators found
+
+CLASSIFY: device
+ROUTE: ESCALATE user — "Please connect device or start emulator"
+```
+
+
 
 ### Fix tại cause hay tại symptom?
 

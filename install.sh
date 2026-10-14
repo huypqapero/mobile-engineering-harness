@@ -6,6 +6,7 @@
 #   install      --overlay <path>              Render templates + write manifest
 #   update       --overlay <path>              Alias for install (idempotent re-render)
 #   uninstall    --overlay <path> [--purge]    Remove rendered files; --purge nukes entire overlay
+#   task validate --plan <path>                Validate task contract YAML schema (R-01)
 #   self-update                                Pull latest upstream in installed location
 #   version                                    Print installed harness version
 #   help                                       Show this message
@@ -622,6 +623,135 @@ cmd_version() {
   echo "upstream: $UPSTREAM_DIR"
 }
 
+cmd_task() {
+  local sub="${1:-}"; shift || true
+  case "$sub" in
+    validate) cmd_task_validate "$@" ;;
+    ""|-h|--help) echo "Usage: $SCRIPT_NAME task validate --plan <path>"; exit 0 ;;
+    *) err "Unknown task subcommand: $sub"; usage 1 ;;
+  esac
+}
+
+cmd_task_validate() {
+  local plan=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --plan) plan="$2"; shift 2 ;;
+      -h|--help) echo "Usage: $SCRIPT_NAME task validate --plan <path>"; exit 0 ;;
+      *) err "Unknown arg: $1"; exit 1 ;;
+    esac
+  done
+  if [ -z "$plan" ]; then
+    err "task validate requires --plan <path>"
+    exit 1
+  fi
+  if [ ! -f "$plan" ]; then
+    err "plan file not found: $plan"
+    exit 1
+  fi
+  check_python
+  local python_bin="${PYTHON_BIN:-python3}"
+  log "Validating task contract: $plan"
+
+  "$python_bin" <<PYEOF
+import yaml, sys, re
+
+with open("$plan") as f:
+    content = f.read()
+
+# Support YAML frontmatter trong markdown
+if content.startswith("---"):
+    parts = content.split("---", 2)
+    if len(parts) >= 3:
+        yaml_text = parts[1]
+    else:
+        yaml_text = content
+else:
+    yaml_text = content
+
+try:
+    d = yaml.safe_load(yaml_text) or {}
+except Exception as e:
+    print(f"ERROR: YAML parse failed: {e}", file=sys.stderr)
+    sys.exit(1)
+
+errors = []
+warnings = []
+
+# Required fields
+for field in ["id", "type", "project", "goal", "acceptance_criteria"]:
+    if field not in d or not d[field]:
+        errors.append(f"Missing REQUIRED field: {field}")
+
+# Type enum
+valid_types = ["feature", "bugfix", "refactor", "release", "spike"]
+if "type" in d and d["type"] not in valid_types:
+    errors.append(f"type '{d['type']}' invalid. Options: {valid_types}")
+
+# Priority enum
+valid_prio = ["low", "medium", "high", "critical"]
+if "priority" in d and d["priority"] not in valid_prio:
+    errors.append(f"priority '{d['priority']}' invalid. Options: {valid_prio}")
+
+# id pattern
+if "id" in d:
+    if not re.match(r"^[A-Z]+-\d+$", str(d["id"])):
+        warnings.append(f"id '{d['id']}' recommended format: UPPERCASE-NUMBER (ví dụ FEAT-104)")
+
+# Acceptance criteria list
+if "acceptance_criteria" in d:
+    ac = d["acceptance_criteria"]
+    if not isinstance(ac, list):
+        errors.append("acceptance_criteria must be a list")
+    elif len(ac) == 0:
+        errors.append("acceptance_criteria cannot be empty")
+
+# Execution limits
+exe = d.get("execution", {}) or {}
+max_fix = exe.get("max_fix_attempts", 3)
+if max_fix > 5:
+    warnings.append(f"execution.max_fix_attempts={max_fix} > 5 (likely runaway cost)")
+if max_fix < 1:
+    errors.append(f"execution.max_fix_attempts must be >= 1")
+
+max_parallel = exe.get("max_parallel_agents", 2)
+if max_parallel > 5:
+    warnings.append(f"execution.max_parallel_agents={max_parallel} > 5 (rate limit risk)")
+
+orch_mode = exe.get("orchestration_mode", "auto")
+if orch_mode not in ("single", "team", "parallel-features", "auto"):
+    errors.append(f"execution.orchestration_mode '{orch_mode}' invalid")
+
+# Verification not all false
+ver = d.get("verification", {}) or {}
+true_count = sum(1 for v in ver.values() if v is True)
+if ver and true_count == 0:
+    warnings.append("verification.* all false — task sẽ không có quality gate")
+
+# Output
+if errors:
+    print("❌ Validation FAILED:")
+    for e in errors:
+        print(f"  - ERROR: {e}")
+    sys.exit(1)
+
+if warnings:
+    print("⚠ Validation passed với warnings:")
+    for w in warnings:
+        print(f"  - WARN: {w}")
+else:
+    print("✓ Validation PASSED (no errors, no warnings)")
+
+print(f"\nTask summary:")
+print(f"  id: {d.get('id')}")
+print(f"  type: {d.get('type')}")
+print(f"  priority: {d.get('priority', 'medium')}")
+print(f"  orchestration_mode: {orch_mode}")
+print(f"  max_fix_attempts: {max_fix}")
+print(f"  acceptance_criteria: {len(d.get('acceptance_criteria', []))} items")
+PYEOF
+}
+
 cmd_help() { usage 0; }
 
 # -----------------------------------------------------------------------------
@@ -647,6 +777,7 @@ case "$SUBCMD" in
   install)     cmd_install     "${SUB_ARGS[@]:-}" ;;
   update)      cmd_update      "${SUB_ARGS[@]:-}" ;;
   uninstall)   cmd_uninstall   "${SUB_ARGS[@]:-}" ;;
+  task)        cmd_task        "${SUB_ARGS[@]:-}" ;;
   self-update) cmd_self_update "${SUB_ARGS[@]:-}" ;;
   version)     cmd_version ;;
   help|-h|--help) cmd_help ;;

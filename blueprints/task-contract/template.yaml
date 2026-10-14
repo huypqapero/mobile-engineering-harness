@@ -1,0 +1,66 @@
+# Task Contract Template — copy to plans/<task-id>.yaml và điền.
+# Schema v1. Validate: `mehcli task validate --plan plans/<task-id>.yaml`
+
+id: FEATURE-NNN                       # REQUIRED. Unique task id (ví dụ FEAT-104, BUG-23)
+type: feature                         # REQUIRED. feature | bugfix | refactor | release | spike
+project: your-product                 # REQUIRED
+priority: medium                      # low | medium | high | critical
+created: "2026-10-14"                 # ISO date
+
+goal: |                               # REQUIRED. 1-2 câu outcome user-observable
+  Implement Library screen displaying saved books with offline-first.
+
+scope:
+  modules:                            # Modules được phép touch
+    - presenter/feature/library
+    - domain
+    - data
+  avoid:                              # Modules KHÔNG touch (ngoài scope)
+    - presenter/feature/payment
+    - core/analytics
+
+acceptance_criteria:                  # REQUIRED. List checkable items
+  - Display saved books from local DB
+  - Support loading + empty + error + offline states
+  - Handle network error gracefully
+  - Open book details on tap
+  - Pull-to-refresh triggers remote sync
+
+execution:
+  max_parallel_agents: 2              # Orchestration cap
+  max_fix_attempts: 3                 # Auto-fix retry limit (R-03)
+  require_review: true                # Reviewer subagent mandatory
+  orchestration_mode: auto            # single | team | parallel-features | auto
+  isolation: feature-package          # feature-package | module | file (parallel mode)
+
+verification:                         # Multi-level build gates (R-02)
+  compile: true                       # Level 1: compile touched module
+  unit_test: true                     # Level 2: targeted unit test
+  lint: true                          # Konsist + Detekt + Android Lint
+  apk_smoke: optional                 # Level 3: APK + Maestro smoke
+  regression: false                   # Level 4: full regression + Artemis
+  ios_build: optional                 # CMP target
+
+model_tier:                           # Optional override (R-05)
+  # architect: opus                   # Deep decomposition
+  # implementer: sonnet
+  # reviewer: opus                    # Independent audit
+  # test_engineer: sonnet
+
+delivery:
+  create_pr: true
+  attach_apk: false                   # true for release validation
+  attach_test_report: true
+  commit_convention: conventional     # Conventional commits
+
+dependencies:                         # Task depend tasks khác (block/sequential)
+  blocks: []                          # Tasks depend ON this task
+  blocked_by: []                      # Tasks THIS depends on
+  cross_feature: []                   # Shared with other feature tasks (parallel sequencing)
+
+risks:
+  - level: medium
+    description: "Offline sync edge case với book bookmarked khi connect lại"
+    mitigation: "Add regression test + manual QA"
+
+open_questions: []                    # List câu hỏi chưa chốt — block implementation nếu critical
