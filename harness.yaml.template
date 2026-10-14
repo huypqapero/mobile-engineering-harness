@@ -1,0 +1,78 @@
+version: 0.1.0
+name: {{PRODUCT_NAME}}-engineering-harness
+description: Clean Architecture + MVI + {{UI_FRAMEWORK}} harness for {{PRODUCT_NAME}}
+
+profile:
+  type: {{UI_FRAMEWORK}}
+  targets: {{TARGETS_LIST}}
+  min_sdk: {{MIN_SDK}}
+  ios_min: "{{IOS_MIN}}"
+  kotlin: "{{KOTLIN_VERSION}}"
+  compose_version: "{{COMPOSE_VERSION}}"
+
+architecture:
+  modules:
+    - {{MODULE_APP}}
+    - {{MODULE_PRESENTER}}
+    - {{MODULE_DOMAIN}}
+    - {{MODULE_DATA}}
+  dependency_graph:
+    {{MODULE_APP}}: [{{MODULE_PRESENTER}}, {{MODULE_DOMAIN}}]
+    {{MODULE_PRESENTER}}: [{{MODULE_DOMAIN}}]
+    {{MODULE_DATA}}: [{{MODULE_DOMAIN}}]
+    {{MODULE_DOMAIN}}: []
+
+stack:
+  ui: {{UI_FRAMEWORK}}
+  mvi: {{MVI_BASE_CLASS}}
+  di: {{DI_FRAMEWORK}}
+  network: {{NETWORK_FRAMEWORK}}
+  database: {{DATABASE_FRAMEWORK}}
+  image: {{IMAGE_FRAMEWORK}}
+  serialization: {{SERIALIZATION_FRAMEWORK}}
+
+skills:
+  android-feature:
+    priority: P0
+  android-compose:
+    priority: P0
+  android-mvi:
+    priority: P0
+  android-code-review:
+    priority: P0
+  android-testing:
+    priority: P0
+
+quality_gates:
+  compile:
+    command: ./gradlew :{{MODULE_APP}}:assembleDebug
+    required: true
+  unit_tests:
+    command: ./gradlew :{{MODULE_DOMAIN}}:test :{{MODULE_PRESENTER}}:test :{{MODULE_DATA}}:test
+    required: true
+  architecture:
+    tool: konsist
+    command: ./gradlew konsistTest
+    required: true
+  code_quality:
+    tool: detekt
+    command: ./gradlew detekt
+    required: true
+
+workflows:
+  feature-development: workflows/feature-development.md
+
+reporting:
+  template: constitution/definition-of-done.md#report
+  states:
+    - VERIFIED
+    - VERIFIED_WITH_LIMITATIONS
+    - BLOCKED
+    - FAILED
+
+constitution_precedence:
+  - project_root_claude_md
+  - overlay_constitution
+  - upstream_constitution
+  - skill_specific
+  - task_requirements

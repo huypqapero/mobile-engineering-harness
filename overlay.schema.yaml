@@ -1,0 +1,75 @@
+# overlay.schema.yaml — reference schema for `.harness-overlay/overlay.yaml`
+# Copy block below vào `.harness-overlay/overlay.yaml` của product và điền giá trị.
+# Keys đánh dấu REQUIRED bắt buộc; keys khác optional có default.
+
+harness_version: ">=0.1.0"            # REQUIRED. Semver range cho upstream version.
+
+product:
+  name: ""                            # REQUIRED. CamelCase, ví dụ: AudioBookApp
+  package: ""                         # REQUIRED. Reverse-DNS, ví dụ: com.yourcompany.product
+  app_display_name: ""                # Optional. Hiển thị user-facing, default = product.name
+
+modules:
+  app: composeApp                     # Entry module (compose-multiplatform convention). Thay đổi nếu khác.
+  presenter: presenter                # UI + MVI + Navigation module
+  domain: domain                      # Pure Kotlin domain module
+  data: data                          # Repo impl + DTO + mapper module
+
+ui:
+  theme_prefix: ""                    # REQUIRED. Ví dụ: Audiobook → sinh ra AudiobookColors, AudiobookTypography...
+  theme_class: ""                     # REQUIRED. Ví dụ: AudiobookTheme (object/composable wrapper)
+
+stack:
+  ui: compose-multiplatform           # Options: compose-multiplatform | compose-android | xml-android
+  mvi: BaseViewModel                  # Base ViewModel class name
+  di: koin                            # Options: koin | hilt | manual
+  network: ktor                       # Options: ktor | retrofit
+  database: sqldelight                # Options: sqldelight | room | datastore | none
+  image: coil                         # Options: coil | glide | kamel | none
+  serialization: kotlinx-serialization
+
+features_root: feature                # Package segment under presenter/.../ containing features
+
+targets:                              # Platform targets
+  - android
+  - ios                               # Remove if Android-only
+
+min_sdk: 24
+ios_min: "15.0"
+kotlin_version: "2.x"
+compose_version: "1.8+"
+
+platform_sdks:                        # Imports chỉ được xuất hiện trong data/{androidMain,iosMain}
+  - androidx.media3
+  - platform.AVFoundation
+  - com.google.firebase
+  - com.revenuecat
+
+forbidden_imports_in_domain:          # Thêm vào ARCH-001 check
+  - android.
+  - androidx.
+  - platform.
+  - com.google.firebase.
+  - com.revenuecat.
+  - io.ktor.client.engine.
+
+reference_blueprint:
+  feature_name: ""                    # Optional. Live feature trong codebase làm blueprint, vd: bookdetail.
+  path: ""                            # Path relative project root tới feature package.
+                                      # Để trống → agent fallback upstream/blueprints/reference-feature/
+
+profile: app                          # Options: app | sdk-library | multiplatform-library
+                                      # 'sdk-library' bật MOD-001..003 lên MUST + binary-compat gate.
+
+detekt:
+  enabled: true
+  baseline_file: "detekt-baseline.xml"
+
+konsist:
+  enabled: true
+  test_module: ""                     # Module chứa Konsist test, default = presenter
+
+product_extensions:
+  constitution_dir: "constitution"    # Thư mục overlay chứa product-specific rule
+  blueprints_dir: "blueprints"
+  evaluations_dir: "evaluations"

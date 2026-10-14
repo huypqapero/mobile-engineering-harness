@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# verify.sh — run all required quality gates for {{PRODUCT_NAME}}.
+# RENDERED FROM TEMPLATE. Do not edit the upstream template; rerun install.sh.
+#
+# Usage: ./verify.sh [module]
+#   module: optional, narrow run ({{MODULE_DOMAIN}}|{{MODULE_DATA}}|{{MODULE_PRESENTER}}|{{MODULE_APP}}). Default = all.
+
+set -euo pipefail
+
+MODULE="${1:-all}"
+# Overlay is at <project>/.harness-overlay/, so project root is 2 levels up from this script.
+cd "$(dirname "$0")/../../.."
+
+C_GREEN='\033[0;32m'
+C_RED='\033[0;31m'
+C_YELLOW='\033[1;33m'
+C_RESET='\033[0m'
+
+PASS=0; FAIL=0; SKIP=0
+
+run_gate() {
+  local name="$1"; shift
+  echo ""; echo -e "${C_YELLOW}▶ ${name}${C_RESET}"
+  echo "  cmd: $*"
+  if "$@"; then
+    echo -e "  ${C_GREEN}✓ PASS${C_RESET}"; PASS=$((PASS + 1))
+  else
+    echo -e "  ${C_RED}✗ FAIL${C_RESET}"; FAIL=$((FAIL + 1))
+  fi
+}
+
+run_gate_optional() {
+  local name="$1"; shift
+  echo ""; echo -e "${C_YELLOW}▶ ${name} (optional)${C_RESET}"
+  echo "  cmd: $*"
+  if "$@"; then
+    echo -e "  ${C_GREEN}✓ PASS${C_RESET}"; PASS=$((PASS + 1))
+  else
+    echo -e "  ${C_YELLOW}⊝ SKIP / soft fail${C_RESET}"; SKIP=$((SKIP + 1))
+  fi
+}
+
+if [ ! -x "./gradlew" ]; then
+  echo -e "${C_RED}gradlew not executable or missing${C_RESET}"
+  exit 2
+fi
+
+echo "═══════════════════════════════════════"
+echo " {{PRODUCT_NAME}} Harness Verification"
+echo " Module scope: ${MODULE}"
+echo "═══════════════════════════════════════"
+
+case "${MODULE}" in
+  {{MODULE_DOMAIN}})
+    run_gate "Compile {{MODULE_DOMAIN}}"      ./gradlew :{{MODULE_DOMAIN}}:build --no-daemon
+    run_gate "Unit test {{MODULE_DOMAIN}}"    ./gradlew :{{MODULE_DOMAIN}}:test --no-daemon
+    ;;
+  {{MODULE_DATA}})
+    run_gate "Compile {{MODULE_DATA}}"        ./gradlew :{{MODULE_DATA}}:build --no-daemon
+    run_gate "Unit test {{MODULE_DATA}}"      ./gradlew :{{MODULE_DATA}}:test --no-daemon
+    ;;
+  {{MODULE_PRESENTER}})
+    run_gate "Compile {{MODULE_PRESENTER}}"   ./gradlew :{{MODULE_PRESENTER}}:build --no-daemon
+    run_gate "Unit test {{MODULE_PRESENTER}}" ./gradlew :{{MODULE_PRESENTER}}:test --no-daemon
+    ;;
+  {{MODULE_APP}})
+    run_gate "Assemble debug"                 ./gradlew :{{MODULE_APP}}:assembleDebug --no-daemon
+    ;;
+  all|*)
+    run_gate "Compile all modules"            ./gradlew assemble --no-daemon
+    run_gate "Unit test {{MODULE_DOMAIN}}"    ./gradlew :{{MODULE_DOMAIN}}:test --no-daemon
+    run_gate "Unit test {{MODULE_DATA}}"      ./gradlew :{{MODULE_DATA}}:test --no-daemon
+    run_gate "Unit test {{MODULE_PRESENTER}}" ./gradlew :{{MODULE_PRESENTER}}:test --no-daemon
+    run_gate "Assemble Android debug"         ./gradlew :{{MODULE_APP}}:assembleDebug --no-daemon
+    run_gate_optional "Konsist tests"         ./gradlew konsistTest --no-daemon
+    run_gate_optional "Detekt"                ./gradlew detekt --no-daemon
+    run_gate_optional "Android lint"          ./gradlew :{{MODULE_APP}}:lintDebug --no-daemon
+    run_gate_optional "iOS klibrary"          ./gradlew :{{MODULE_APP}}:iosX64MainKlibrary --no-daemon
+    ;;
+esac
+
+echo ""
+echo "═══════════════════════════════════════"
+echo " Summary"
+echo "═══════════════════════════════════════"
+echo -e " ${C_GREEN}PASS: ${PASS}${C_RESET}"
+echo -e " ${C_RED}FAIL: ${FAIL}${C_RESET}"
+echo -e " ${C_YELLOW}SKIP: ${SKIP}${C_RESET}"
+echo ""
+
+if [ "${FAIL}" -gt 0 ]; then
+  echo -e "${C_RED}❌ Verification failed. Fix blockers before claiming DONE.${C_RESET}"
+  exit 1
+fi
+
+echo -e "${C_GREEN}✅ Required gates passed.${C_RESET}"
+if [ "${SKIP}" -gt 0 ]; then
+  echo -e "${C_YELLOW}Note: ${SKIP} optional gate(s) skipped or soft-failed. Report as LIMITATIONS if relevant.${C_RESET}"
+fi
+exit 0
