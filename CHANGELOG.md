@@ -4,6 +4,35 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.7.0] — 2026-10-14
+
+### Added — Multi-stack data layer support
+
+Harness tách rõ data layer options theo target platform:
+
+#### Networking
+- **Retrofit** (Android-only) — full section trong `knowledge/data/network.md §Option 2`: setup, service interface annotation, OkHttp interceptor, auth + token refresh với `Authenticator`, error mapping `HttpException`, MockWebServer testing.
+- **Ktor Client** (KMP/CMP) — section cũ renamed thành `§Option 1`.
+- **Ktorfit** (KMP + annotation) — new section `§Option 3`: Retrofit-style interface + KMP support, Ktorfit builder, DX comparison.
+- Decision guide: Android-only → Retrofit; KMP + annotation → Ktorfit; KMP manual → Ktor.
+- Side-by-side comparison table.
+
+#### Database
+- **SQLDelight** (KMP + Android) — existing section.
+- **Room** (Android native + KMP 2.7+) — new section trong `knowledge/data/persistence.md §Room patterns`: `@Entity`, `@Dao`, `@Database`, AutoMigration + manual Migration, `BundledSQLiteDriver` cho KMP, `@ConstructedBy` KMP generator.
+- Decision guide: KMP → SQLDelight (mature); Android-only new → Room (Jetpack convention); existing Android migrate CMP → Room 2.7+.
+
+### Changed
+
+- `overlay.schema.yaml`: `stack.network` options rõ (`ktor` / `ktorfit` / `retrofit`); `stack.database` options rõ (`sqldelight` / `room` / `datastore` / `none`) với inline guidance comment.
+- `skills/android-network/SKILL.md`: thêm "Lib selection" section; Step 2 "Define API service" tách variant A/B/C per lib.
+- `skills/android-database/SKILL.md`: thêm "Lib selection" section; Step 1 "Design schema" tách variant A (SQLDelight) + B (Room).
+- `README.md`: thêm "Stack options" table trong `Phạm vi áp dụng` section.
+
+### Rationale
+
+Harness ban đầu CMP-centric (Ktor + SQLDelight). User cần support cả Android-only (Retrofit + Room) + KMP (choice Ktor/Ktorfit, SQLDelight/Room). Expansion không duplicate — knowledge detail trong 1 file, skills cross-reference. Agent chọn snippet đúng dựa trên `stack.network` + `stack.database` trong `overlay.yaml`.
+
 ## [0.6.0] — 2026-10-14
 
 ### Added — P2 reference blueprint completion

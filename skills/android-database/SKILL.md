@@ -1,6 +1,6 @@
 ---
 name: android-database
-description: Design + implement local persistence với SQLDelight — schema, DAO, migration, Flow-based queries. Trigger khi task touch database layer, add table, run migration, hoặc cache strategy.
+description: Design + implement local persistence — schema, DAO, migration, Flow queries. Supports SQLDelight (KMP + Android) hoặc Room (Android native + KMP 2.7+). Trigger khi task touch database layer, add table, run migration, hoặc cache strategy.
 priority: P1
 ---
 
@@ -15,6 +15,21 @@ priority: P1
 - Design offline-first strategy (SSOT local DB)
 - Cache invalidation strategy
 
+## Lib selection
+
+Chọn DB lib dựa trên `stack.database` trong `overlay.yaml`:
+
+| Value | Lib | Platform |
+|---|---|---|
+| `sqldelight` | SQLDelight 2.x | KMP + Android (SQL-first, generated Kotlin API) |
+| `room` | Room 2.7+ | Android native + KMP experimental (annotation-based) |
+| `datastore` | DataStore Preferences/Proto | Key-value, không relational |
+| `none` | — | In-memory / filesystem only |
+
+Chi tiết lib comparison + decision guide: `.harness/knowledge/data/persistence.md §Relational DB`.
+
+Procedure phần lớn generic. Lib-specific snippet đánh dấu rõ.
+
 ## Inputs
 
 - Entity shape (fields, nullable, PK, FK)
@@ -27,11 +42,16 @@ priority: P1
 1. `.harness/knowledge/data/persistence.md`
 2. `.harness/knowledge/data/caching.md`
 3. `.harness/knowledge/coroutines/essentials.md §Flow operators`
-4. SQLDelight 2.x docs: https://cashapp.github.io/sqldelight
+4. **SQLDelight**: https://cashapp.github.io/sqldelight
+5. **Room**: https://developer.android.com/training/data-storage/room (+ KMP support 2.7+)
 
 ## Execution procedure
 
 ### Step 1 — Design schema
+
+Example dưới là **SQLDelight** `.sq` file. Room `@Entity` + `@Dao` xem `knowledge/data/persistence.md §Room patterns`.
+
+#### Variant A — SQLDelight
 
 File `.sq` tại `{{MODULE_DATA}}/src/commonMain/sqldelight/<package>/`:
 
@@ -68,12 +88,48 @@ deleteStale:
 DELETE FROM Book WHERE updated_at < :threshold AND is_bookmarked = 0;
 ```
 
-**Rules**:
+**Rules SQLDelight**:
 - `NOT NULL` default — nullable chỉ khi business state hợp lệ
 - `INTEGER AS Boolean` cho boolean (SQLite không có native bool)
 - Index cho column dùng trong `WHERE` + `ORDER BY` khi > 1000 row
 - Partial index cho filtered query thường xuyên (`WHERE is_bookmarked = 1`)
 - Named parameter `:name` thay vì positional
+
+#### Variant B — Room
+
+```kotlin
+@Entity(
+    tableName = "books",
+    indices = [Index("updated_at"), Index(value = ["is_bookmarked"])],
+)
+data class BookEntity(
+    @PrimaryKey val id: String,
+    val title: String,
+    @ColumnInfo(name = "is_bookmarked") val isBookmarked: Boolean = false,
+    @ColumnInfo(name = "updated_at") val updatedAt: Long,
+)
+
+@Dao
+interface BookDao {
+    @Query("SELECT * FROM books WHERE id = :id")
+    suspend fun getById(id: String): BookEntity?
+
+    @Query("SELECT * FROM books WHERE is_bookmarked = 1 ORDER BY updated_at DESC")
+    fun observeBookmarked(): Flow<List<BookEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(book: BookEntity)
+}
+```
+
+**Rules Room**:
+- `@PrimaryKey` required
+- `@Entity(tableName = ...)` explicit để tránh class rename impact DB
+- `@Query` SQL verified build-time
+- `suspend fun` 1-shot, `Flow<T>` reactive
+- `@Insert(onConflict = REPLACE)` cho upsert pattern
+
+Chi tiết Room setup + migration + KMP driver: `.harness/knowledge/data/persistence.md §Room patterns`.
 
 ### Step 2 — Mapper DB entity ↔ domain
 

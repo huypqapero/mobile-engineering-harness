@@ -527,6 +527,25 @@ profile: app                     # Default: consumer app
 
 `sdk-library` promote `MOD-001..003` severity SHOULD → MUST + thêm binary compat gate.
 
+### Stack options
+
+Harness support đa stack qua `stack.*` fields trong `overlay.yaml`:
+
+| Field | Options | Note |
+|---|---|---|
+| `stack.ui` | `compose-multiplatform` / `compose-android` / `xml-android` | UI framework |
+| `stack.di` | `koin` / `hilt` / `manual` | DI framework |
+| `stack.network` | **`ktor`** (KMP) / **`ktorfit`** (KMP annotation) / **`retrofit`** (Android-only) | API client |
+| `stack.database` | **`sqldelight`** (KMP + Android) / **`room`** (Android + KMP 2.7+) / `datastore` / `none` | Local DB |
+| `stack.image` | `coil` / `glide` / `kamel` / `none` | Image loader |
+| `stack.serialization` | `kotlinx-serialization` / `moshi` / `gson` | JSON serialization |
+
+Decision guides chi tiết:
+- Network: `.harness-overlay/upstream/knowledge/data/network.md §Library selection`
+- Database: `.harness-overlay/upstream/knowledge/data/persistence.md §Relational DB`
+
+Agent sử dụng stack value để chọn snippet trong knowledge/skills (ví dụ `stack.network: retrofit` → Retrofit code, không Ktor).
+
 ---
 
 ## Phase roadmap

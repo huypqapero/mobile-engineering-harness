@@ -1,12 +1,12 @@
 # Persistence — Essentials
 
-Local storage: SQLDelight (DB), DataStore (preferences), filesystem (large binary).
+Local storage selection phụ thuộc target platform + data shape. Harness support SQLDelight hoặc Room (relational), DataStore (key-value), filesystem (binary), SecureStorage (secret).
 
 ## When to use what
 
 | Type | Choose |
 |---|---|
-| Structured relational, >100 items, offline-first | **SQLDelight** |
+| Structured relational, >100 items, offline-first | **SQLDelight** (KMP + Android) hoặc **Room** (Android native; KMP 2.7+) |
 | Key-value user preference, settings, feature flags | **DataStore (Preferences)** |
 | Typed single object (user session, config) | **DataStore (Proto)** |
 | Large binary (image cache, audio file, download) | **Filesystem** + manifest trong DB |
@@ -14,6 +14,41 @@ Local storage: SQLDelight (DB), DataStore (preferences), filesystem (large binar
 | Simple scratch < 10 kv | **In-memory `Map` + Flow** (nếu không cần persist) |
 
 **FORBIDDEN**: SharedPreferences cho data mới (legacy only). Migrate sang DataStore.
+
+## Relational DB — SQLDelight vs Room
+
+### Decision guide
+
+```
+Target: KMP (share schema iOS/desktop)?
+  ├─ YES → tiếp
+  │       ├─ Team familiar với Room annotation style? → Room 2.7+ (KMP support)
+  │       └─ Prefer SQL-first, generated Kotlin API? → SQLDelight
+  └─ NO (Android-only)?
+          ├─ Simple schema, Compose integration quan trọng? → Room (Jetpack)
+          └─ Share team với KMP team? → SQLDelight (consistency)
+```
+
+### Side-by-side
+
+| Feature | SQLDelight 2.x | Room 2.7+ |
+|---|---|---|
+| Platform | **KMP** (Android + iOS + JVM + JS + Native) | Android native + **KMP** (2.7+ experimental) |
+| Approach | SQL-first (`.sq` files) → generated Kotlin API | Annotation-based (`@Entity`, `@Dao`, `@Query`) |
+| Learning curve | SQL familiarity | Annotation familiarity (Jetpack convention) |
+| Query compile-time check | ✓ SQL verified at build | ✓ Query verified at build |
+| Reactive queries | `.asFlow()` built-in | `Flow<T>` return type Dao |
+| Migration | `.sqm` files per version | `AutoMigration` + manual `Migration` class |
+| Testing | `JdbcSqliteDriver.IN_MEMORY` | `inMemoryDatabaseBuilder` |
+| Multiplatform driver | expect/actual (Android, Native, JVM) | KMP 2.7+ via native driver |
+| Ecosystem | Smaller, Cash App | Google-backed, Jetpack ecosystem |
+
+### Recommendation
+
+- **New KMP project**: SQLDelight (mature KMP support, battle-tested)
+- **New Android-only project**: Room (Jetpack convention, Compose paging)
+- **Existing Room Android migrate sang CMP**: Room 2.7+ KMP (ít migration cost)
+- **Existing SQLDelight**: không migrate, continue
 
 ## SQLDelight patterns
 
@@ -72,6 +107,124 @@ actual class DatabaseDriverFactory {
     actual fun create(): SqlDriver = NativeSqliteDriver(AppDatabase.Schema, "app.db")
 }
 ```
+
+## Room patterns
+
+Chi tiết: `.harness/skills/android-database/SKILL.md §Room section`.
+
+### Schema basics
+
+```kotlin
+// {{MODULE_DATA}}/local/BookEntity.kt
+@Entity(
+    tableName = "books",
+    indices = [Index("updated_at"), Index(value = ["is_bookmarked"], name = "idx_bookmarked")],
+)
+data class BookEntity(
+    @PrimaryKey val id: String,
+    val title: String,
+    @ColumnInfo(name = "is_bookmarked") val isBookmarked: Boolean = false,
+    @ColumnInfo(name = "updated_at") val updatedAt: Long,
+)
+```
+
+### DAO
+
+```kotlin
+@Dao
+interface BookDao {
+    @Query("SELECT * FROM books WHERE id = :id")
+    suspend fun getById(id: String): BookEntity?
+
+    @Query("SELECT * FROM books WHERE is_bookmarked = 1 ORDER BY updated_at DESC")
+    fun observeBookmarked(): Flow<List<BookEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(book: BookEntity)
+
+    @Query("UPDATE books SET is_bookmarked = :bookmarked, updated_at = :updatedAt WHERE id = :id")
+    suspend fun setBookmark(id: String, bookmarked: Boolean, updatedAt: Long)
+
+    @Query("DELETE FROM books WHERE updated_at < :threshold AND is_bookmarked = 0")
+    suspend fun deleteStale(threshold: Long)
+}
+```
+
+### Database declaration
+
+```kotlin
+@Database(
+    entities = [BookEntity::class],
+    version = 2,
+    autoMigrations = [AutoMigration(from = 1, to = 2)],
+)
+@ConstructedBy(AppDatabaseConstructor::class)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun bookDao(): BookDao
+}
+
+// KMP 2.7+ generated via @ConstructedBy
+expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase>
+```
+
+### Migration
+
+```kotlin
+// Simple column add: AutoMigration
+@AutoMigration(from = 1, to = 2)
+object MigrationFrom1To2 : AutoMigrationSpec
+
+// Complex: manual Migration
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE books ADD COLUMN author TEXT NOT NULL DEFAULT ''")
+        // Backfill if needed
+    }
+}
+```
+
+### Platform driver (KMP 2.7+)
+
+```kotlin
+// commonMain
+expect fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase>
+
+// androidMain
+actual fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> =
+    Room.databaseBuilder<AppDatabase>(
+        context = context,
+        name = context.getDatabasePath("app.db").absolutePath,
+    )
+
+// iosMain
+actual fun getDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {
+    val dbFilePath = NSHomeDirectory() + "/app.db"
+    return Room.databaseBuilder<AppDatabase>(name = dbFilePath)
+}
+```
+
+### Instantiation
+
+```kotlin
+single {
+    getDatabaseBuilder()
+        .setDriver(BundledSQLiteDriver())
+        .setQueryCoroutineContext(Dispatchers.IO)
+        .build()
+}
+single { get<AppDatabase>().bookDao() }
+```
+
+### Rules Room
+
+- **Entity** `@PrimaryKey` required, `@Entity(tableName = ...)` explicit tránh class name mismatch
+- **DAO** `suspend fun` cho 1-shot, `Flow<T>` cho reactive
+- **Query** `@Query` SQL verified build-time
+- **Migration** AutoMigration cho simple add column; Manual cho complex transform
+- **Driver** `BundledSQLiteDriver` KMP (consistent SQLite version)
+- **Expose** DAO interface từ `{{MODULE_DATA}}`, không expose Entity cross-module
+
+---
 
 ## DataStore patterns
 

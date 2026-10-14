@@ -23,10 +23,17 @@ stack:
   ui: compose-multiplatform           # Options: compose-multiplatform | compose-android | xml-android
   mvi: BaseViewModel                  # Base ViewModel class name
   di: koin                            # Options: koin | hilt | manual
-  network: ktor                       # Options: ktor | retrofit
-  database: sqldelight                # Options: sqldelight | room | datastore | none
+  network: ktor                       # Options:
+                                      #   - ktor      (KMP/CMP; prefer khi share code iOS/desktop)
+                                      #   - ktorfit   (KMP + Retrofit-style annotation; type-safe interface)
+                                      #   - retrofit  (Android-only; mature, OkHttp ecosystem)
+  database: sqldelight                # Options:
+                                      #   - sqldelight (KMP + Android; generated typed Kotlin API)
+                                      #   - room       (Android native; KMP support từ 2.7+; annotation-based)
+                                      #   - datastore  (Preferences + Proto; key-value, không relational)
+                                      #   - none       (in-memory / filesystem only)
   image: coil                         # Options: coil | glide | kamel | none
-  serialization: kotlinx-serialization
+  serialization: kotlinx-serialization   # Options: kotlinx-serialization | moshi | gson
 
 features_root: feature                # Package segment under presenter/.../ containing features
 

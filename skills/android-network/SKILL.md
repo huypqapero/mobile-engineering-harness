@@ -1,6 +1,6 @@
 ---
 name: android-network
-description: Build Ktor Client-based API integration — service contract, request/response DTO, error mapping, auth interceptor, retry/timeout. Trigger khi task touch API layer, add endpoint, refactor error handling, hoặc integrate 3rd-party API.
+description: Build API integration — service contract, DTO, error mapping, auth, retry/timeout. Supports Retrofit (Android), Ktor Client (KMP), Ktorfit (KMP annotation). Trigger khi task touch API layer, add endpoint, refactor error handling, hoặc integrate 3rd-party API.
 priority: P1
 ---
 
@@ -13,7 +13,21 @@ priority: P1
 - Refactor error handling, response parsing
 - Add auth header / token refresh
 - Debug network issue (timeout, 4xx, 5xx mapping)
-- Setup Ktor Client cho project mới
+- Setup network client cho project mới (Retrofit / Ktor / Ktorfit)
+
+## Lib selection
+
+Chọn network lib dựa trên `stack.network` trong `overlay.yaml`:
+
+| Value | Lib | Platform |
+|---|---|---|
+| `retrofit` | Retrofit + OkHttp | Android-only |
+| `ktor` | Ktor Client manual | KMP / CMP |
+| `ktorfit` | Ktor + Ktorfit annotation | KMP / CMP (Retrofit-style interface) |
+
+Chi tiết lib comparison + decision guide: `.harness/knowledge/data/network.md §Library selection`.
+
+Pattern + procedure chung mọi lib (tiếp theo). Lib-specific code snippet trong `knowledge/data/network.md`.
 
 ## Inputs
 
@@ -56,16 +70,19 @@ data class BookDto(
 
 ### Step 2 — Define API service
 
+Lib-specific. Chọn theo `stack.network`.
+
+**Rules chung mọi lib**:
+- API class/interface `internal` — không expose cross-module
+- Path constants trong `companion object` hoặc `const val` top-level
+- Suspend functions, không callback
+- Non-2xx response throw exception → caught ở `BaseRepository.apiCall { }`
+
+#### Variant A — Ktor Client (KMP/CMP)
+
 ```kotlin
 // {{MODULE_DATA}}/remote/BookApi.kt
 internal class BookApi(private val client: HttpClient) {
-
-    suspend fun getBooks(page: Int, pageSize: Int = 20): List<BookDto> =
-        client.get("$BOOKS_PATH") {
-            parameter("page", page)
-            parameter("page_size", pageSize)
-        }.body()
-
     suspend fun getBook(id: String): BookDto =
         client.get("$BOOKS_PATH/$id").body()
 
@@ -75,19 +92,41 @@ internal class BookApi(private val client: HttpClient) {
             filter?.let { parameter("filter", it) }
         }.body()
 
-    companion object {
-        private const val BOOKS_PATH = "/v1/books"
-    }
+    companion object { private const val BOOKS_PATH = "/v1/books" }
 }
 ```
 
-**Rules**:
-- API class `internal` — không expose cross-module
-- Path constants trong `companion object`
-- `.body()` throws `ClientRequestException` cho 4xx, `ServerResponseException` cho 5xx — caught ở Repository
-- Suspend functions, không callback
+#### Variant B — Retrofit (Android-only)
 
-### Step 3 — Configure HttpClient
+```kotlin
+internal interface BookApi {
+    @GET("/v1/books/{id}")
+    suspend fun getBook(@Path("id") id: String): BookDto
+
+    @GET("/v1/books/search")
+    suspend fun searchBooks(
+        @Query("q") query: String,
+        @Query("filter") filter: String? = null,
+    ): List<BookDto>
+}
+```
+
+#### Variant C — Ktorfit (KMP + annotation)
+
+Interface giống Retrofit, generator tạo impl:
+
+```kotlin
+internal interface BookApi {
+    @GET("/v1/books/{id}")
+    suspend fun getBook(@Path("id") id: String): BookDto
+}
+```
+
+Chi tiết + builder config + DI binding: xem `.harness/knowledge/data/network.md`.
+
+### Step 3 — Configure client
+
+Example dưới là **Ktor** (KMP). Retrofit builder config + Ktorfit `Ktorfit.Builder()` xem `knowledge/data/network.md §Option 2/3`.
 
 ```kotlin
 // {{MODULE_DATA}}/di/DataModule.kt
@@ -198,7 +237,13 @@ internal class BookRepositoryImpl(
 }
 ```
 
-### Step 6 — Test với MockEngine
+### Step 6 — Test
+
+Chọn mock tool theo lib:
+- Ktor / Ktorfit → `MockEngine` (Ktor built-in)
+- Retrofit → `MockWebServer` (OkHttp lib)
+
+Example dưới là **Ktor MockEngine**. MockWebServer snippet xem `knowledge/data/network.md §Testing với MockWebServer`.
 
 ```kotlin
 class BookRepositoryImplTest {
