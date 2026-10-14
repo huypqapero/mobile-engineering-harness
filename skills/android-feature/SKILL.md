@@ -77,13 +77,13 @@ domain/src/commonMain/kotlin/{{PACKAGE_ROOT_PATH}}/domain/repository/
 └── <Name>Repository.kt           ← interface
 
 data/src/commonMain/kotlin/{{PACKAGE_ROOT_PATH}}/data/repository/
-└── <Name>RepositoryImpl.kt       ← extends BaseRepository
+└── <Name>RepositoryImpl.kt       ← implement interface, không kế thừa base class
 
 data/src/commonMain/kotlin/{{PACKAGE_ROOT_PATH}}/data/mapper/
 └── <Name>Mapper.kt               ← object + extensions
 
 data/src/commonMain/kotlin/{{PACKAGE_ROOT_PATH}}/data/remote/
-└── <Name>Api.kt                  ← Ktor service
+└── <Name>Api.kt                  ← service trả ApiResult<Dto>
 
 data/src/commonMain/kotlin/{{PACKAGE_ROOT_PATH}}/data/dto/
 └── <Name>Dto.kt                  ← @Serializable DTO
@@ -96,8 +96,8 @@ Thứ tự fix lỗi:
 1. **Domain model** — pure Kotlin data class
 2. **Repository interface** — ở `domain/repository/`
 3. **DTO + Mapper** — `data/dto/` + `data/mapper/`
-4. **API service** — `data/remote/`
-5. **Repository impl** — extend `BaseRepository`, dùng `apiCall { }`
+4. **API service** — `data/remote/`, trả `ApiResult<Dto>` (`skills/android-network` Step 4)
+5. **Repository impl** — implement interface, `api.x().map { it.toDomain() }` (ARCH-004)
 6. **UseCase** (nếu có logic) — pure function class, `invoke(...)` suspend
 7. **DI binding** — thêm vào `DataModule.kt` + `DomainModule.kt` + `PresenterModule.kt`
 8. **Contract** — State + Intent + Effect

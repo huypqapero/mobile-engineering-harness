@@ -96,8 +96,8 @@ Orchestrate việc implement feature end-to-end. Trạng thái máy, không chec
 
 1. Domain model + Repository interface (nếu mới)
 2. DTO + Mapper
-3. API service (Ktor)
-4. Repository impl (extend `BaseRepository`)
+3. API service (trả `ApiResult<Dto>`)
+4. Repository impl (implement interface, không kế thừa base class — ARCH-004)
 5. UseCase (nếu cần logic)
 6. DI binding (3 modules: Data/Domain/Presenter)
 7. Contract (State + Intent + Effect)

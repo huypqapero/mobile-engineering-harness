@@ -200,17 +200,14 @@ internal object CatalogMapper {
 }
 
 internal class CatalogRepositoryImpl(
-    private val api: CatalogApi,
-    ioDispatcher: CoroutineDispatcher,
-) : BaseRepository(ioDispatcher), CatalogRepository {
+    private val api: CatalogApi,            // trả ApiResult<Dto> (skills/android-network Step 4)
+) : CatalogRepository {
 
-    override suspend fun getItems(): ApiResult<List<Item>> = apiCall {
-        api.getItems().map { it.toDomain() }
-    }
+    override suspend fun getItems(): ApiResult<List<Item>> =
+        api.getItems().map { dtos -> dtos.map { it.toDomain() } }
 
-    override suspend fun toggleFavorite(id: String, favorite: Boolean): ApiResult<Unit> = apiCall {
+    override suspend fun toggleFavorite(id: String, favorite: Boolean): ApiResult<Unit> =
         api.setFavorite(id, favorite)
-    }
 }
 ```
 
@@ -218,7 +215,7 @@ internal class CatalogRepositoryImpl(
 
 ```kotlin
 // DataModule
-single<CatalogRepository> { CatalogRepositoryImpl(get(), get(named("io"))) }
+single<CatalogRepository> { CatalogRepositoryImpl(get()) }
 
 // DomainModule
 factory { GetItemsUseCase(get()) }

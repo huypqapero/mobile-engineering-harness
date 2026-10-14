@@ -41,13 +41,30 @@ Dependency graph bất biến: `composeApp → presenter → domain ← data`.
   class HomeViewModel(private val useCase: GetHomeFeedUseCase) ...
   ```
 
-## ARCH-004 — Repository impl pattern
+## ARCH-004 — Repository impl không kế thừa base class, network trả `ApiResult`
 
 - **Severity**: MUST
-- **Scope**: `data/src/.../repository/*Impl.kt`
-- **Rationale**: Thống nhất error mapping + dispatcher.
-- **Pattern**: extend `BaseRepository`, bọc call bằng `withContext(ioDispatcher) + apiCall { ... }`
-- **Verification**: review manual + Konsist `repository_impl_extends_base`
+- **Scope**: `data/src/.../repository/*Impl.kt`, `data/src/.../remote/*Api.kt`
+- **Rationale**: Kế thừa base class chỉ để dùng chung error mapping + dispatcher gây coupling không cần thiết, và mỗi method phải tự bọc — quên bọc là exception thô lọt ra. Retrofit (`CallAdapter.Factory`) và Ktorfit (`Converter.Factory`) có cơ chế chính thức để trả `ApiResult` ngay tầng network; mapping lỗi chỉ viết một lần.
+- **Pattern**:
+  - Repository impl chỉ implement interface ở `domain/repository/`, không kế thừa class nào; nhiệm vụ còn lại là map DTO → domain: `api.getBook(id).map { it.toDomain() }`
+  - API service trả `ApiResult<Dto>` qua `ApiResultCallAdapterFactory` (Retrofit), `ApiResultConverterFactory` (Ktorfit) hoặc `HttpClient.safeRequest` / `safeCall` (Ktor thuần)
+  - Exception → `DomainError` ở một `ErrorMapper` duy nhất (`data/core/network/`); `CancellationException` luôn rethrow
+  - Không bọc network call bằng `withContext(ioDispatcher)` (suspend call đã main-safe, xem CORO-002)
+- **Verification**: Konsist `ARCH-004 repository impl does not extend base repository` (check theo tên parent `*BaseRepository`; base class tên khác bắt ở review) + `ARCH-004 remote api suspend functions return ApiResult` (suspend fun không private trong `remote/*Api.kt`, **phải khai báo return type tường minh**)
+- **Exception**: endpoint cần response thô (`HttpResponse`, stream channel) → đặt ở class không nằm trong file `*Api.kt` (ví dụ `*Downloader`) hoặc bọc `safeCall { }`
+- **Detail**: `knowledge/data/network.md §ApiResult contract`, `§Migration từ BaseRepository`
+- **Violation**:
+  ```kotlin
+  // ❌
+  internal class BookRepositoryImpl(api: BookApi, io: CoroutineDispatcher) : BaseRepository(io), BookRepository {
+      override suspend fun getBook(id: String) = apiCall { api.getBook(id).toDomain() }
+  }
+  // ✅
+  internal class BookRepositoryImpl(private val api: BookApi) : BookRepository {
+      override suspend fun getBook(id: String): ApiResult<Book> = api.getBook(id).map { it.toDomain() }
+  }
+  ```
 
 ## ARCH-005 — Mapper là object + extension
 

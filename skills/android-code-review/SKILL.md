@@ -88,7 +88,7 @@ Checklist bắt buộc, theo thứ tự ưu tiên:
 #### F. Error handling
 
 - [ ] `ApiResult` / `DomainError` dùng, không throw raw?
-- [ ] Error mapping ở `BaseRepository`?
+- [ ] Error mapping ở `ErrorMapper` qua CallAdapter / Converter / `safeRequest`; Repository impl không kế thừa base class (ARCH-004)?
 - [ ] UI phân biệt 4 error class: network / server / client / unknown?
 
 #### G. Security

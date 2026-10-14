@@ -9,11 +9,11 @@ Repository = façade che các data source (remote API, local DB, cache, pref) v�
 ## Rules
 
 - **MUST** interface ở `domain/repository/`
-- **MUST** impl ở `data/repository/`, extend `BaseRepository`
+- **MUST** impl ở `data/repository/`, chỉ implement interface — **không** kế thừa base class (ARCH-004)
 - **MUST** method trả `ApiResult<T>` (success/error typed) hoặc `Flow<T>` cho observable
 - **MUST** map DTO/entity → domain model TRƯỚC khi return
 - **FORBIDDEN** expose DTO, SQL entity, Firebase types ra ngoài data module
-- **FORBIDDEN** throw exception raw (dùng `ApiResult.Error(DomainError)`)
+- **FORBIDDEN** để exception network lọt ra — API service trả `ApiResult<Dto>`, impl chỉ `map` (xem §Error handling)
 
 ## Interface shape
 
@@ -41,16 +41,14 @@ interface BookRepository {
 ```kotlin
 // data/repository/BookRepositoryImpl.kt
 internal class BookRepositoryImpl(
-    private val api: BookApi,
+    private val api: BookApi,               // trả ApiResult<BookDto> (CallAdapter / Converter / safeRequest)
     private val local: BookLocalSource,
-    ioDispatcher: CoroutineDispatcher,
-) : BaseRepository(ioDispatcher), BookRepository {
+) : BookRepository {
 
-    override suspend fun getBook(id: String): ApiResult<Book> = apiCall {
-        api.getBook(id).toDomain().also { book ->
-            local.upsert(book.toEntity(now = Clock.System.now().toEpochMilliseconds()))
-        }
-    }
+    override suspend fun getBook(id: String): ApiResult<Book> =
+        api.getBook(id)
+            .map { it.toDomain() }
+            .onSuccess { book -> local.upsert(book.toEntity(now = Clock.System.now().toEpochMilliseconds())) }
 
     override fun observeBookmarked(): Flow<List<Book>> =
         local.observeBookmarked().map { it.map { entity -> entity.toDomain() } }
@@ -63,11 +61,14 @@ Tách DB vs API vs cache thành `*LocalSource`, `*RemoteSource` để test:
 
 ```kotlin
 internal class BookRemoteSource(private val api: BookApi) {
-    suspend fun fetchBook(id: String): BookDto = api.getBook(id)
+    suspend fun fetchBook(id: String): ApiResult<BookDto> = api.getBook(id)
 }
 
-internal class BookLocalSource(private val queries: BookQueries) {
-    suspend fun upsert(book: Book) { ... }
+internal class BookLocalSource(
+    private val queries: BookQueries,
+    private val ioDispatcher: CoroutineDispatcher,
+) {
+    suspend fun upsert(book: Book): Unit = withContext(ioDispatcher) { ... }   // query SQLDelight đồng bộ (CORO-002)
     fun observeBookmarked(): Flow<List<Book>> = ...
 }
 ```
@@ -82,10 +83,10 @@ Repository impl inject cả 2 source → orchestrate.
 override fun observeBook(id: String): Flow<Book?> =
     local.observeBook(id).map { it?.toDomain() }
 
-override suspend fun refreshBook(id: String): ApiResult<Unit> = apiCall {
-    val remote = api.getBook(id).toDomain()
-    local.upsert(remote.toEntity(now = Clock.System.now().toEpochMilliseconds()))
-}
+override suspend fun refreshBook(id: String): ApiResult<Unit> =
+    api.getBook(id).map { dto ->
+        local.upsert(dto.toDomain().toEntity(now = Clock.System.now().toEpochMilliseconds()))
+    }
 ```
 
 UI observe local → render luôn (fast first paint). Trigger refresh async → local update → Flow re-emit → UI re-render.
@@ -103,7 +104,7 @@ Chi tiết: `knowledge/data/caching.md`.
 
 ## Error handling
 
-Repository không throw raw. Return `ApiResult.Error(DomainError)`:
+Repository không throw raw. Return `ApiResult.Error(DomainError)` — lỗi đến sẵn từ API service:
 
 ```kotlin
 sealed interface DomainError {
@@ -118,29 +119,23 @@ sealed interface DomainError {
 }
 ```
 
-Mapping ở `BaseRepository.mapError`:
+Mapping exception → `DomainError` nằm ở `ErrorMapper` (`data/core/network/`), được gọi bởi `ApiResultCallAdapterFactory` (Retrofit), `ApiResultConverterFactory` (Ktorfit) hoặc `safeRequest` / `safeCall` (Ktor thuần). Repository không có try/catch. Bảng mapping + snippet: `knowledge/data/network.md §ApiResult contract`.
 
-```kotlin
-private fun mapError(e: Throwable): DomainError = when (e) {
-    is IOException            -> DomainError.Network.Offline
-    is HttpRequestTimeoutException -> DomainError.Network.Timeout
-    is ClientRequestException -> when (e.response.status.value) {
-        404 -> DomainError.NotFound
-        else -> DomainError.Client(e.response.status.value)
-    }
-    is ServerResponseException -> DomainError.Server(e.response.status.value)
-    is SerializationException -> DomainError.Parse(e.message ?: "")
-    else -> DomainError.Unknown(e.message ?: "")
-}
-```
+Nối nhiều kết quả: `map` (đổi data), `flatMap` (call sau phụ thuộc call trước), `onSuccess` (side effect như ghi cache).
+
+### Ranh giới lỗi
+
+`ApiResult` chỉ bao network boundary. Exception từ local source (Room/SQLDelight) không tự map sang `DomainError`; harness chưa định nghĩa cơ chế wrap lỗi DB — coi là lỗi lập trình/storage. Code trong `onSuccess { local... }` không được throw cho điều kiện mong đợi (dùng upsert thay vì insert, query nullable thay vì `executeAsOne`).
 
 ## Testing
 
+Fake API implement interface `BookApi` (Retrofit/Ktorfit vốn là interface; Ktor thuần → tách `interface BookApi` + `KtorBookApi`, hoặc test repository qua `MockEngine`).
+
 ```kotlin
 class BookRepositoryImplTest {
-    private val mockApi = FakeBookApi(response = fakeBookDto())
+    private val mockApi = FakeBookApi(response = ApiResult.Success(fakeBookDto()))
     private val mockLocal = FakeBookLocal()
-    private val repo = BookRepositoryImpl(mockApi, mockLocal, UnconfinedTestDispatcher())
+    private val repo = BookRepositoryImpl(mockApi, mockLocal)
 
     @Test
     fun `getBook success maps dto to domain + cache`() = runTest {
@@ -148,6 +143,13 @@ class BookRepositoryImplTest {
         assertTrue(result is ApiResult.Success)
         assertEquals("Atomic", result.data.title)
         assertEquals(1, mockLocal.upsertCalls.size)
+    }
+
+    @Test
+    fun `getBook error passes through and skips cache`() = runTest {
+        val repo = BookRepositoryImpl(FakeBookApi(response = ApiResult.Error(DomainError.NotFound)), mockLocal)
+        assertEquals(ApiResult.Error(DomainError.NotFound), repo.getBook("1"))
+        assertEquals(0, mockLocal.upsertCalls.size)
     }
 }
 ```
@@ -161,7 +163,8 @@ Fake preferred > Mock.
 | Interface + impl trong cùng module (domain) | Interface domain, impl data |
 | Return DTO từ Repository public method | Map sang domain trước return |
 | Repository impl có business logic | Business logic ở UseCase, Repository là bridge |
-| Throw raw Exception | Return `ApiResult.Error(DomainError)` |
+| Throw raw Exception / try-catch trong Repository | API service trả `ApiResult` (ARCH-004), Repository chỉ `map` |
+| Repository kế thừa `BaseRepository` + `apiCall { }` | Class thuần implement interface (xem `network.md §Migration từ BaseRepository`) |
 | Single Repository "god" cho mọi feature | Chia theo bounded context (BookRepository, UserRepository, ...) |
 | `observeX(): LiveData` platform-coupled | Dùng `Flow<T>` |
 

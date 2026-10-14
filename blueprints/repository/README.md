@@ -93,19 +93,25 @@ internal object BookmarkMapper {
 ```kotlin
 // {{MODULE_DATA}}/remote/BookmarkApi.kt
 internal class BookmarkApi(private val client: HttpClient) {
-    suspend fun getBookmarks(bookId: String): List<BookmarkDto> =
-        client.get("/v1/bookmarks") { parameter("book_id", bookId) }.body()
+    suspend fun getBookmarks(bookId: String): ApiResult<List<BookmarkDto>> =
+        client.safeRequest {
+            url("/v1/bookmarks")
+            parameter("book_id", bookId)
+        }
 
-    suspend fun create(bookmark: BookmarkDto) {
-        client.post("/v1/bookmarks") {
+    suspend fun create(bookmark: BookmarkDto): ApiResult<Unit> =
+        client.safeRequest {
+            method = HttpMethod.Post
+            url("/v1/bookmarks")
             contentType(ContentType.Application.Json)
             setBody(bookmark)
         }
-    }
 
-    suspend fun delete(id: String) {
-        client.delete("/v1/bookmarks/$id")
-    }
+    suspend fun delete(id: String): ApiResult<Unit> =
+        client.safeRequest {
+            method = HttpMethod.Delete
+            url("/v1/bookmarks/$id")
+        }
 }
 ```
 
@@ -113,13 +119,16 @@ internal class BookmarkApi(private val client: HttpClient) {
 
 ```kotlin
 // {{MODULE_DATA}}/local/BookmarkLocalSource.kt
-internal class BookmarkLocalSource(private val queries: BookmarkQueries) {
+internal class BookmarkLocalSource(
+    private val queries: BookmarkQueries,
+    private val ioDispatcher: CoroutineDispatcher,   // query SQLDelight đồng bộ → tự chuyển dispatcher (CORO-002)
+) {
     fun observeByBook(bookId: String): Flow<List<Bookmark>> =
         queries.getByBook(bookId).asFlow().mapToList(Dispatchers.Default).map { entities ->
             entities.map { it.toDomain() }
         }
 
-    suspend fun upsert(bookmark: Bookmark) {
+    suspend fun upsert(bookmark: Bookmark): Unit = withContext(ioDispatcher) {
         queries.upsert(
             id = bookmark.id,
             book_id = bookmark.bookId,
@@ -129,7 +138,7 @@ internal class BookmarkLocalSource(private val queries: BookmarkQueries) {
         )
     }
 
-    suspend fun delete(id: String) {
+    suspend fun delete(id: String): Unit = withContext(ioDispatcher) {
         queries.delete(id)
     }
 }
@@ -142,28 +151,27 @@ internal class BookmarkLocalSource(private val queries: BookmarkQueries) {
 internal class BookmarkRepositoryImpl(
     private val api: BookmarkApi,
     private val local: BookmarkLocalSource,
-    ioDispatcher: CoroutineDispatcher,
-) : BaseRepository(ioDispatcher), BookmarkRepository {
+) : BookmarkRepository {
 
     override fun observeBookmarks(bookId: String): Flow<List<Bookmark>> =
         local.observeByBook(bookId)
 
-    override suspend fun addBookmark(bookmark: Bookmark): ApiResult<Unit> = apiCall {
+    override suspend fun addBookmark(bookmark: Bookmark): ApiResult<Unit> {
         local.upsert(bookmark)                    // optimistic
-        api.create(bookmark.toDto())              // sync remote
+        return api.create(bookmark.toDto())       // sync remote
     }
 
-    override suspend fun removeBookmark(id: String): ApiResult<Unit> = apiCall {
+    override suspend fun removeBookmark(id: String): ApiResult<Unit> {
         local.delete(id)
-        api.delete(id)
+        return api.delete(id)
     }
 
-    override suspend fun syncBookmarks(): ApiResult<Int> = apiCall {
-        // Pull remote
-        val remote = api.getBookmarks(bookId = "").map { it.toDomain() }
-        remote.forEach { local.upsert(it) }
-        remote.size
-    }
+    override suspend fun syncBookmarks(): ApiResult<Int> =
+        api.getBookmarks(bookId = "").map { dtos ->
+            val remote = dtos.map { it.toDomain() }
+            remote.forEach { local.upsert(it) }
+            remote.size
+        }
 }
 ```
 
@@ -177,19 +185,19 @@ internal class BookmarkRepositoryImpl(
 ```kotlin
 // data/di/DataModule.kt
 single { BookmarkApi(get()) }
-single { BookmarkLocalSource(get<AppDatabase>().bookmarkQueries) }
-single<BookmarkRepository> {
-    BookmarkRepositoryImpl(get(), get(), get(named("io")))
-}
+single { BookmarkLocalSource(get<AppDatabase>().bookmarkQueries, get(named("io"))) }
+single<BookmarkRepository> { BookmarkRepositoryImpl(get(), get()) }
 ```
 
 ## 7. Unit test
 
 ```kotlin
+// FakeBookmarkApi cần BookmarkApi là interface: Ktor → `interface BookmarkApi` + `internal class KtorBookmarkApi(client) : BookmarkApi`
+// trong cùng file BookmarkApi.kt; hoặc test qua MockEngine như blueprints/network-service §7.
 class BookmarkRepositoryImplTest {
     private val api = FakeBookmarkApi()
     private val local = FakeBookmarkLocal()
-    private val repo = BookmarkRepositoryImpl(api, local, UnconfinedTestDispatcher())
+    private val repo = BookmarkRepositoryImpl(api, local)
 
     @Test
     fun `addBookmark updates local + remote`() = runTest {
@@ -202,11 +210,10 @@ class BookmarkRepositoryImplTest {
 
     @Test
     fun `addBookmark remote fail returns Error`() = runTest {
-        val failingApi = FakeBookmarkApi(error = IOException())
-        val repo = BookmarkRepositoryImpl(failingApi, local, UnconfinedTestDispatcher())
+        val failingApi = FakeBookmarkApi(createResult = ApiResult.Error(DomainError.Network.Offline))
+        val repo = BookmarkRepositoryImpl(failingApi, local)
         val result = repo.addBookmark(fakeBookmark())
-        assertTrue(result is ApiResult.Error)
-        assertTrue((result as ApiResult.Error).cause is DomainError.Network.Offline)
+        assertEquals(ApiResult.Error(DomainError.Network.Offline), result)
     }
 }
 ```
@@ -214,7 +221,7 @@ class BookmarkRepositoryImplTest {
 ## Checklist
 
 - [ ] Interface ở `domain/`, impl ở `data/`
-- [ ] Impl extend `BaseRepository`, dùng `apiCall { }`
+- [ ] Impl không kế thừa base class; API trả `ApiResult<Dto>`, impl chỉ `map` / `flatMap` / `onSuccess` (ARCH-004)
 - [ ] DTO `internal`, `@Serializable`, nullable có default
 - [ ] Mapper `object` + extension (ARCH-005)
 - [ ] Data source split (`*Api`, `*LocalSource`) nếu > 1 source

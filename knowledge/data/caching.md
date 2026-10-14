@@ -106,10 +106,10 @@ val user: StateFlow<User?> = authRepo.observeUser()
 override fun observeBook(id: String): Flow<Book?> =
     local.observeBook(id).map { it?.toDomain() }
 
-override suspend fun refreshBook(id: String): ApiResult<Unit> = apiCall {
-    val remote = api.getBook(id).toDomain()
-    local.upsert(remote.toEntity(now = Clock.System.now().toEpochMilliseconds()))
-}
+override suspend fun refreshBook(id: String): ApiResult<Unit> =
+    api.getBook(id).map { dto ->
+        local.upsert(dto.toDomain().toEntity(now = Clock.System.now().toEpochMilliseconds()))
+    }
 
 // UI
 val book by viewModel.book.collectAsStateWithLifecycle()  // observe local
@@ -121,13 +121,11 @@ LaunchedEffect(bookId) {
 ### Fallback remote-first
 
 ```kotlin
-override suspend fun getBook(id: String): ApiResult<Book> = apiCall {
-    local.getById(id)?.toDomain()  // cached nếu có
-        ?: run {
-            val remote = api.getBook(id).toDomain()
-            local.upsert(remote.toEntity(now = Clock.System.now().toEpochMilliseconds()))
-            remote
-        }
+override suspend fun getBook(id: String): ApiResult<Book> {
+    local.getById(id)?.let { return ApiResult.Success(it.toDomain()) }  // cached nếu có
+    return api.getBook(id)
+        .map { it.toDomain() }
+        .onSuccess { local.upsert(it.toEntity(now = Clock.System.now().toEpochMilliseconds())) }
 }
 ```
 
@@ -159,19 +157,18 @@ suspend fun invalidateBook(id: String) {
 ### Trigger invalidate on write
 
 ```kotlin
-suspend fun toggleBookmark(id: String, bookmarked: Boolean): ApiResult<Unit> = apiCall {
+suspend fun toggleBookmark(id: String, bookmarked: Boolean): ApiResult<Unit> =
     api.toggleBookmark(id, bookmarked)
-    local.updateBookmark(id, bookmarked)  // local update ngay — in-memory tự re-emit qua Flow
-}
+        .onSuccess { local.updateBookmark(id, bookmarked) }  // local update ngay — in-memory tự re-emit qua Flow
 ```
 
 ### TTL expiry
 
 ```kotlin
-val remote = if (local.lastUpdated(id) < Clock.System.now() - 1.hours) {
-    api.getBook(id).also { local.upsert(it.toEntity()) }
+val book: ApiResult<Book> = if (local.lastUpdated(id) < Clock.System.now() - 1.hours) {
+    api.getBook(id).map { it.toDomain() }.onSuccess { local.upsert(it.toEntity()) }
 } else {
-    local.getById(id).toDomain()
+    local.getById(id)?.let { ApiResult.Success(it.toDomain()) } ?: ApiResult.Error(DomainError.NotFound)
 }
 ```
 

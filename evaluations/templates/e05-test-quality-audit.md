@@ -71,7 +71,7 @@ class BookRepositoryImplTest {
 | # | Severity | Issue | Rule |
 |---|---|---|---|
 | 1 | MEDIUM | Test name `test1` không describe behavior | Testing §Naming |
-| 2 | HIGH | Hardcoded `Dispatchers.IO` không inject | CORO-002 |
+| 2 | HIGH | Hardcoded `Dispatchers.IO` truyền vào Repository — theo ARCH-004 mới Repository impl không nhận dispatcher (network call main-safe) | CORO-002, ARCH-004 |
 | 3 | HIGH | `runBlocking` trong test → chậm, chặn thread, không advance time | CORO-010 |
 | 4 | MEDIUM | `assertNotNull(result)` / `assertTrue(result != null)` quá weak | Testing §Assertion strength |
 | 5 | HIGH | `delay(500)` thật trong test → chạy chậm, flaky | Testing §Determinism |
@@ -82,14 +82,14 @@ class BookRepositoryImplTest {
 ## Expected rewrite
 
 ```kotlin
+// FakeBookApi implement interface BookApi, trả ApiResult<BookDto> (ARCH-004).
+// Mapping exception/HTTP status → DomainError được test ở tầng API (MockEngine/MockWebServer), không ở Repository.
 class BookRepositoryImplTest {
-
-    private val testDispatcher = StandardTestDispatcher()
 
     @Test
     fun `getBook success maps dto to domain`() = runTest {
-        val api = FakeBookApi(response = BookDto(id = "1", title = "Atomic", author = "Clear"))
-        val repo = BookRepositoryImpl(api, testDispatcher)
+        val api = FakeBookApi(response = ApiResult.Success(BookDto(id = "1", title = "Atomic", author = "Clear")))
+        val repo = BookRepositoryImpl(api)
 
         val result = repo.getBook("1")
 
@@ -100,8 +100,8 @@ class BookRepositoryImplTest {
 
     @Test
     fun `getBook with delay still deterministic`() = runTest {
-        val api = FakeBookApi(response = BookDto("1", "T", "A"), responseDelayMs = 500)
-        val repo = BookRepositoryImpl(api, testDispatcher)
+        val api = FakeBookApi(response = ApiResult.Success(BookDto("1", "T", "A")), responseDelayMs = 500)
+        val repo = BookRepositoryImpl(api)
 
         val deferred = async { repo.getBook("1") }
         advanceTimeBy(600)
@@ -111,36 +111,19 @@ class BookRepositoryImplTest {
     }
 
     @Test
-    fun `getBook network IO error returns DomainError Network Offline`() = runTest {
-        val api = FakeBookApi(error = IOException("timeout"))
-        val repo = BookRepositoryImpl(api, testDispatcher)
+    fun `getBook offline error passes through unchanged`() = runTest {
+        val api = FakeBookApi(response = ApiResult.Error(DomainError.Network.Offline))
+        val repo = BookRepositoryImpl(api)
 
-        val result = repo.getBook("1")
-
-        assertTrue(result is ApiResult.Error)
-        assertTrue((result as ApiResult.Error).cause is DomainError.Network.Offline)
+        assertEquals(ApiResult.Error(DomainError.Network.Offline), repo.getBook("1"))
     }
 
     @Test
-    fun `getBook server 500 returns DomainError Server`() = runTest {
-        val api = FakeBookApi(httpStatus = 500)
-        val repo = BookRepositoryImpl(api, testDispatcher)
+    fun `getBook 404 passes through as DomainError NotFound`() = runTest {
+        val api = FakeBookApi(response = ApiResult.Error(DomainError.NotFound))
+        val repo = BookRepositoryImpl(api)
 
-        val result = repo.getBook("1")
-
-        assertTrue(result is ApiResult.Error)
-        assertTrue((result as ApiResult.Error).cause is DomainError.Server)
-    }
-
-    @Test
-    fun `getBook 404 returns DomainError NotFound`() = runTest {
-        val api = FakeBookApi(httpStatus = 404)
-        val repo = BookRepositoryImpl(api, testDispatcher)
-
-        val result = repo.getBook("missing")
-
-        assertTrue(result is ApiResult.Error)
-        assertTrue((result as ApiResult.Error).cause is DomainError.NotFound)
+        assertEquals(ApiResult.Error(DomainError.NotFound), repo.getBook("missing"))
     }
 }
 ```
@@ -154,7 +137,8 @@ class BookRepositoryImplTest {
 
 Trừ điểm nếu rewrite:
 - Vẫn `runBlocking` thay vì `runTest`
-- Vẫn hardcode `Dispatchers.IO`
+- Vẫn hardcode `Dispatchers.IO` hoặc vẫn truyền dispatcher vào Repository
+- Repository test tự giả lập exception/HTTP status thay vì fake API trả `ApiResult` (ARCH-004)
 - Vẫn assertion weak
 - Không add fake class reusable
 

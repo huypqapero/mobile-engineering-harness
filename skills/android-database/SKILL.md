@@ -167,15 +167,17 @@ Tách DB access khỏi Repository impl để test được:
 // {{MODULE_DATA}}/local/BookLocalSource.kt
 internal class BookLocalSource(
     private val queries: BookQueries,
+    private val ioDispatcher: CoroutineDispatcher,   // query SQLDelight đồng bộ → tự chuyển dispatcher (CORO-002)
     private val clock: Clock = Clock.System,
 ) {
     fun observeBookmarked(): Flow<List<BookEntity>> =
         queries.getBookmarked().asFlow().mapToList(Dispatchers.Default)
 
-    suspend fun getById(id: String): BookEntity? =
+    suspend fun getById(id: String): BookEntity? = withContext(ioDispatcher) {
         queries.getById(id).executeAsOneOrNull()
+    }
 
-    suspend fun upsert(book: BookEntity) {
+    suspend fun upsert(book: BookEntity): Unit = withContext(ioDispatcher) {
         queries.upsert(
             id = book.id,
             title = book.title,
@@ -187,7 +189,7 @@ internal class BookLocalSource(
         )
     }
 
-    suspend fun toggleBookmark(id: String, bookmarked: Boolean) {
+    suspend fun toggleBookmark(id: String, bookmarked: Boolean): Unit = withContext(ioDispatcher) {
         queries.toggleBookmark(
             is_bookmarked = bookmarked,
             updated_at = clock.now().toEpochMilliseconds(),
@@ -202,27 +204,22 @@ internal class BookLocalSource(
 ```kotlin
 // {{MODULE_DATA}}/repository/BookRepositoryImpl.kt
 internal class BookRepositoryImpl(
-    private val api: BookApi,
+    private val api: BookApi,               // trả ApiResult<BookDto> (skills/android-network Step 4)
     private val local: BookLocalSource,
-    ioDispatcher: CoroutineDispatcher,
-) : BaseRepository(ioDispatcher), BookRepository {
+) : BookRepository {
 
     override fun observeBookmarked(): Flow<List<Book>> =
         local.observeBookmarked().map { entities -> entities.map { it.toDomain() } }
 
-    override suspend fun getBook(id: String): ApiResult<Book> = apiCall {
-        local.getById(id)?.toDomain() ?: run {
-            val remote = api.getBook(id).toDomain()
-            local.upsert(remote.toEntity(now = Clock.System.now().toEpochMilliseconds()))
-            remote
-        }
+    override suspend fun getBook(id: String): ApiResult<Book> {
+        local.getById(id)?.let { return ApiResult.Success(it.toDomain()) }
+        return refreshBook(id)
     }
 
-    override suspend fun refreshBook(id: String): ApiResult<Book> = apiCall {
-        val remote = api.getBook(id).toDomain()
-        local.upsert(remote.toEntity(now = Clock.System.now().toEpochMilliseconds()))
-        remote
-    }
+    override suspend fun refreshBook(id: String): ApiResult<Book> =
+        api.getBook(id)
+            .map { it.toDomain() }
+            .onSuccess { local.upsert(it.toEntity(now = Clock.System.now().toEpochMilliseconds())) }
 }
 ```
 
@@ -257,7 +254,7 @@ class BookLocalSourceTest {
     fun setup() {
         driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY).also { AppDatabase.Schema.create(it) }
         db = AppDatabase(driver)
-        local = BookLocalSource(db.bookQueries)
+        local = BookLocalSource(db.bookQueries, ioDispatcher = UnconfinedTestDispatcher())
     }
 
     @AfterTest fun tearDown() { driver.close() }
