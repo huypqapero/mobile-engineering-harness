@@ -4,6 +4,28 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.4.0] — 2026-10-14
+
+### Added
+
+- **`constitution/kotlin-conventions.md`** — 12 KOT rules (naming, null safety, immutability, visibility, sealed types, extensions, scope functions, exception handling, collection ops, resources, documentation).
+- **`skills/android-coroutines/SKILL.md`** — dedicated procedure cho async/Flow/cancellation work; previously only knowledge/essentials.
+- **`workflows/fix-bug.md`** — 5-stage: reproduce → isolate → cause → fix → verify. Cause-level fix discipline, không mask symptom.
+- **`workflows/review-pull-request.md`** — PR audit workflow với 10 dimensions + evidence-based findings + severity levels.
+- **`agents/`** folder — role prompts cho multi-agent orchestration:
+  - `architect.md` — Plan + inspect, no code
+  - `implementer.md` — Execute theo plan, minimal scope
+  - `reviewer.md` — Independent audit, evidence-based
+  - `test-engineer.md` — Behavior coverage, deterministic test
+
+### Changed
+
+- `AGENTS.md`: task routing table thêm `android-coroutines`; thêm "Workflows" + "Agent roles" sections; file index updated.
+
+### Rationale
+
+Fill P0 gap vs reference blueprint theo evidence-driven priority. Skip P1/P2 (6 skills khác, 20+ knowledge split files, 4 blueprints khác) để tránh YAGNI + context bloat.
+
 ## [0.3.0] — 2026-10-14
 
 ### Added

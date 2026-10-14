@@ -26,14 +26,30 @@ Context project (resolve từ `overlay.yaml`):
 | Tạo feature mới end-to-end | `android-feature` |
 | Build/sửa Compose UI | `android-compose` |
 | Thiết kế UiState/Intent/Effect, reducer, side-effect | `android-mvi` |
+| Async / Flow / cancellation / concurrency | `android-coroutines` |
 | Review PR, diff, module | `android-code-review` |
 | Viết unit/UI/integration test | `android-testing` |
 
 Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùng file.
 
-## Workflow mặc định
+## Workflows
 
-`workflows/feature-development.md` điều phối: inspect → plan → implement → verify → report. Mỗi stage có completion criteria rõ.
+| Workflow | Khi nào |
+|---|---|
+| `workflows/feature-development.md` | Implement feature mới end-to-end (5 stages: inspect → plan → implement → verify → report) |
+| `workflows/fix-bug.md` | Debug + fix bug (reproduce → isolate → cause → fix → verify) |
+| `workflows/review-pull-request.md` | Review PR / diff theo 10 dimensions với evidence-based findings |
+
+## Agent roles
+
+Trong workflow, agent có thể chuyển mindset qua các role (xem `agents/*.md`):
+
+- `architect.md` — Plan + inspect + decisions
+- `implementer.md` — Execute theo plan, minimal scope
+- `reviewer.md` — Independent audit, evidence-based findings
+- `test-engineer.md` — Behavior coverage, deterministic test
+
+Giai đoạn solo (1 agent): 1 agent chuyển mindset qua các role. Giai đoạn multi-agent: subagent dedicated per role.
 
 ## Quality gates bắt buộc
 
@@ -60,17 +76,29 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `constitution/engineering-principles.md`
 - `constitution/architecture-rules.md` — ARCH-001..014 + MOD-001..003
 - `constitution/concurrency-rules.md` — CORO-001..010
+- `constitution/kotlin-conventions.md` — KOT-001..012
 - `constitution/definition-of-done.md`
 - `knowledge/architecture/clean-mvi.md`
 - `knowledge/compose/essentials.md`
 - `knowledge/mvi/essentials.md`
 - `knowledge/coroutines/essentials.md`
-- `skills/*/SKILL.md` — 5 skills
-- `blueprints/reference-feature/README.md` — generic demo
+- `skills/android-feature/SKILL.md`
+- `skills/android-compose/SKILL.md`
+- `skills/android-mvi/SKILL.md`
+- `skills/android-coroutines/SKILL.md`
+- `skills/android-code-review/SKILL.md`
+- `skills/android-testing/SKILL.md`
+- `blueprints/reference-feature/README.md`
 - `workflows/feature-development.md`
-- `verification/architecture-tests/TemplateArchitectureRulesTest.kt` — Konsist, cần render
-- `verification/scripts/verify.sh.template` — gate runner, cần render
-- `evaluations/templates/` — scenario templates
+- `workflows/fix-bug.md`
+- `workflows/review-pull-request.md`
+- `agents/architect.md`
+- `agents/implementer.md`
+- `agents/reviewer.md`
+- `agents/test-engineer.md`
+- `verification/architecture-tests/TemplateArchitectureRulesTest.kt`
+- `verification/scripts/verify.sh.template`
+- `evaluations/templates/e01..e05.md`
 
 ## Report format
 
