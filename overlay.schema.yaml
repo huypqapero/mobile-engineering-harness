@@ -97,6 +97,31 @@ enforcement:
                                       #   - strict   (fail CI khi violation; default, khuyến nghị cho production)
                                       #   - advisory (warn only, không fail CI; dùng khi mới migrate hoặc evaluation phase)
 
+orchestration:
+  mode: auto                          # Options:
+                                      #   - single           (1 agent chuyển mindset qua roles; task < 300 LOC)
+                                      #   - team             (sequential subagent per role: architect → impl → reviewer)
+                                      #   - parallel-features (spawn N subagent cùng lúc per feature; max_concurrent)
+                                      #   - auto             (harness quyết dựa trên task size + feature count)
+  parallel:
+    max_concurrent: 3                 # Max subagent spawn cùng lúc (parallel-features mode)
+    isolation: feature-package        # Options:
+                                      #   - feature-package (mỗi subagent 1 feature package, no file overlap)
+                                      #   - module          (mỗi subagent 1 Gradle module)
+                                      #   - file            (strict file-level ownership)
+    shared_file_strategy: coordinator # Subagent emit merge instructions to handoff doc;
+                                      # Orchestrator aggregator applies serially after parallel done.
+                                      # Prevent race condition editing DI/Nav/resources.
+  auto_threshold:
+    files_changed: 5                  # > 5 files touched → team
+    loc_changed: 300                  # > 300 LOC → team
+    feature_count: 1                  # > 1 feature trong spec → parallel-features
+    cross_module: true                # Touch > 1 module → team
+    risk_tier: medium                 # low | medium | high (high → always team hoặc parallel)
+  handoff:
+    report_dir: "plans/handoff"       # Mỗi subagent write handoff doc
+    aggregate_report: true            # Orchestrator write final aggregate report
+
 detekt:
   enabled: true
   baseline_file: "detekt-baseline.xml"

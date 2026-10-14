@@ -4,6 +4,78 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.9.0] — 2026-10-14
+
+### Added — Agent orchestration pack
+
+Harness switch cho 4 orchestration modes giải quyết use case "chạy 3-5 features song song từ spec":
+
+#### Config
+- **`overlay.yaml.orchestration.*`** fields: `mode` (single/team/parallel-features/auto), `parallel.max_concurrent`, `parallel.isolation`, `parallel.shared_file_strategy`, `auto_threshold.*`, `handoff.report_dir`.
+- Install validates `orchestration.mode` enum.
+
+#### Knowledge
+- **`knowledge/agent-orchestration/essentials.md`** — comprehensive guide:
+  - Mode comparison table (cost multiplier, latency, risk per mode)
+  - Mode decision tree
+  - Each mode's workflow + handoff doc protocol
+  - Claude Code Task tool spawn patterns + tool subset per role
+  - Parallel-features: isolation strategy, shared-file coordinator pattern
+  - Cost/latency trade-off table
+  - When NOT to use parallel-features
+
+#### Skill
+- **`skills/android-orchestrator/SKILL.md`** — procedure cho:
+  - Mode resolution (Step 1-2)
+  - Team mode sequential spawn (Step 3)
+  - Parallel-features: spec decomposition + isolation check + batch spawn + aggregate + review (Step 4-9)
+  - Parallel feature prompt template cho Task() tool
+  - Tool subset table per role
+  - Aggregator serial pattern cho shared files (DI/Nav/resources/analytics)
+
+#### Workflow
+- **`workflows/parallel-feature-development.md`** — 6-stage orchestration:
+  1. Decompose (architect subagent)
+  2. Isolation check (orchestrator)
+  3. Spawn parallel (orchestrator + N implementer)
+  4. Aggregate shared (orchestrator serial)
+  5. Review (reviewer subagent với tool subset Read+Grep)
+  6. Verify (gates)
+  - Final report template với timing + cost + verdict
+
+#### Agent roles
+- **`agents/orchestrator.md`** — new role: mindset, scope, workflow, decision guides (team↔single escalation, retry policy), handoff validation rules, anti-patterns.
+- **`agents/architect.md`** — add "Spec decomposition" section cho parallel-features mode: feature boundary heuristics, plan template, isolation-check.yaml spec.
+
+### Changed
+- `install.sh`: validate `orchestration.mode` + render 5 new placeholders.
+- `AGENTS.md`: task routing + workflows table + agent roles section + file index refresh cho orchestration additions.
+- `TemplateArchitectureRulesTest.kt`: no change (orchestration là meta-pattern, không ảnh hưởng rule check).
+
+### Rationale
+
+User case: build app mới cần 3-5 features từ spec cùng lúc. Single-threaded orchestration = slow wall-clock. Parallel orchestration = 2x speedup wall-clock với 3x token cost — ROI justified cho new product bootstrap.
+
+Key design decision: **coordinator pattern** cho shared files. Subagent không edit shared file direct (race condition risk); emit merge instructions vào handoff doc, orchestrator aggregate serial. Pattern safe cho parallel + preserve architecture compliance.
+
+### Migration from 0.8.0
+
+**Zero manual migration**. Default `orchestration.mode: auto` — harness tự quyết dựa trên task size + feature count. Overlay cũ không có `orchestration` section vẫn work (fallback single/team).
+
+### Usage example
+
+```yaml
+# overlay.yaml
+orchestration:
+  mode: parallel-features           # Explicit mode
+  parallel:
+    max_concurrent: 3
+    isolation: feature-package
+    shared_file_strategy: coordinator
+```
+
+Agent prompt: "Build features login + signup + forgot-password song song từ docs/specs/auth.md". Harness tự decompose → isolation check → spawn 3 Task subagent parallel → aggregate → review → verify.
+
 ## [0.8.0] — 2026-10-14
 
 ### Added — Flexibility pack (A + B + C)

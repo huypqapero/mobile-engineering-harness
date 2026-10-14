@@ -34,6 +34,7 @@ Context project (resolve từ `overlay.yaml`):
 | Performance profile + optimize startup/UI/memory/network | `android-performance` |
 | Review PR, diff, module | `android-code-review` |
 | Viết unit/UI/integration test | `android-testing` |
+| Orchestrate multi-agent / parallel feature build | `android-orchestrator` |
 
 Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùng file.
 
@@ -46,15 +47,17 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 | `workflows/review-pull-request.md` | Review PR / diff theo 10 dimensions với evidence-based findings |
 | `workflows/refactor-module.md` | Preserve behavior refactor (baseline → plan → refactor → compare → verify) |
 | `workflows/release-validation.md` | Release candidate validation (preflight → build → smoke → artifact → regression → sign-off) |
+| `workflows/parallel-feature-development.md` | Build N feature độc lập song song từ spec (decompose → isolation → spawn → aggregate → review → verify) |
 
 ## Agent roles
 
 Trong workflow, agent có thể chuyển mindset qua các role (xem `agents/*.md`):
 
-- `architect.md` — Plan + inspect + decisions
+- `architect.md` — Plan + inspect + decisions + spec decomposition (parallel mode)
 - `implementer.md` — Execute theo plan, minimal scope
 - `reviewer.md` — Independent audit, evidence-based findings
 - `test-engineer.md` — Behavior coverage, deterministic test
+- `orchestrator.md` — Coordinate multi-agent spawn + aggregate (team/parallel-features mode)
 
 Giai đoạn solo (1 agent): 1 agent chuyển mindset qua các role. Giai đoạn multi-agent: subagent dedicated per role.
 
@@ -85,6 +88,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `constitution/concurrency-rules.md` — CORO-001..010
 - `constitution/kotlin-conventions.md` — KOT-001..012
 - `constitution/definition-of-done.md`
+- `knowledge/agent-orchestration/essentials.md` — orchestration modes + Claude Code Task tool patterns
 - `knowledge/architecture/architecture-profiles.md` — profile cmp/kmp/android-only + migration
 - `knowledge/architecture/clean-mvi.md`
 - `knowledge/compose/essentials.md`
@@ -108,6 +112,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `skills/android-performance/SKILL.md`
 - `skills/android-code-review/SKILL.md`
 - `skills/android-testing/SKILL.md`
+- `skills/android-orchestrator/SKILL.md`
 - `blueprints/reference-feature/README.md`
 - `blueprints/network-service/README.md`
 - `blueprints/compose-screen/README.md`
@@ -118,10 +123,12 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `workflows/review-pull-request.md`
 - `workflows/refactor-module.md`
 - `workflows/release-validation.md`
+- `workflows/parallel-feature-development.md`
 - `agents/architect.md`
 - `agents/implementer.md`
 - `agents/reviewer.md`
 - `agents/test-engineer.md`
+- `agents/orchestrator.md`
 - `verification/architecture-tests/TemplateArchitectureRulesTest.kt`
 - `verification/scripts/verify.sh.template`
 - `verification/detekt/README.md` + `detekt-config-template.yml`

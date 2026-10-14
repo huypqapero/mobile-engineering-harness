@@ -577,6 +577,37 @@ enforcement:
   # mode: advisory # Warn only — dùng khi mới migrate hoặc evaluation phase
 ```
 
+### Agent orchestration (v0.9.0+)
+
+4 orchestration modes qua `orchestration.mode`:
+
+| Mode | Khi dùng | Cost | Latency wall-clock |
+|---|---|---|---|
+| `single` | Task < 300 LOC, 1 feature | 1x | 1x |
+| `team` | Cross-module hoặc high-risk | 2-3x | 3x (sequential handoff) |
+| `parallel-features` | **Build 3-5 features từ spec cùng lúc** | 3-5x | **1.2-1.5x** (parallel speedup) |
+| `auto` | Default — harness quyết dựa trên task | Varies | Varies |
+
+```yaml
+orchestration:
+  mode: parallel-features     # Build N feature song song từ spec
+  parallel:
+    max_concurrent: 3
+    isolation: feature-package           # Mỗi subagent 1 feature package, không conflict
+    shared_file_strategy: coordinator    # DI/Nav/resources handled serial
+```
+
+Flow `parallel-features` (xem `workflows/parallel-feature-development.md`):
+
+```
+spec → architect decompose → isolation check → spawn N parallel Task subagents
+     → aggregate shared files (coordinator) → reviewer audit → verify
+```
+
+Claude Code `Task` tool native support. Subagent per role, tool subset limit (ví dụ reviewer chỉ Read+Grep, không Edit → prevent bias).
+
+Chi tiết: `knowledge/agent-orchestration/essentials.md`.
+
 ---
 
 ## Phase roadmap

@@ -120,8 +120,95 @@ Plan complete khi:
 
 Trao plan + rationale → Implementer execute không phải guess.
 
+## Spec decomposition (parallel-features mode)
+
+Khi `orchestration.mode: parallel-features`, architect subagent decompose spec thành N feature plan trước khi orchestrator spawn parallel.
+
+### Actions
+
+1. Read toàn spec file
+2. Identify boundary mỗi feature:
+   - UI screen độc lập?
+   - Business logic self-contained?
+   - Data layer touch repository khác?
+3. For each feature produce `plans/<date>/plans/<feature-name>.md`:
+
+```markdown
+# Plan: <feature name>
+
+## Outcome
+<user-observable outcome>
+
+## Scope
+IN: <list>
+OUT (defer): <list>
+
+## Owned packages
+- presenter/.../feature/<name>/
+- domain/model/<domain>/
+- domain/usecase/<domain>/
+- data/dto/
+- data/mapper/
+- data/remote/
+- data/repository/
+
+## Shared files touched (merge via handoff)
+- NavRoute.kt + AppNavHost.kt (add route)
+- DomainModule.kt (add UseCase binding)
+- DataModule.kt (add Repository binding)
+- PresenterModule.kt (add ViewModel binding)
+- strings.xml (add feature_<name>_* keys)
+- AnalyticsEvent.kt (register events)
+
+## Dependencies
+- cross_feature: [list of feature names] OR none
+
+## File list
+<new/modified files>
+
+## Architecture decisions
+<rationale>
+
+## Risks + mitigations
+<list>
+
+## Verification plan
+<Konsist rules + tests expected>
+```
+
+4. Produce `plans/<date>/isolation-check.yaml`:
+
+```yaml
+features:
+  feature-login:
+    owned_packages: [...]
+    shared_files: [...]
+    cross_dep: []
+  feature-signup:
+    owned_packages: [...]
+    shared_files: [...]
+    cross_dep: []
+# Orchestrator uses this to verify parallel safety.
+```
+
+### Boundary heuristics
+
+**Feature nhất định độc lập** nếu:
+- UI screen riêng (nav route riêng)
+- Business logic không cross reference
+- Resource namespace isolate
+- Analytics event prefix riêng
+
+**Feature phụ thuộc** nếu:
+- Share UseCase (ví dụ `GetSessionUseCase` dùng cho mọi feature auth)
+- Share state (`SessionManager` state across features)
+- Nav A → B hard-coded
+
+Nếu phụ thuộc → declare `cross_dep`, orchestrator sẽ sequential cho chain.
+
 ## Pair với skills
 
 - `android-feature` khi task tạo feature mới
 - `android-mvi` khi design state contract phức tạp
+- `android-orchestrator` khi orchestrate multi-feature parallel
 - `android-sdk-structure` (future) khi extract feature SDK

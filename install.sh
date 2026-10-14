@@ -129,7 +129,18 @@ mapping = {
     "HARNESS_VERSION": g("harness_version", ">=0.1.0"),
     "ARCHITECTURE_PROFILE": g("architecture.profile", "cmp"),
     "ENFORCEMENT_MODE": g("enforcement.mode", "strict"),
+    "ORCHESTRATION_MODE": g("orchestration.mode", "auto"),
+    "ORCHESTRATION_MAX_CONCURRENT": str(g("orchestration.parallel.max_concurrent", 3)),
+    "ORCHESTRATION_ISOLATION": g("orchestration.parallel.isolation", "feature-package"),
+    "ORCHESTRATION_SHARED_STRATEGY": g("orchestration.parallel.shared_file_strategy", "coordinator"),
+    "ORCHESTRATION_HANDOFF_DIR": g("orchestration.handoff.report_dir", "plans/handoff"),
 }
+
+# Validate orchestration.mode
+orch_mode = mapping["ORCHESTRATION_MODE"]
+if orch_mode not in ("single", "team", "parallel-features", "auto"):
+    sys.stderr.write(f"ERROR: orchestration.mode '{orch_mode}' invalid. Options: single | team | parallel-features | auto\n")
+    sys.exit(1)
 
 # Validate architecture.profile
 arch_profile = mapping["ARCHITECTURE_PROFILE"]
@@ -235,6 +246,11 @@ render_file() {
     -e "s|{{DISABLED_RULES_KT}}|$DISABLED_RULES_KT|g" \
     -e "s|{{RULE_OVERRIDE_COUNT}}|$RULE_OVERRIDE_COUNT|g" \
     -e "s|{{DISABLED_RULE_LIST}}|$DISABLED_RULE_LIST|g" \
+    -e "s|{{ORCHESTRATION_MODE}}|$ORCHESTRATION_MODE|g" \
+    -e "s|{{ORCHESTRATION_MAX_CONCURRENT}}|$ORCHESTRATION_MAX_CONCURRENT|g" \
+    -e "s|{{ORCHESTRATION_ISOLATION}}|$ORCHESTRATION_ISOLATION|g" \
+    -e "s|{{ORCHESTRATION_SHARED_STRATEGY}}|$ORCHESTRATION_SHARED_STRATEGY|g" \
+    -e "s|{{ORCHESTRATION_HANDOFF_DIR}}|$ORCHESTRATION_HANDOFF_DIR|g" \
     -e "s|{{HARNESS_VERSION}}|$HARNESS_VERSION|g" \
     "$in" > "$out"
   success "rendered $out"
