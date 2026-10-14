@@ -85,6 +85,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `constitution/concurrency-rules.md` — CORO-001..010
 - `constitution/kotlin-conventions.md` — KOT-001..012
 - `constitution/definition-of-done.md`
+- `knowledge/architecture/architecture-profiles.md` — profile cmp/kmp/android-only + migration
 - `knowledge/architecture/clean-mvi.md`
 - `knowledge/compose/essentials.md`
 - `knowledge/mvi/essentials.md`

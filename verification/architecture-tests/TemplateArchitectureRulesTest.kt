@@ -26,9 +26,36 @@ import kotlin.test.Test
 
 class ArchitectureRulesTest {
 
+    /**
+     * Architecture profile selected in overlay.yaml. Options:
+     *  - cmp          (Compose Multiplatform: shared UI + logic qua expect/actual)
+     *  - kmp          (Kotlin Multiplatform: shared logic only, native UI)
+     *  - android-only (Jetpack Compose Android, single platform)
+     */
+    private val architectureProfile = "{{ARCHITECTURE_PROFILE}}"
+
+    /**
+     * Rule IDs disabled via rule_overrides trong overlay.yaml.
+     * Each disabled rule required rationale ≥ 50 chars (validated at install).
+     */
+    private val disabledRules: Set<String> = setOf({{DISABLED_RULES_KT}})
+
+    private fun skipIfDisabled(ruleId: String): Boolean = ruleId in disabledRules
+
+    private fun appliesToProfile(ruleId: String): Boolean = when (ruleId) {
+        // ARCH-010 (platform SDK boundary) — chỉ áp dụng cho multiplatform
+        "ARCH-010" -> architectureProfile in setOf("cmp", "kmp")
+        // All other rules apply mọi profile
+        else -> true
+    }
+
+    private fun shouldRun(ruleId: String): Boolean =
+        !skipIfDisabled(ruleId) && appliesToProfile(ruleId)
+
     // ARCH-001 — Domain purity
     @Test
     fun `ARCH-001 domain has no platform or android imports`() {
+        if (!shouldRun("ARCH-001")) return
         val forbiddenPrefixes = listOf({{DOMAIN_FORBIDDEN_PREFIXES_KT}})
         Konsist
             .scopeFromModule("{{MODULE_DOMAIN}}")
@@ -43,6 +70,7 @@ class ArchitectureRulesTest {
     // ARCH-002 — Presenter không import data
     @Test
     fun `ARCH-002 presenter does not import data module`() {
+        if (!shouldRun("ARCH-002")) return
         Konsist
             .scopeFromModule("{{MODULE_PRESENTER}}")
             .files
@@ -54,6 +82,7 @@ class ArchitectureRulesTest {
     // ARCH-003 — ViewModel không depend trực tiếp Repository impl
     @Test
     fun `ARCH-003 viewmodel does not depend on repository impl`() {
+        if (!shouldRun("ARCH-003")) return
         Konsist
             .scopeFromModule("{{MODULE_PRESENTER}}")
             .classes()
@@ -67,6 +96,7 @@ class ArchitectureRulesTest {
     // ARCH-005 — Mapper là object
     @Test
     fun `ARCH-005 mappers are objects`() {
+        if (!shouldRun("ARCH-005")) return
         Konsist
             .scopeFromModule("{{MODULE_DATA}}")
             .classes(includeNested = false)
@@ -77,6 +107,7 @@ class ArchitectureRulesTest {
     // ARCH-007 — ViewModel extends {{MVI_BASE_CLASS}}
     @Test
     fun `ARCH-007 viewmodel extends base viewmodel`() {
+        if (!shouldRun("ARCH-007")) return
         Konsist
             .scopeFromModule("{{MODULE_PRESENTER}}")
             .classes()
@@ -90,6 +121,7 @@ class ArchitectureRulesTest {
     // ARCH-010 — Platform SDK chỉ ở data androidMain / iosMain
     @Test
     fun `ARCH-010 platform SDK restricted to platform source sets`() {
+        if (!shouldRun("ARCH-010")) return
         val platformPrefixes = listOf({{PLATFORM_SDK_PREFIXES_KT}})
         Konsist
             .scopeFromProject()
@@ -110,6 +142,7 @@ class ArchitectureRulesTest {
     // ARCH-013 — Mapper không dùng !! (non-null assertion)
     @Test
     fun `ARCH-013 mappers avoid non-null assertion`() {
+        if (!shouldRun("ARCH-013")) return
         Konsist
             .scopeFromModule("{{MODULE_DATA}}")
             .files
@@ -120,6 +153,7 @@ class ArchitectureRulesTest {
     // CORO-001 — GlobalScope cấm toàn project
     @Test
     fun `CORO-001 no global scope anywhere`() {
+        if (!shouldRun("CORO-001")) return
         Konsist
             .scopeFromProject()
             .files
@@ -133,6 +167,7 @@ class ArchitectureRulesTest {
     // MOD-002 — Public API không expose ViewModel type
     @Test
     fun `MOD-002 feature api files do not expose viewmodel`() {
+        if (!shouldRun("MOD-002")) return
         Konsist
             .scopeFromModule("{{MODULE_PRESENTER}}")
             .files

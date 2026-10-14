@@ -2,6 +2,10 @@
 # verify.sh — run all required quality gates for {{PRODUCT_NAME}}.
 # RENDERED FROM TEMPLATE. Do not edit the upstream template; rerun install.sh.
 #
+# Architecture profile: {{ARCHITECTURE_PROFILE}}
+# Enforcement mode:     {{ENFORCEMENT_MODE}}  (strict = fail CI; advisory = warn only)
+# Rule overrides:       {{RULE_OVERRIDE_COUNT}} (disabled: {{DISABLED_RULE_LIST}})
+#
 # Usage: ./verify.sh [module]
 #   module: optional, narrow run ({{MODULE_DOMAIN}}|{{MODULE_DATA}}|{{MODULE_PRESENTER}}|{{MODULE_APP}}). Default = all.
 
@@ -88,9 +92,17 @@ echo -e " ${C_RED}FAIL: ${FAIL}${C_RESET}"
 echo -e " ${C_YELLOW}SKIP: ${SKIP}${C_RESET}"
 echo ""
 
+readonly ENFORCEMENT_MODE="{{ENFORCEMENT_MODE}}"
+
 if [ "${FAIL}" -gt 0 ]; then
-  echo -e "${C_RED}❌ Verification failed. Fix blockers before claiming DONE.${C_RESET}"
-  exit 1
+  if [ "${ENFORCEMENT_MODE}" = "advisory" ]; then
+    echo -e "${C_YELLOW}⚠ Verification failed with ${FAIL} issue(s) — advisory mode: NOT failing CI.${C_RESET}"
+    echo -e "${C_YELLOW}  Switch 'enforcement.mode: strict' trong overlay.yaml khi ready enforce.${C_RESET}"
+    exit 0
+  else
+    echo -e "${C_RED}❌ Verification failed. Fix blockers before claiming DONE.${C_RESET}"
+    exit 1
+  fi
 fi
 
 echo -e "${C_GREEN}✅ Required gates passed.${C_RESET}"

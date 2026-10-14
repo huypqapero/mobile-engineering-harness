@@ -127,7 +127,53 @@ mapping = {
     "TARGETS_LIST": targets_list,
     "PROFILE": g("profile", "app"),
     "HARNESS_VERSION": g("harness_version", ">=0.1.0"),
+    "ARCHITECTURE_PROFILE": g("architecture.profile", "cmp"),
+    "ENFORCEMENT_MODE": g("enforcement.mode", "strict"),
 }
+
+# Validate architecture.profile
+arch_profile = mapping["ARCHITECTURE_PROFILE"]
+if arch_profile not in ("cmp", "kmp", "android-only"):
+    sys.stderr.write(f"ERROR: architecture.profile '{arch_profile}' invalid. Options: cmp | kmp | android-only\n")
+    sys.exit(1)
+
+# Validate enforcement.mode
+enforce_mode = mapping["ENFORCEMENT_MODE"]
+if enforce_mode not in ("strict", "advisory"):
+    sys.stderr.write(f"ERROR: enforcement.mode '{enforce_mode}' invalid. Options: strict | advisory\n")
+    sys.exit(1)
+
+# Validate rule_overrides: each must have rationale ≥ 50 chars
+rule_overrides = g("rule_overrides", []) or []
+disabled_rules = []
+downgraded_rules = {}
+if isinstance(rule_overrides, list):
+    for i, override in enumerate(rule_overrides):
+        if not isinstance(override, dict):
+            continue
+        rule_id = override.get("rule", "")
+        rationale = override.get("rationale", "")
+        if not rule_id:
+            sys.stderr.write(f"ERROR: rule_overrides[{i}] missing 'rule' field\n")
+            sys.exit(1)
+        if len(rationale.strip()) < 50:
+            sys.stderr.write(f"ERROR: rule_overrides[{i}] (rule={rule_id}): rationale must be ≥ 50 characters. Current: {len(rationale.strip())} chars.\n")
+            sys.exit(1)
+        if override.get("disabled"):
+            disabled_rules.append(rule_id)
+        severity = override.get("severity")
+        if severity and severity in ("SHOULD", "MAY"):
+            downgraded_rules[rule_id] = severity
+
+# Expose disabled rules for Konsist test template (set of quoted rule IDs)
+if disabled_rules:
+    mapping["DISABLED_RULES_KT"] = ", ".join(f'"{r}"' for r in disabled_rules)
+else:
+    mapping["DISABLED_RULES_KT"] = ""
+
+# Summary override info for manifest / README
+mapping["RULE_OVERRIDE_COUNT"] = str(len(rule_overrides) if isinstance(rule_overrides, list) else 0)
+mapping["DISABLED_RULE_LIST"] = ", ".join(disabled_rules) if disabled_rules else "(none)"
 
 platform_sdks = g("platform_sdks", [])
 if isinstance(platform_sdks, list) and platform_sdks:
@@ -184,6 +230,11 @@ render_file() {
     -e "s|{{PLATFORM_SDK_PREFIXES_KT}}|$PLATFORM_SDK_PREFIXES_KT|g" \
     -e "s|{{DOMAIN_FORBIDDEN_PREFIXES_KT}}|$DOMAIN_FORBIDDEN_PREFIXES_KT|g" \
     -e "s|{{PROFILE}}|$PROFILE|g" \
+    -e "s|{{ARCHITECTURE_PROFILE}}|$ARCHITECTURE_PROFILE|g" \
+    -e "s|{{ENFORCEMENT_MODE}}|$ENFORCEMENT_MODE|g" \
+    -e "s|{{DISABLED_RULES_KT}}|$DISABLED_RULES_KT|g" \
+    -e "s|{{RULE_OVERRIDE_COUNT}}|$RULE_OVERRIDE_COUNT|g" \
+    -e "s|{{DISABLED_RULE_LIST}}|$DISABLED_RULE_LIST|g" \
     -e "s|{{HARNESS_VERSION}}|$HARNESS_VERSION|g" \
     "$in" > "$out"
   success "rendered $out"
@@ -379,7 +430,9 @@ cmd_install() {
 
   log "Install into $overlay_dir"
 
-  eval "$(read_overlay_vars "$overlay_dir")"
+  local vars_output
+  vars_output=$(read_overlay_vars "$overlay_dir") || exit 1
+  eval "$vars_output"
 
   echo "  Product:  $PRODUCT_NAME ($PACKAGE_ROOT)"
   echo "  Profile:  $PROFILE"

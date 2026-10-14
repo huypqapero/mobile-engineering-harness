@@ -4,6 +4,65 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.8.0] — 2026-10-14
+
+### Added — Flexibility pack (A + B + C)
+
+#### A. Architecture profiles
+
+- **`overlay.yaml` field `architecture.profile`** với 3 options:
+  - `cmp` (Compose Multiplatform — default) — shared UI + logic qua expect/actual
+  - `kmp` (Kotlin Multiplatform) — shared logic, native UI (SwiftUI iOS + Compose Android)
+  - `android-only` (Jetpack Compose Android) — single platform
+- **`knowledge/architecture/architecture-profiles.md`** — profile comparison, module layouts, migration paths, trade-offs.
+- **Konsist test template** profile-aware: rule `ARCH-010` (platform SDK boundary) auto-skip khi `android-only` profile.
+
+#### B. Rule overrides với rationale requirement
+
+- **`overlay.yaml` field `rule_overrides`** — list rule override entries:
+  ```yaml
+  rule_overrides:
+    - rule: ARCH-008
+      severity: SHOULD        # downgrade từ MUST
+      rationale: "..."         # REQUIRED ≥ 50 chars
+    - rule: ARCH-007
+      disabled: true
+      rationale: "..."
+  ```
+- **Install-time validation**: `install.sh` reject overlay với rationale < 50 chars.
+- **Konsist test** respect overrides via `disabledRules` set rendered từ overlay.
+- Governance: human review rationale 1-2 lần đầu, AI trust sau (per user instruction).
+
+#### C. Enforcement mode (strict / advisory)
+
+- **`overlay.yaml` field `enforcement.mode`** — `strict` (default, fail CI) hoặc `advisory` (warn only).
+- **`verify.sh`** respect mode: advisory → exit 0 với warning khi violation, không block CI.
+- Use case advisory: new product migrate, evaluation phase, không ready enforce ngay.
+
+### Changed
+
+- `overlay.schema.yaml`: thêm `architecture.*`, `rule_overrides`, `enforcement.mode` sections với inline guidance.
+- `install.sh`: validate 3 fields mới + render Konsist test + verify.sh với placeholders tương ứng. Propagate exit code từ Python validation.
+- `TemplateArchitectureRulesTest.kt`: thêm `architectureProfile`, `disabledRules`, `appliesToProfile()`, `shouldRun()` helpers. Mỗi test method guard bằng `shouldRun("RULE-ID")`.
+- `verify.sh.template`: thêm header show profile + enforcement mode + override count; conditional exit theo mode.
+- `AGENTS.md`: file index thêm `architecture-profiles.md`.
+- AudioBookApp overlay: thêm `architecture.profile: cmp` + `enforcement.mode: strict`.
+
+### Rationale
+
+Harness v0.7 CMP-centric nhưng rigid cho use case khác school (KMP native UI, Android-only). Flexibility pack cho phép:
+1. Multi-profile support (3 archaeology schools) via `architecture.profile`
+2. Rule deviation có governance (rationale required ≥ 50 chars)
+3. Phased adoption (advisory mode cho migration period)
+
+Flexibility hẹp + strict governance (rationale) = balance giữa rigid (safety) + freestyle (over-flexible defeat purpose).
+
+### Migration from 0.7.0
+
+**Zero manual migration** cho CMP products — default `architecture.profile: cmp` preserve current behavior. Overlay cũ không có field vẫn work.
+
+**Breaking** (minor): overlay có `rule_overrides` nhưng rationale < 50 chars → install fail. Fix: expand rationale hoặc remove override.
+
 ## [0.7.0] — 2026-10-14
 
 ### Added — Multi-stack data layer support

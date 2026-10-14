@@ -546,6 +546,37 @@ Decision guides chi tiết:
 
 Agent sử dụng stack value để chọn snippet trong knowledge/skills (ví dụ `stack.network: retrofit` → Retrofit code, không Ktor).
 
+### Architecture profile (v0.8.0+)
+
+Pick 1 trong 3 profiles qua `architecture.profile`:
+
+| Profile | Target | ARCH-010 (platform SDK) |
+|---|---|---|
+| `cmp` | Compose Multiplatform (shared UI + logic) | **MUST enforce** |
+| `kmp` | Kotlin Multiplatform (shared logic, native UI) | **MUST enforce** |
+| `android-only` | Jetpack Compose Android | **SKIP** (relaxed) |
+
+Chi tiết + migration guide: `.harness-overlay/upstream/knowledge/architecture/architecture-profiles.md`.
+
+### Rule overrides (v0.8.0+)
+
+Overlay có thể override rule MUST qua `rule_overrides` nhưng **rationale ≥ 50 chars bắt buộc**. Install validate — thiếu rationale → fail.
+
+```yaml
+rule_overrides:
+  - rule: ARCH-008
+    severity: SHOULD              # Downgrade từ MUST
+    rationale: "Settings app simple không có remote data, 5-state coverage over-strict."
+```
+
+### Enforcement mode (v0.8.0+)
+
+```yaml
+enforcement:
+  mode: strict     # Default: fail CI khi violation
+  # mode: advisory # Warn only — dùng khi mới migrate hoặc evaluation phase
+```
+
 ---
 
 ## Phase roadmap

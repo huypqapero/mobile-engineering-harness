@@ -68,6 +68,35 @@ reference_blueprint:
 profile: app                          # Options: app | sdk-library | multiplatform-library
                                       # 'sdk-library' bật MOD-001..003 lên MUST + binary-compat gate.
 
+architecture:
+  profile: cmp                        # REQUIRED. Target architecture school. Options:
+                                      #   - cmp          (Compose Multiplatform: shared UI + logic qua expect/actual)
+                                      #   - kmp          (Kotlin Multiplatform: shared logic, native UI SwiftUI/Compose Android)
+                                      #   - android-only (Jetpack Compose Android, single platform)
+                                      # Profile tune rule applicability (ARCH-010 platform SDK boundary, 5-states coverage, etc.)
+
+rule_overrides:                       # Optional. Override severity hoặc disable rule MUST.
+                                      # Mỗi override PHẢI có rationale ≥ 50 ký tự giải thích tại sao.
+                                      # Install validate; thiếu rationale → fail install.
+  # Examples (uncomment để dùng):
+  #
+  # - rule: ARCH-008                  # 5 UI states coverage
+  #   severity: SHOULD                # Downgrade từ MUST → SHOULD
+  #   rationale: "Settings screen app không có remote data; 5-state coverage over-strict cho context này."
+  #
+  # - rule: ARCH-007                  # ViewModel extends BaseViewModel
+  #   disabled: true
+  #   rationale: "Team dùng pure Compose state hoisting pattern, không MVI, nên BaseViewModel không áp dụng."
+  #
+  # - rule: MOD-001                   # Future-SDK Discipline
+  #   severity: MAY
+  #   rationale: "Product chưa có plan extract feature SDK, bật discipline sớm là over-engineering."
+
+enforcement:
+  mode: strict                        # Options:
+                                      #   - strict   (fail CI khi violation; default, khuyến nghị cho production)
+                                      #   - advisory (warn only, không fail CI; dùng khi mới migrate hoặc evaluation phase)
+
 detekt:
   enabled: true
   baseline_file: "detekt-baseline.xml"
