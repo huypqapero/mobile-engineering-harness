@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# Mobile Engineering Harness CLI
+# Mobile Engineering Harness CLI (mehcli)
 #
 # Subcommands:
-#   init      --project <path>              Scaffold .harness-overlay/ with schema template
-#   install   --overlay <path>              Render templates + write manifest
-#   update    --overlay <path>              Alias for install (idempotent re-render)
-#   uninstall --overlay <path> [--purge]    Remove rendered files; --purge nukes entire overlay
-#   help                                    Show this message
+#   init         --project <path>              Scaffold .harness-overlay/ with schema template
+#   install      --overlay <path>              Render templates + write manifest
+#   update       --overlay <path>              Alias for install (idempotent re-render)
+#   uninstall    --overlay <path> [--purge]    Remove rendered files; --purge nukes entire overlay
+#   self-update                                Pull latest upstream in installed location
+#   version                                    Print installed harness version
+#   help                                       Show this message
 #
 # Common flags (all subcommands):
 #   --dry-run     Print actions without executing
@@ -502,6 +504,55 @@ cmd_uninstall() {
   log "Konsist test copied into source (if any) must be removed manually."
 }
 
+cmd_self_update() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -h|--help) usage 0 ;;
+      *) err "Unknown arg for self-update: $1"; usage 1 ;;
+    esac
+  done
+
+  if [ ! -d "$UPSTREAM_DIR/.git" ]; then
+    err "Not a git clone — self-update requires upstream to be a git repo."
+    err "Install via bootstrap.sh: curl -fsSL https://raw.githubusercontent.com/huypqapero/mobile-engineering-harness/main/bootstrap.sh | bash"
+    exit 1
+  fi
+
+  log "Self-update in $UPSTREAM_DIR"
+  local before
+  before=$(git -C "$UPSTREAM_DIR" rev-parse --short HEAD)
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    dry "git -C $UPSTREAM_DIR fetch --tags"
+    dry "git -C $UPSTREAM_DIR pull --ff-only"
+    return 0
+  fi
+
+  git -C "$UPSTREAM_DIR" fetch --tags --quiet
+  git -C "$UPSTREAM_DIR" pull --ff-only --quiet
+
+  local after
+  after=$(git -C "$UPSTREAM_DIR" rev-parse --short HEAD)
+
+  if [ "$before" = "$after" ]; then
+    success "Already up to date ($before)."
+  else
+    success "Updated: $before → $after"
+    log "Run: $SCRIPT_NAME update --overlay <path> to re-render overlays."
+  fi
+}
+
+cmd_version() {
+  local commit="unknown"
+  local tag="untagged"
+  if [ -d "$UPSTREAM_DIR/.git" ]; then
+    commit=$(git -C "$UPSTREAM_DIR" rev-parse --short HEAD 2>/dev/null || echo unknown)
+    tag=$(git -C "$UPSTREAM_DIR" describe --tags --always 2>/dev/null || echo untagged)
+  fi
+  echo "mehcli $tag ($commit)"
+  echo "upstream: $UPSTREAM_DIR"
+}
+
 cmd_help() { usage 0; }
 
 # -----------------------------------------------------------------------------
@@ -523,10 +574,12 @@ while [ $# -gt 0 ]; do
 done
 
 case "$SUBCMD" in
-  init)      cmd_init      "${SUB_ARGS[@]:-}" ;;
-  install)   cmd_install   "${SUB_ARGS[@]:-}" ;;
-  update)    cmd_update    "${SUB_ARGS[@]:-}" ;;
-  uninstall) cmd_uninstall "${SUB_ARGS[@]:-}" ;;
+  init)        cmd_init        "${SUB_ARGS[@]:-}" ;;
+  install)     cmd_install     "${SUB_ARGS[@]:-}" ;;
+  update)      cmd_update      "${SUB_ARGS[@]:-}" ;;
+  uninstall)   cmd_uninstall   "${SUB_ARGS[@]:-}" ;;
+  self-update) cmd_self_update "${SUB_ARGS[@]:-}" ;;
+  version)     cmd_version ;;
   help|-h|--help) cmd_help ;;
   *) err "Unknown subcommand: $SUBCMD"; usage 1 ;;
 esac

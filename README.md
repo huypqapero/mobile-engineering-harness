@@ -1,8 +1,39 @@
-# Android Engineering Harness (Upstream)
+# Mobile Engineering Harness (Upstream)
 
-Harness chung cho các sản phẩm Android/Compose Multiplatform theo concept **Clean Architecture + SOLID + MVI + Compose + Coroutines**.
+Harness chung cho các sản phẩm Android / Compose Multiplatform theo concept **Clean Architecture + SOLID + MVI + Compose + Coroutines**.
 
-Harness này là **upstream generic**. Mỗi sản phẩm consume qua `.harness-overlay/` của riêng nó, parameterize bằng `overlay.yaml`.
+Upstream generic; mỗi sản phẩm consume qua `.harness-overlay/` riêng, parameterize bằng `overlay.yaml`.
+
+## Install (one-liner)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/huypqapero/mobile-engineering-harness/main/bootstrap.sh | bash
+```
+
+Script tự clone upstream vào `~/.mobile-engineering-harness/` và symlink CLI thành `mehcli` ở `~/.local/bin/`.
+
+Sau khi install (lần đầu add `~/.local/bin` vào PATH nếu chưa có):
+
+```bash
+mehcli help
+mehcli init --project /path/to/your/android-project
+mehcli install --overlay /path/to/your/android-project/.harness-overlay
+mehcli self-update                      # pull latest từ GitHub
+```
+
+**One-liner install + chạy luôn**:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/huypqapero/mobile-engineering-harness/main/bootstrap.sh | bash -s init --project .
+```
+
+### Env vars cho bootstrap (optional)
+
+| Var | Default |
+|---|---|
+| `MEH_INSTALL_DIR` | `$HOME/.mobile-engineering-harness` |
+| `MEH_BIN_DIR` | `$HOME/.local/bin` |
+| `MEH_REF` | `main` (hoặc specify tag như `v0.3.0`) |
 
 ## Mục tiêu
 
@@ -48,15 +79,19 @@ mobile-engineering-harness/
 
 ## CLI usage
 
-Script `install.sh` có 4 subcommands + flags chung (`--dry-run`, `--yes`):
+Sau khi install, `mehcli` có 6 subcommands + flags chung (`--dry-run`, `--yes`):
 
 ```bash
-./install.sh init      --project <path>              # scaffold overlay + schema template
-./install.sh install   --overlay <path>              # render templates + write manifest
-./install.sh update    --overlay <path>              # idempotent re-render (alias install)
-./install.sh uninstall --overlay <path> [--purge]    # remove rendered; --purge xóa toàn bộ overlay
-./install.sh help
+mehcli init         --project <path>              # scaffold overlay + schema template
+mehcli install      --overlay <path>              # render templates + write manifest
+mehcli update       --overlay <path>              # idempotent re-render (alias install)
+mehcli uninstall    --overlay <path> [--purge]    # remove rendered; --purge xóa toàn bộ overlay
+mehcli self-update                                # git pull upstream
+mehcli version                                    # show installed version
+mehcli help
 ```
+
+Nếu không install qua `bootstrap.sh`, dùng path đầy đủ `./install.sh <subcommand>` cũng ok.
 
 ### Quick start cho product mới (3 lệnh)
 

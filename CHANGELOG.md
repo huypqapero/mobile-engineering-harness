@@ -4,6 +4,25 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.3.0] — 2026-10-14
+
+### Added
+
+- **`bootstrap.sh`** — one-liner curl-pipe installer:
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/huypqapero/mobile-engineering-harness/main/bootstrap.sh | bash
+  ```
+  Clones upstream vào `~/.mobile-engineering-harness/` + symlinks CLI thành `mehcli` ở `~/.local/bin/`.
+  Supports: idempotent re-run, PATH check, pass-through subcommand (`bash -s init --project .`).
+- **`self-update` subcommand**: `mehcli self-update` git pulls latest từ installed location.
+- **`version` subcommand**: `mehcli version` prints tag + commit + upstream path.
+- **Env vars** cho bootstrap: `MEH_INSTALL_DIR`, `MEH_BIN_DIR`, `MEH_REF` (pin specific tag).
+
+### Changed
+
+- README quickstart dùng one-liner install thay vì manual clone + symlink.
+- Install script branding thành `mehcli` (giữ filename `install.sh` cho backward compat).
+
 ## [0.2.0] — 2026-10-14
 
 ### Added
