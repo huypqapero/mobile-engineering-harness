@@ -61,7 +61,7 @@ hành vi giữ nguyên.
    REST là fallback có tài liệu. Chi tiết: `plans/reports/researcher-261015-0954-figma-confluence-access.md`.
 8. Ảnh frame: `spec_sources.figma.export_images` mặc định `true`, chỉ export frame được tham chiếu trong spec,
    scale 1x → `docs/specs/<feature>/design/<frame-slug>.png`. Validation `install.sh` chạy lúc install/update.
-9. Version bump `0.12.0` (thêm skill + block overlay optional, không breaking).
+9. Version bump `0.13.0` (main đã dùng 0.12.0 cho Harness Guardian) (thêm skill + block overlay optional, không breaking).
 
 ## Non-goals
 

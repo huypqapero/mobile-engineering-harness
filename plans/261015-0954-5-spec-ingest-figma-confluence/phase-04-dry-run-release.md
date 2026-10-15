@@ -13,8 +13,8 @@
   (D) subagent mới đóng vai orchestrator Step 0/2/4 + android-feature Step 1 với spec (A sau C) và (B) → báo "không cần sửa tay" cho single/team/parallel-features.
 
 ### Task 4.2 — CHANGELOG + README
-- Target: `CHANGELOG.md` (entry `[0.12.0] — 2026-10-15` trên 0.11.0), `README.md` (mục `### Spec ingest từ Confluence + Figma (v0.12.0+)` sau `### Agent orchestration`; 1 dòng v0.12.0 trong Release history).
-- Verify: `grep -q "\[0.12.0\]" CHANGELOG.md && grep -q "v0.12.0" README.md && echo ok` in `ok`.
+- Target: `CHANGELOG.md` (entry `[0.13.0] — 2026-10-15` trên 0.11.0), `README.md` (mục `### Spec ingest từ Confluence + Figma (v0.13.0+)` sau `### Agent orchestration`; 1 dòng v0.13.0 trong Release history).
+- Verify: `grep -q "\[0.13.0\]" CHANGELOG.md && grep -q "v0.13.0" README.md && echo ok` in `ok`.
 
 ## Failure Protocol
 If any Verify step does not meet its stated pass condition, STOP this phase.

@@ -608,7 +608,7 @@ Claude Code `Task` tool native support. Subagent per role, tool subset limit (v�
 
 Chi tiết: `knowledge/agent-orchestration/essentials.md`.
 
-### Spec ingest từ Confluence + Figma (v0.12.0+)
+### Spec ingest từ Confluence + Figma (v0.13.0+)
 
 Bước tuỳ chọn để sinh `docs/specs/<feature>.md` từ một Confluence page và Figma file/frame thay vì export tay. Ingest chỉ chạy khi nguồn được bật trong overlay **và** user đưa link. Thiếu một trong hai thì hành vi giữ nguyên như cũ.
 
@@ -657,7 +657,7 @@ Mỗi version một dòng. Chi tiết đầy đủ xem [`CHANGELOG.md`](./CHANGE
 - **v0.10.0**: Factory pack gồm task YAML contract, build 4 level, auto-fix có fingerprint, phân loại lỗi, chọn model theo tier
 - **v0.10.1 và v0.10.2**: MIT LICENSE và `CONTRIBUTING.md`
 - **v0.11.0**: ARCH-004 mới, Repository không kế thừa `BaseRepository`, API trả `ApiResult` qua CallAdapter (Retrofit) / Converter (Ktorfit) / `safeRequest` (Ktor)
-- **v0.12.0**: skill `android-spec-ingest` tuỳ chọn sinh `docs/specs/<feature>.md` từ Confluence + Figma (MCP hoặc REST + env), block `spec_sources`, blueprint `feature-spec`
+- **v0.13.0**: skill `android-spec-ingest` tuỳ chọn sinh `docs/specs/<feature>.md` từ Confluence + Figma (MCP hoặc REST + env), block `spec_sources`, blueprint `feature-spec`
 
 **Sắp tới — v1.0.0**: Production proof, có từ 3 product trở lên dùng trong production và đo được ROI.
 
