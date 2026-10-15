@@ -4,6 +4,19 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [Unreleased]
+
+### Added
+- **`skills/android-sdk-structure/SKILL.md`** — procedure tách feature nội bộ thành SDK/library dùng lại cho nhiều sản phẩm: pre-check MOD-001..003, module layout (`explicitApi()`, namespace, resource prefix, DI), public API trong `<Feature>Api.kt` (route + config + `Result`), tuỳ biến UI (theme token, slot composable, resource/text override), tuỳ biến luồng (host giữ navigation, bật/tắt step, chèn/thay step qua `HostStep` + `StepScope`), semver + binary-compat + deprecation, checklist verification + Konsist MOD-002 trên module mới, anti-patterns.
+
+### Changed
+- `skills/android-refactor/SKILL.md §P-07` và `agents/architect.md`: trỏ sang `android-sdk-structure`, bỏ nhãn "future".
+- `workflows/feature-development.md` và `skills/android-feature/SKILL.md`: "Platform SDK integration (ExoPlayer, AVPlayer)" giờ trỏ ARCH-010 + `knowledge/patterns/common-patterns.md §Adapter` thay vì `android-sdk-structure` (skill này dùng để tách feature, không phải tích hợp SDK bên thứ ba).
+- `AGENTS.md`: thêm `android-sdk-structure` vào task routing + file index.
+
+### Migration
+Không cần. Không đổi rule trong `constitution/`; MOD-001..003 giữ nguyên wording và severity.
+
 ## [0.12.0] — 2026-10-15
 
 ### Added — Harness Guardian (meta-agent)

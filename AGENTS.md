@@ -30,6 +30,7 @@ Context project (resolve từ `overlay.yaml`):
 | API integration, Ktor service, DTO + mapper | `android-network` |
 | Local DB SQLDelight, schema, migration, offline-first | `android-database` |
 | Refactor module preserve-behavior | `android-refactor` |
+| Tách feature thành SDK/library dùng lại, tuỳ biến UI + luồng | `android-sdk-structure` |
 | Debug crash / ANR / memory leak / flaky | `android-debug` |
 | Performance profile + optimize startup/UI/memory/network | `android-performance` |
 | Review PR, diff, module | `android-code-review` |
@@ -115,6 +116,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `skills/android-network/SKILL.md`
 - `skills/android-database/SKILL.md`
 - `skills/android-refactor/SKILL.md`
+- `skills/android-sdk-structure/SKILL.md`
 - `skills/android-debug/SKILL.md`
 - `skills/android-performance/SKILL.md`
 - `skills/android-code-review/SKILL.md`
