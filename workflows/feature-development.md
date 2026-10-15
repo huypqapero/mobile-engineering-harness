@@ -5,13 +5,16 @@ Orchestrate việc implement feature end-to-end. Trạng thái máy, không chec
 ## Entry conditions
 
 - Spec file có tại `docs/specs/<feature>.md` HOẶC requirement rõ ràng từ user
+- User đưa link Confluence/Figma và `spec_sources` bật cho nguồn đó → chạy `skills/android-spec-ingest` trước để sinh
+  spec; không link hoặc chưa bật → giữ nguyên điều kiện trên
 - Branch feature đã checkout
 - Open items của spec không block implementation hiện tại
 
 ## Input artifacts
 
-- Spec file (bắt buộc)
-- Design mock / frame reference (nếu có)
+- Spec file (bắt buộc) — viết tay hoặc sinh bởi `android-spec-ingest`, format `blueprints/feature-spec/template.md`;
+  spec có `generated_by` và `status: draft` → stop và hỏi user (Stage 1 blocker)
+- Design mock / frame reference (nếu có) — ảnh frame ingest ở `docs/specs/<feature>/design/`
 - 14 rules project `CLAUDE.md`
 - Constitution `.harness/constitution/`
 - Blueprint `.harness/blueprints/complete-mvi-feature/`

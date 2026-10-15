@@ -22,7 +22,8 @@ Phân tích task, scope boundary, chọn pattern + layer, identify trade-offs, k
 
 ## Inputs
 
-- Task requirement + spec file
+- Task requirement + spec file. Spec theo `blueprints/feature-spec` (viết tay hoặc `android-spec-ingest`):
+  `generated_by` + `status: draft` → dừng hỏi user; OQ `Blocking: no` → mang `Mặc định nếu chưa trả lời` vào plan làm assumption
 - Project root `CLAUDE.md` + 14 rules
 - `constitution/` (toàn bộ)
 - Overlay `product-extensions.md` nếu có
@@ -67,6 +68,10 @@ Phân tích task, scope boundary, chọn pattern + layer, identify trade-offs, k
 
 ## Open questions
 - <list, ask user before Implement stage>
+- <OQ non-blocking từ spec: ID + mặc định dùng làm assumption>
+
+## Sources
+- <chép từ `## Sources` của spec nếu có>
 ```
 
 ## Checklist khi plan
@@ -126,7 +131,8 @@ Khi `orchestration.mode: parallel-features`, architect subagent decompose spec t
 
 ### Actions
 
-1. Read toàn spec file
+1. Read toàn spec file. Spec theo `blueprints/feature-spec` (viết tay hoặc sinh bởi `android-spec-ingest`):
+   chép các dòng `## Sources` và các dòng `## Open questions` liên quan vào feature plan tương ứng
 2. Identify boundary mỗi feature:
    - UI screen độc lập?
    - Business logic self-contained?
@@ -174,6 +180,9 @@ OUT (defer): <list>
 
 ## Verification plan
 <Konsist rules + tests expected>
+
+## Open questions + Sources
+<OQ và Sources liên quan từ spec, OQ id dạng <feature>#OQ-n>
 ```
 
 4. Produce `plans/<date>/isolation-check.yaml`:

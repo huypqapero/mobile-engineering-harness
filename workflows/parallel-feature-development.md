@@ -10,10 +10,12 @@ Orchestrate build **N feature độc lập song song** từ spec. Dùng khi proj
 - `orchestration.mode: parallel-features | auto` trong overlay.yaml
 - Claude Code (hoặc runtime support Task tool spawn)
 - Budget cho 2-4x cost per feature
+- Spec từ link Confluence/Figma: `android-orchestrator` Step 0 chạy `android-spec-ingest` trước; spec phải
+  `status: ready`. Không link hoặc `spec_sources` chưa bật → giữ nguyên điều kiện trên
 
 ## Input artifacts
 
-- Spec file(s) trong `docs/specs/` hoặc user prompt
+- Spec file(s) trong `docs/specs/` hoặc user prompt (spec có thể sinh bởi `android-spec-ingest`)
 - Overlay config
 - Access to `.harness-overlay/upstream/` skills + agents
 

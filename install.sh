@@ -155,6 +155,71 @@ if enforce_mode not in ("strict", "advisory"):
     sys.stderr.write(f"ERROR: enforcement.mode '{enforce_mode}' invalid. Options: strict | advisory\n")
     sys.exit(1)
 
+# Validate spec_sources: shape, access enum, no credential stored in overlay
+from urllib.parse import urlparse
+spec_sources = g("spec_sources", {}) or {}
+if not isinstance(spec_sources, dict):
+    sys.stderr.write("ERROR: spec_sources must be a mapping\n")
+    sys.exit(1)
+credential_substrings = ("token", "password", "passwd", "secret", "apikey", "api_key", "credential", "private_key")
+credential_segments = ("pat", "pwd")
+credential_value_prefixes = ("figd_", "ATATT", "ATCTT")
+
+def looks_like_credential_key(key):
+    norm = str(key).lower().replace("-", "_")
+    if any(m in norm for m in credential_substrings):
+        return True
+    return any(seg in credential_segments for seg in norm.split("_"))
+
+def looks_like_credential_value(value):
+    if not isinstance(value, str):
+        return False
+    v = value.strip()
+    if v.startswith(credential_value_prefixes):
+        return True
+    try:
+        return bool(urlparse(v).password)
+    except ValueError:
+        return False
+
+def check_no_credential(node, path):
+    if isinstance(node, dict):
+        for key, value in node.items():
+            key_path = f"{path}.{key}"
+            if looks_like_credential_key(key) or looks_like_credential_value(value):
+                sys.stderr.write(f"ERROR: {key_path} looks like a credential. Do not store credentials in overlay.yaml; use env vars (FIGMA_ACCESS_TOKEN, CONFLUENCE_USERNAME + CONFLUENCE_API_TOKEN, CONFLUENCE_PERSONAL_TOKEN) or an MCP server.\n")
+                sys.exit(1)
+            check_no_credential(value, key_path)
+    elif isinstance(node, list):
+        for i, item in enumerate(node):
+            check_no_credential(item, f"{path}[{i}]")
+
+check_no_credential(spec_sources, "spec_sources")
+known_source_keys = {
+    "confluence": {"enabled", "access", "base_url", "space"},
+    "figma": {"enabled", "access", "export_images"},
+}
+for source in spec_sources:
+    if source not in known_source_keys:
+        sys.stderr.write(f"ERROR: spec_sources.{source} unknown. Options: confluence | figma\n")
+        sys.exit(1)
+for source, known_keys in known_source_keys.items():
+    source_cfg = spec_sources.get(source) or {}
+    if not isinstance(source_cfg, dict):
+        sys.stderr.write(f"ERROR: spec_sources.{source} must be a mapping\n")
+        sys.exit(1)
+    for key in source_cfg:
+        if key not in known_keys:
+            sys.stderr.write(f"WARNING: spec_sources.{source}.{key} is not a known key and will be ignored\n")
+    for flag in ("enabled", "export_images"):
+        if flag in source_cfg and not isinstance(source_cfg[flag], bool):
+            sys.stderr.write(f"ERROR: spec_sources.{source}.{flag} must be true or false\n")
+            sys.exit(1)
+    access = source_cfg.get("access") or "auto"
+    if access not in ("auto", "mcp", "rest"):
+        sys.stderr.write(f"ERROR: spec_sources.{source}.access '{access}' invalid. Options: auto | mcp | rest\n")
+        sys.exit(1)
+
 # Validate rule_overrides: each must have rationale ≥ 50 chars
 rule_overrides = g("rule_overrides", []) or []
 disabled_rules = []

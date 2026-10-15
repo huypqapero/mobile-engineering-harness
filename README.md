@@ -608,6 +608,37 @@ Claude Code `Task` tool native support. Subagent per role, tool subset limit (v�
 
 Chi tiết: `knowledge/agent-orchestration/essentials.md`.
 
+### Spec ingest từ Confluence + Figma (v0.12.0+)
+
+Bước tuỳ chọn để sinh `docs/specs/<feature>.md` từ một Confluence page và Figma file/frame thay vì export tay. Ingest chỉ chạy khi nguồn được bật trong overlay **và** user đưa link. Thiếu một trong hai thì hành vi giữ nguyên như cũ.
+
+```yaml
+spec_sources:
+  confluence:
+    enabled: true
+    access: auto            # auto (MCP trước, rồi REST + env) | mcp | rest
+    base_url: "https://yourcompany.atlassian.net"
+    space: "MOBILE"
+  figma:
+    enabled: true
+    access: auto
+    export_images: true     # PNG 1x → docs/specs/<feature>/design/
+```
+
+Credential **không** ghi vào overlay. `mehcli install` từ chối key dạng token/password. Có hai cách cấu hình:
+
+- **MCP** (mặc định): `claude mcp add --transport http figma https://mcp.figma.com/mcp` và `claude mcp add --transport http atlassian https://mcp.atlassian.com/v2/mcp`, rồi đăng nhập OAuth qua `/mcp`. Cũng có thể dùng `mcp-atlassian` chạy local.
+- **REST + env**: `FIGMA_ACCESS_TOKEN`; `CONFLUENCE_USERNAME` + `CONFLUENCE_API_TOKEN` (Cloud); `CONFLUENCE_PERSONAL_TOKEN` (Data Center).
+
+Ví dụ prompt: "Build feature login từ https://yourcompany.atlassian.net/wiki/spaces/MOBILE/pages/123456/Login và https://www.figma.com/design/AbC123/App?node-id=12-34".
+
+```
+link → android-orchestrator Step 0 → android-spec-ingest → docs/specs/login.md (status: ready | draft)
+     → draft: dừng hỏi user các open question blocking → ready → flow orchestrator như cũ
+```
+
+Spec dùng format `blueprints/feature-spec/template.md`. Chỗ suy luận hoặc thiếu dữ liệu được đánh dấu `[INFERRED → OQ-n]` / `[MISSING → OQ-n]`. UI state không có trong Figma là open question không chặn. API, auth, flag hoặc AC mơ hồ là open question chặn. Chi tiết: `skills/android-spec-ingest/SKILL.md`.
+
 ---
 
 ## Release history
@@ -626,6 +657,7 @@ Mỗi version một dòng. Chi tiết đầy đủ xem [`CHANGELOG.md`](./CHANGE
 - **v0.10.0**: Factory pack gồm task YAML contract, build 4 level, auto-fix có fingerprint, phân loại lỗi, chọn model theo tier
 - **v0.10.1 và v0.10.2**: MIT LICENSE và `CONTRIBUTING.md`
 - **v0.11.0**: ARCH-004 mới, Repository không kế thừa `BaseRepository`, API trả `ApiResult` qua CallAdapter (Retrofit) / Converter (Ktorfit) / `safeRequest` (Ktor)
+- **v0.12.0**: skill `android-spec-ingest` tuỳ chọn sinh `docs/specs/<feature>.md` từ Confluence + Figma (MCP hoặc REST + env), block `spec_sources`, blueprint `feature-spec`
 
 **Sắp tới — v1.0.0**: Production proof, có từ 3 product trở lên dùng trong production và đo được ROI.
 

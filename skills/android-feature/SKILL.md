@@ -15,12 +15,14 @@ priority: P0
 ## Inputs
 
 Bắt buộc:
-- Spec file `docs/specs/<feature>.md` hoặc rõ requirement
+- Spec file `docs/specs/<feature>.md` hoặc rõ requirement. Spec có thể viết tay hoặc sinh bởi
+  `android-spec-ingest` (frontmatter `generated_by`); format chung ở `blueprints/feature-spec/template.md`
 - Feature name (dùng cho package, route)
 - Data source (REST endpoint, local DB, cache strategy)
 
 Optional:
-- Design mock hoặc frame reference
+- Design mock hoặc frame reference — spec ingest đặt ảnh frame ở `docs/specs/<feature>/design/`
+- Link Confluence/Figma: nếu `spec_sources` bật cho nguồn đó → chạy `android-spec-ingest` trước, rồi dùng spec nó sinh ra
 - Analytics event list
 - Remote config key
 
@@ -32,14 +34,16 @@ Trước khi code, đọc:
 2. `.harness/constitution/architecture-rules.md` — ARCH-001..014
 3. `.harness/knowledge/architecture/clean-mvi.md`
 4. `.harness/blueprints/complete-mvi-feature/README.md`
-5. Spec file liên quan
+5. Spec file liên quan, gồm `## Open questions` và `## Sources` nếu có. Spec có `generated_by` và `status: draft`
+   (còn OQ `Blocking: yes`) → BLOCKED, hỏi user trước khi code
 
 ## Execution procedure
 
 ### Step 1 — Requirement analysis (5 phút)
 
 - Extract acceptance criteria từ spec
-- Identify 5 UI states cần cover (loading / empty / error / offline / success)
+- Identify 5 UI states cần cover (loading / empty / error / offline / success). Spec theo
+  `blueprints/feature-spec` có bảng state mỗi màn; hàng `[MISSING → OQ-n]` non-blocking → render theo mặc định ARCH-008
 - List external deps: API endpoints, DB tables, remote config, analytics events
 - Decide: cần UseCase mới hay gọi Repository interface direct?
 
@@ -163,7 +167,7 @@ Trước khi tuyên bố DONE:
 - [ ] Unit test pass
 - [ ] Detekt pass
 - [ ] Build Android debug pass
-- [ ] 5 states đã render (loading / empty / error / offline / success)
+- [ ] 5 states đã render (loading / empty / error / offline / success); state spec chốt "không áp dụng" thì ghi lý do trong report
 - [ ] Nav route type-safe
 - [ ] Analytics event wire đúng chỗ
 
