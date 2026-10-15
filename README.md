@@ -11,14 +11,15 @@ Harness biến AI agent (Claude Code, Codex, CLI agent khác) từ "generic code
 ## Table of contents
 
 1. [Install](#install)
-2. [AI Harness là gì](#ai-harness-là-gì)
-3. [Kiến trúc 2-layer](#kiến-trúc-2-layer)
-4. [Current state](#current-state)
-5. [Best practices](#best-practices)
-6. [CLI reference](#cli-reference)
-7. [Agent resolution order](#agent-resolution-order)
-8. [Governance](#governance)
-9. [Phạm vi áp dụng](#phạm-vi-áp-dụng)
+2. [Update to latest](#update-to-latest)
+3. [AI Harness là gì](#ai-harness-là-gì)
+4. [Kiến trúc 2-layer](#kiến-trúc-2-layer)
+5. [Current state](#current-state)
+6. [Best practices](#best-practices)
+7. [CLI reference](#cli-reference)
+8. [Agent resolution order](#agent-resolution-order)
+9. [Governance](#governance)
+10. [Phạm vi áp dụng](#phạm-vi-áp-dụng)
 
 ---
 
@@ -63,6 +64,91 @@ curl -fsSL https://raw.githubusercontent.com/huypqapero/mobile-engineering-harne
 | `MEH_INSTALL_DIR` | `$HOME/.mobile-engineering-harness` | Custom install location |
 | `MEH_BIN_DIR` | `$HOME/.local/bin` | Prefer `/usr/local/bin` (cần sudo) |
 | `MEH_REF` | `main` | Pin version: `MEH_REF=v0.6.0 curl ... \| bash` |
+
+---
+
+## Update to latest
+
+Workflow cập nhật harness lên version mới nhất trong product repo đang consume harness.
+
+### Prerequisites
+
+- Product repo đã có `.harness-overlay/overlay.yaml` (từ `mehcli init`).
+- Upstream location đã install qua `bootstrap.sh` (symlink) hoặc git submodule.
+
+### Workflow (symlink mode — default bootstrap.sh)
+
+```bash
+# 1. Check version đang pin
+mehcli version
+# → commit <hash>, tag <v0.X.Y>
+
+# 2. Fetch latest upstream (git pull --ff-only)
+mehcli self-update
+# → "Updated: <old-hash> → <new-hash>" hoặc "Already up to date"
+
+# 3. Re-render templates với latest upstream + overlay.yaml hiện tại
+mehcli update --overlay .harness-overlay
+
+# 4. Review diff trong product repo
+cd /path/to/product
+git diff .harness-overlay/
+
+# 5. Smoke verify
+./gradlew konsistTest detekt
+
+# 6. Commit overlay delta
+git add .harness-overlay/
+git commit -m "chore: update harness to v0.X.Y"
+```
+
+### Workflow (submodule mode — CI pin)
+
+Thay step 2 bằng:
+
+```bash
+# Pull submodule tới latest main (hoặc checkout specific tag)
+git -C .harness-overlay/upstream fetch --tags
+git -C .harness-overlay/upstream checkout v0.14.0   # pin cụ thể
+# hoặc
+git submodule update --remote .harness-overlay/upstream   # follow tracked branch
+
+# Rồi step 3 trở đi giữ nguyên
+mehcli update --overlay .harness-overlay
+```
+
+### Rollback
+
+Nếu update broken, revert về version trước:
+
+```bash
+# Symlink mode: checkout tag cũ trong upstream clone
+cd $(dirname $(readlink .harness-overlay/upstream))
+git checkout v0.12.0   # version cũ ổn định
+cd -
+mehcli update --overlay .harness-overlay
+
+# Submodule mode: checkout tag cũ + commit submodule pointer
+git -C .harness-overlay/upstream checkout v0.12.0
+git add .harness-overlay/upstream
+git commit -m "chore: rollback harness to v0.12.0"
+mehcli update --overlay .harness-overlay
+```
+
+### Breaking change check
+
+Trước khi update qua major/minor bump:
+
+1. Đọc `CHANGELOG.md` entry của version mới (section "Migration" nếu có).
+2. Kiểm `overlay.yaml` còn match schema mới không (`mehcli install` sẽ fail nếu required field missing).
+3. Nếu CHANGELOG ghi "zero breaking change" (v0.13 → v0.14): update an toàn.
+4. Nếu có breaking: review migration guide trước, apply overlay.yaml adjustments, rồi mới `mehcli update`.
+
+### Pin strategy cho CI
+
+- **Development product repo**: `MEH_REF=main` + `mehcli self-update` khi cần.
+- **Production CI**: pin tag cụ thể (`MEH_REF=v0.14.0`) để build reproducible; update tag theo release schedule.
+- **Multi-product org**: 1 team maintain upstream clone shared (`MEH_INSTALL_DIR=/opt/harness`), từng product self-update independently.
 
 ---
 
