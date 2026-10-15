@@ -1,0 +1,144 @@
+# Feature Brief Manifest — single source of truth cho input layer
+# Validate: verification/brief-schema/brief.schema.json
+
+# REQUIRED
+id: book-detail                              # kebab-case slug, unique trong briefs/
+title: Book Detail Screen                    # human-readable title
+version: 1                                   # bump khi re-generate từ spec update
+generated_at: 2026-10-15T17:06:00+07:00      # ISO 8601 với timezone
+generated_by: input-analyst-agent            # agent id generate brief
+
+# REQUIRED — 1-2 câu outcome, không process
+goal: >
+  User mở màn hình chi tiết sách, xem metadata (title/author/cover),
+  tap play preview audio 30 giây.
+
+# REQUIRED — tối thiểu 1 spec source
+sources:
+  spec:
+    - path: assets/sources/spec.md
+      checksum: sha256:<hex>                 # BẮT BUỘC match file trong assets/sources/
+      format: markdown                       # markdown | confluence | docs | pdf | jira
+      origin: docs/specs/book-detail.md      # path gốc trong product repo (optional)
+  design:
+    - path: assets/sources/screenshots/detail.png
+      checksum: sha256:<hex>
+      format: screenshot                     # screenshot | figma | svg | pdf
+      origin: designs/book-detail/detail.png
+    - path: assets/sources/screenshots/loading.png
+      checksum: sha256:<hex>
+      format: screenshot
+      origin: designs/book-detail/loading.png
+  # api: []                                  # optional, cho OpenAPI/contract source
+  # repository: {}                           # optional, context từ existing code
+
+# REQUIRED — tối thiểu 1 confirmed requirement
+requirements:
+  - id: REQ-001
+    type: functional                         # functional | non-functional | navigation | validation | ui
+    description: >
+      User tap nút "Play" trên screen Book Detail để preview 30 giây audio.
+    evidence_status: confirmed               # confirmed | inferred | unresolved
+    source_references:
+      - path: assets/sources/spec.md
+        locator: L23-L28
+        quote: >
+          "Người dùng có thể nhấn nút Play để nghe thử 30 giây audio."
+    acceptance_criteria_ids: [AC-001]
+
+  - id: REQ-002
+    type: ui
+    description: >
+      Error state hiển thị message + nút Retry khi load metadata fail.
+    evidence_status: inferred                # chưa có spec quote, suy từ pattern app
+    source_references:
+      - path: assets/sources/screenshots/error.png
+        locator: full-image
+        note: screenshot cho thấy error layout; spec không mô tả trigger
+    acceptance_criteria_ids: [AC-003]
+
+  - id: REQ-003
+    type: functional
+    description: >
+      Behavior khi preview audio fail trên cellular (fallback hoặc disable).
+    evidence_status: unresolved              # cần hỏi PM
+    source_references: []
+    acceptance_criteria_ids: []
+
+# Screen-by-screen contract — xem design.md cho detail
+screens:
+  - id: book-detail
+    name: Book Detail
+    source: assets/sources/screenshots/detail.png
+    layout_hint: vertical-scroll             # confidence: inferred
+    states_confirmed: [content]
+    states_missing: [loading, error, empty, offline]
+    components_inferred:
+      - id: book-cover
+        type: image
+        position: top-center
+      - id: play-button
+        type: primary-button
+        action_ref: REQ-001                  # link tới requirement
+    components_ambiguous:                    # agent không chắc, cần human review
+      - id: top-right-icon
+        candidates: [bookmark, favorite, share]
+
+# REQUIRED — tối thiểu 1 verifiable AC
+acceptance_criteria:
+  - id: AC-001
+    description: >
+      Tap play button → audio bắt đầu phát trong 500ms (p50).
+    requirement_ids: [REQ-001]
+    verifiable: true                         # có thể viết test không
+    test_hint: ViewModel intent OnPlayClicked → Effect.StartPlayback trong 500ms
+  - id: AC-002
+    description: >
+      Màn hình render book metadata (title, author, cover) khi API trả success.
+    requirement_ids: [REQ-001]
+    verifiable: true
+  - id: AC-003
+    description: >
+      Error state có nút Retry; tap Retry → re-fetch metadata.
+    requirement_ids: [REQ-002]
+    verifiable: true
+
+# Issues phát hiện trong reconciliation
+issues:
+  - id: ISSUE-001
+    type: SOURCE_CONFLICT                    # xem knowledge/input-analysis/reconciliation-matrix.md
+    severity: blocker                        # blocker | high | info
+    description: >
+      Spec section 3 ghi "nút Buy", screenshot detail.png cho thấy "Add to Cart".
+    affected_requirements: [REQ-001]
+    resolution_hint: Hỏi PM confirm label đúng.
+    status: open                             # open | resolved | accepted
+  - id: ISSUE-002
+    type: MISSING_DESIGN
+    severity: high
+    description: >
+      Spec yêu cầu offline state nhưng không có screenshot cho offline.
+    affected_requirements: []
+    resolution_hint: Dùng offline component mặc định của design system.
+    status: open
+
+# Assumptions đã document (không cần resolve, chỉ để traceability)
+assumptions:
+  - id: ASSUME-001
+    description: >
+      Audio preview URL có sẵn trong metadata response, không cần API riêng.
+    rationale: Spec không nói rõ, giả định theo pattern của feature AudioPlayer hiện có.
+
+# Downstream workflow routing hint (optional)
+downstream:
+  recommended_workflow: feature-development
+  recommended_skills: [android-feature, android-compose, android-mvi]
+  estimated_scope: single-feature            # single-feature | multi-feature | sdk-extraction
+
+# Validation state — set bởi `input-validate-brief` skill
+validation:
+  status: pending                            # pending | passed | failed
+  gates_passed: []                           # INPUT-001, SPEC-001, DESIGN-001, ...
+  gates_failed: []
+  validated_at: null
+  validated_by: null

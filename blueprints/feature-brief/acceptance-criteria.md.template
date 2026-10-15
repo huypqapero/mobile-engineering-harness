@@ -1,0 +1,91 @@
+# Acceptance Criteria: {{feature-title}}
+
+> Verifiable criteria. Mỗi AC map tới ≥1 requirement. Agent downstream phải cover trong test.
+
+## Rules
+
+- Mỗi AC phải **verifiable** (có thể viết test, không phải "nên work tốt").
+- AC chỉ reference `confirmed` requirements. Inferred requirement cần resolve trước khi AC phát hành.
+- AC viết dưới dạng Given-When-Then hoặc verifiable statement.
+
+---
+
+## AC-001 — Play preview starts within 500ms
+
+**Requirements:** REQ-001
+**Verifiable:** true
+**Test hint:** ViewModel unit test — intent `OnPlayClicked` → effect `StartPlayback` emit trong 500ms (p50 trên device baseline).
+
+**Given** user ở Book Detail screen với metadata loaded
+**When** user tap Play button
+**Then** audio playback bắt đầu trong 500ms (measured từ tap event tới first audio frame)
+
+---
+
+## AC-002 — Metadata render on success
+
+**Requirements:** REQ-001
+**Verifiable:** true
+**Test hint:** ViewModel state transition — initial → loading → content(book).
+
+**Given** API trả 200 với book metadata
+**When** screen entered với valid bookId
+**Then** render:
+- Cover image (loaded hoặc placeholder)
+- Title text
+- Author text
+- Play button enabled
+
+---
+
+## AC-003 — Error state has Retry
+
+**Requirements:** REQ-002
+**Verifiable:** true
+**Test hint:** ViewModel state — error path render Retry button, tap → re-fetch.
+
+**Given** API fail (network error hoặc 5xx)
+**When** screen entered
+**Then** render error message + Retry button
+
+**And** tap Retry → trigger re-fetch, show loading state, resolve content hoặc error lại
+
+---
+
+## AC-004 — Offline state
+
+**Requirements:** NFR-003
+**Verifiable:** true
+**Test hint:** Repository fake offline → ViewModel state offline.
+
+**Given** device offline
+**When** screen entered và không có cache
+**Then** render offline component với message "Không có kết nối"
+
+**And** nếu có cache → render content với offline indicator
+
+---
+
+## AC-005 — Accessibility
+
+**Requirements:** NFR-002
+**Verifiable:** true
+**Test hint:** Semantics test — mọi image có contentDescription không null.
+
+**Given** screen rendered
+**Then**:
+- Cover image có `contentDescription` = book title
+- Play button có `contentDescription` = "Play preview {{title}}"
+- Error retry có `contentDescription` = "Thử lại"
+
+---
+
+## Coverage matrix
+
+| AC | Requirement | Test level | Blocker nếu fail |
+|---|---|---|---|
+| AC-001 | REQ-001 | unit (VM) | yes |
+| AC-002 | REQ-001 | unit (VM) + UI | yes |
+| AC-003 | REQ-002 | unit (VM) | yes |
+| AC-004 | NFR-003 | unit (Repo) + UI | no |
+| AC-005 | NFR-002 | UI (semantics) | no |

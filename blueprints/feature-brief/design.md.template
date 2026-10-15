@@ -1,0 +1,92 @@
+# Design: {{feature-title}}
+
+> Screen-by-screen contract. Mỗi screen có source reference, states confirmed/missing, components confirmed/ambiguous.
+
+## Design system scope
+
+**Strategy:** prefer-existing-project-tokens
+**Rationale:** không claim exact color/spacing từ screenshot; mapping sang token hiện có khi implement.
+
+---
+
+## Screen 1: Book Detail
+
+**ID:** `book-detail`
+**Source:** `assets/sources/screenshots/detail.png`
+**Layout hint:** vertical-scroll (confidence: inferred)
+
+### Visible components (confirmed)
+
+| ID | Type | Position | Action | Links to |
+|---|---|---|---|---|
+| book-cover | image | top-center | — | — |
+| book-title | text (headline) | below cover | — | REQ-001 |
+| book-author | text (body) | below title | — | REQ-001 |
+| play-button | primary-button | below metadata | tap → preview | REQ-002 |
+
+### Ambiguous components
+
+> Agent không chắc semantic. Cần human confirm trước khi implement.
+
+- **top-right-icon** (position: top-right corner)
+  - Candidates: bookmark / favorite / share
+  - Resolution: hỏi designer hoặc check Figma nếu available
+
+### States
+
+**Confirmed (có screenshot):**
+- content
+
+**Missing (chưa có screenshot, cần implement default):**
+- loading
+- error
+- empty
+- offline
+
+**Default source:** `knowledge/compose/essentials.md` + project design system
+
+### Assets referenced
+
+- `assets/sources/screenshots/detail.png` — primary reference
+- Logo/icon chưa có file → list vào issues.md
+
+---
+
+## Screen 2: Loading state (optional)
+
+**ID:** `book-detail-loading`
+**Source:** `assets/sources/screenshots/loading.png`
+
+{{Lặp lại format screen 1}}
+
+---
+
+## Navigation
+
+### Entry
+
+- Từ screen `book-list`, tap item → nav tới `book-detail` với `bookId: String`
+- **Source:** `assets/sources/spec.md` L15
+
+### Exit
+
+- Tap system back → pop về `book-list`
+- Tap toolbar back → pop về `book-list`
+
+### Inferred navigation (needs confirm)
+
+- Tap play-button → bật playback inline hay nav tới player screen? → **ISSUE-004 open**
+
+---
+
+## Visual references
+
+Mọi screenshot gốc giữ trong `assets/sources/screenshots/` làm regression baseline. Downstream implementation có thể dùng để so sánh visual.
+
+## Open design questions
+
+- Transition animation từ list → detail?
+- Responsive layout cho tablet?
+- Dark mode variant?
+
+→ List vào `issues.md` với type `MISSING_DESIGN`.

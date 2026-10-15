@@ -4,6 +4,168 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.14.0] — 2026-10-15
+
+### Added — Confluence + Figma MCP Adapters
+
+Mở rộng input layer với 2 remote source adapters qua MCP. Spec có thể fetch từ Confluence, design có thể fetch từ Figma với node tree + variables + image export. Vẫn tuân thủ "adapter fetch-only" principle: không analyze business logic trong fetch layer.
+
+#### Skills (2)
+
+- **`skills/input-fetch-confluence/SKILL.md`** — Fetch Confluence page + children + attachments + inline images + comments qua `mcp-atlassian`. Normalize sang markdown + binary vào `assets/sources/`. Hỗ trợ URL/page_id/CQL input, `--include-children`, `--include-comments`, `--design-source: confluence-attachments` route images sang screenshots.
+- **`skills/input-fetch-figma/SKILL.md`** — Fetch Figma file + node tree + variables + styles + PNG screenshots + SVG icons qua `framelink-figma` (primary) hoặc `TalkToFigma` (fallback live canvas). Build structured `screen-contracts.json` cho downstream analyze. Hỗ trợ `--mode: fetch|live`, `--include-variables`, variants auto-export.
+
+#### Knowledge (2)
+
+- **`knowledge/input-analysis/confluence-fetch-rules.md`** — CONF-RULE-001..012 (permission check, snapshot immutable, preserve revision, markdown normalize, attachment handling, multi-page spec, flag open items). 7 anti-patterns. Edge cases (empty page, large attachment, Cloud vs Server, WIP labels, PDF/DOCX attachments).
+- **`knowledge/input-analysis/figma-fetch-rules.md`** — FIG-RULE-001..008 (snapshot, record version, explicit node selection, variables = authoritative token, component instance resolution, image export quality, variants export, preserve constraints + auto-layout). 8 anti-patterns. Edge cases (no variables, remote library, prototyping conditions, nested depth).
+
+#### Design rule overrides khi có Figma
+
+Khi design source là Figma với variables available, DESIGN-RULE override:
+- **DESIGN-RULE-OVERRIDE-001**: color từ variable → confirmed (không estimate)
+- **DESIGN-RULE-OVERRIDE-005**: dimension fixed → confirmed
+- **DESIGN-RULE-OVERRIDE-007**: layout mode auto-layout → confirmed
+
+Vẫn giữ không override: DESIGN-RULE-002 (không infer navigation), DESIGN-RULE-003 (chỉ states có variant), DESIGN-RULE-004 (ambiguous → candidates).
+
+### Changed
+
+- `skills/input-prepare-feature/SKILL.md` Phase P1 — route theo source type (local/confluence/figma) với adapter routing matrix.
+- `skills/input-analyze-design/SKILL.md` — thêm Figma mode procedure (Step F1..F5): load structured contract trước, PNG cho visual confirm.
+- `workflows/prepare-feature-brief.md` Phase P1 — entry conditions + input artifacts + adapter routing matrix + fetch notes documentation.
+- `knowledge/input-analysis/screenshot-reading-rules.md` — section "Priority khi design source = Figma" nêu override rules.
+- `verification/brief-schema/brief.schema.json` — thêm `fetch_notes` field (confluence_open_items, suspicious_content, remote_components), thêm `origin_metadata` field cho sourceEntry với page_id/version/file_key/has_variables/mcp_adapter.
+- `AGENTS.md` — task routing +2 rows (Confluence, Figma fetch), file index refresh.
+
+### Rationale
+
+Trước v0.14: brief chỉ accept local markdown + screenshots. Team dùng Confluence cho spec + Figma cho design phải export manual rồi copy vào product repo → extra step, lose metadata (version, author, variables).
+
+v0.14 bridge gap:
+- **Metadata preservation**: Confluence version + author + Figma variables không mất khi fetch, cho downstream phân tích chính xác hơn (color confirmed từ variable thay vì estimate).
+- **Deterministic re-fetch**: origin URI (`confluence://.../#v12`, `figma://file/key?node=1-2&version=ts`) + checksum → detect source drift automatic.
+- **Permission guard**: Confluence read restriction check trước fetch, không bypass access control.
+- **Instruction injection safe**: spec remote có thể chứa prompt injection; adapter flag suspicious pattern, không execute.
+
+Key design decisions:
+- **Adapter fetch-only**: không mix analyze + fetch; analyze thuộc Phase P2/P3. Thay source type (Confluence → Google Docs) không ảnh hưởng analysis logic.
+- **MCP qua existing servers**: dùng `mcp-atlassian`, `framelink-figma`, `TalkToFigma` sẵn có. Không build custom integration.
+- **Structured over image**: Figma có variables + node tree → authoritative. PNG chỉ fallback visual confirm.
+- **Variables unlock confirmed**: design token từ Figma variable upgrade confidence `inferred` → `confirmed` thông qua override rules.
+- **Live mode fallback**: Figma plugin workflow (TalkToFigma) chỉ khi file chưa publish version hoặc private.
+
+### Migration from 0.13.0
+
+Zero breaking change. v0.14 additive:
+- Existing briefs với local source vẫn work.
+- v0.13 brief không có `fetch_notes`, `origin_metadata` → vẫn validate pass (optional fields).
+- Khi muốn dùng Confluence/Figma: specify source type trong input `input-prepare-feature`, orchestrator route tới adapter skill tương ứng.
+
+**Usage examples**:
+
+```
+# Confluence spec + local design
+Prompt: "Prepare feature brief cho book-detail từ confluence URL https://.../pages/123456/Book+Detail và local designs/book-detail/"
+
+# Figma design + local spec
+Prompt: "Prepare brief cho payment-flow với spec docs/specs/payment.md và Figma https://www.figma.com/design/<key>/?node-id=1-2"
+
+# Confluence spec với attachments làm design
+Prompt: "Prepare brief từ Confluence page 123456 với --design-source confluence-attachments --include-comments"
+
+# Full remote
+Prompt: "Prepare brief từ Confluence URL ... + Figma URL ..., include children + variables"
+```
+
+### Scope boundaries
+
+- **IN scope v0.14**: Confluence (`mcp-atlassian`), Figma (`framelink-figma` + `TalkToFigma`), markdown normalization, image/variable export.
+- **OUT scope (Wave 4+)**: Google Docs, Jira, PDF, OpenAPI adapters. Figma Code Connect. Multi-team profiles. TypeScript CLI.
+
+## [0.13.0] — 2026-10-15
+
+### Added — Input Layer (Markdown + Screenshot MVP)
+
+Lớp chuẩn hóa spec + design nguồn thành Feature Brief package trước khi handoff vào `feature-development`. Upstream của mọi workflow build feature.
+
+#### Skills (5)
+
+- **`skills/input-prepare-feature/SKILL.md`** — orchestrator 5-phase pipeline (fetch → analyze spec → analyze design → reconcile → validate). Entry point duy nhất user gọi.
+- **`skills/input-analyze-spec/SKILL.md`** — extract requirement + AC từ spec markdown, phân loại evidence_status (confirmed/inferred/unresolved).
+- **`skills/input-analyze-design/SKILL.md`** — extract screen contract từ screenshots: components, states confirmed/missing, ambiguity, assets.
+- **`skills/input-reconcile/SKILL.md`** — cross-reference spec + design, classify severity, resolve bằng project default hoặc tạo blocker.
+- **`skills/input-validate-brief/SKILL.md`** — 12 quality gates (INPUT/SPEC/DESIGN/RECON/CONTRACT/HANDOFF), mark brief READY/BLOCKED/FAILED.
+
+#### Agents (2)
+
+- **`agents/input-analyst.md`** — role phân tích spec, extract requirement + AC, không viết code, không design UI chi tiết.
+- **`agents/design-analyst.md`** — role đọc screenshot, extract screen contract, không claim design token exact, không infer navigation.
+
+#### Workflow
+
+- **`workflows/prepare-feature-brief.md`** — 5-phase pipeline với parallel P2+P3, blocker gate P4, 12-gate validation P5.
+
+#### Blueprint
+
+- **`blueprints/feature-brief/`** — package specification với README + 5 template files (brief.yaml, requirements.md, design.md, acceptance-criteria.md, issues.md).
+
+#### Knowledge
+
+- **`knowledge/input-analysis/requirement-extraction-rules.md`** — REQ-RULE-001..006, 8 anti-patterns, extraction procedure.
+- **`knowledge/input-analysis/screenshot-reading-rules.md`** — DESIGN-RULE-001..012, 10 anti-patterns, reading procedure, edge cases.
+- **`knowledge/input-analysis/reconciliation-matrix.md`** — issue type matrix, severity decision tree, 5 ví dụ resolution.
+
+#### Verification
+
+- **`verification/brief-schema/brief.schema.json`** — JSON Schema Draft 2020-12 validate brief.yaml. Conditional constraint: evidence_status=confirmed → source_references BẮT BUỘC non-empty với quote.
+- **`verification/brief-schema/README.md`** — usage với jsonschema + check-jsonschema.
+
+#### Output location
+
+- **`briefs/`** — output directory. Mỗi feature 1 subfolder `briefs/<slug>/` chứa brief package + assets snapshot. Tách biệt với `plans/` (implementation plan).
+
+### Changed
+
+- `AGENTS.md`: task routing table thêm 5 rows cho input layer; workflows table thêm `prepare-feature-brief.md`; agent roles list thêm `input-analyst` + `design-analyst`; file index refresh.
+
+### Rationale
+
+Trước v0.13: downstream workflow (`feature-development`) đọc spec thô + screenshot adhoc, agent phải guess structure mỗi feature. Spec + design conflict không detect systematic → scope drift, missing requirement silent.
+
+Input layer giải quyết:
+- **Contract giữa input và execution**: `briefs/<slug>/brief.yaml` schema-validated, downstream biết chính xác input format.
+- **Confidence tagging**: `evidence_status: confirmed/inferred/unresolved` → downstream biết tin cậy đến đâu, không treat suy luận như confirmed.
+- **Blocker gating**: `issues[severity=blocker]` chặn implement start cho đến khi human review.
+- **Traceability**: mọi requirement có source quote + checksum snapshot → detect spec drift.
+- **Reusability**: 1 brief có thể feed nhiều downstream workflow (feature-dev, extract-sdk, parallel-features).
+
+Key design decisions:
+- **Pure markdown, không TypeScript CLI**: KISS, consistent với harness hiện tại. CLI chỉ cần khi Wave 3 có multi-source adapters (Confluence/Figma/Jira API).
+- **Tích hợp vào harness, không tách repo**: 1 nguồn tiêu chuẩn, dễ discover. Tách repo chỉ khi cross-platform (iOS/BE) có pain point rõ.
+- **Brief ≠ Plan**: tách `briefs/` (immutable input contract) khỏi `plans/` (mutable implementation strategy). Brief = what/why, Plan = how.
+- **Phase P2 + P3 parallel-ready**: multi-agent spawn độc lập, merge P4.
+- **Blocker gate strict**: không auto-pass qua blocker; `--force-handoff` require explicit user rationale.
+
+### Migration from 0.12.0
+
+Zero breaking change. Input layer là addition purely:
+- Existing feature-development workflow vẫn work với spec adhoc (brief là optional).
+- Khi muốn dùng brief: gọi `input-prepare-feature` trước, downstream Stage 1 Inspect đọc `briefs/<slug>/` thay cho spec gốc.
+
+**Usage**:
+
+```
+Prompt: "Prepare feature brief cho book-detail từ docs/specs/book-detail.md + designs/book-detail/"
+→ Skill input-prepare-feature orchestrate 5-phase → briefs/book-detail/
+```
+
+### Scope boundaries (MVP)
+
+- **IN scope**: Markdown spec + Screenshot design
+- **OUT scope (Wave 2)**: Multi-team profiles, JSON schema validation script
+- **OUT scope (Wave 3)**: Confluence/Figma/Jira/PDF adapters, TypeScript CLI, Feature Store registry
+
 ## [0.12.0] — 2026-10-15
 
 ### Added — Harness Guardian (meta-agent)

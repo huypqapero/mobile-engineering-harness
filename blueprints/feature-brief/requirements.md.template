@@ -1,0 +1,104 @@
+# Requirements: {{feature-title}}
+
+> Derived từ `assets/sources/`. Mỗi requirement có evidence status + source reference. Đừng edit tay — regenerate qua `input-prepare-feature` skill.
+
+## Scope
+
+**IN scope:**
+- {{bullet 1}}
+- {{bullet 2}}
+
+**OUT of scope (defer):**
+- {{bullet 1}}
+
+---
+
+## Confirmed Requirements
+
+### REQ-001 — {{short title}}
+
+**Type:** functional
+**Status:** confirmed
+
+**Description:**
+{{1-2 câu, user-observable}}
+
+**Source:**
+- `assets/sources/spec.md` L23-L28:
+  > {{exact quote từ spec}}
+
+**Acceptance criteria:** AC-001
+
+---
+
+### REQ-002 — {{short title}}
+
+**Type:** ui
+**Status:** confirmed
+
+**Description:**
+{{1-2 câu}}
+
+**Source:**
+- `assets/sources/spec.md` L45-L50:
+  > {{quote}}
+- `assets/sources/screenshots/detail.png` — nút Play visible top-right
+
+**Acceptance criteria:** AC-002
+
+---
+
+## Inferred Requirements
+
+> Derived từ pattern/screenshot nhưng không có spec quote. Cần human review trước khi downstream implement.
+
+### REQ-010 — {{short title}}
+
+**Type:** ui
+**Status:** inferred
+**Confidence:** medium
+
+**Description:**
+{{1-2 câu}}
+
+**Source:**
+- `assets/sources/screenshots/error.png`
+- Pattern: app hiện tại luôn có Retry button cho error state
+
+**Why inferred:**
+Spec không mô tả error behavior. Suy luận từ design system convention.
+
+**Resolution needed:** PM confirm có cần Retry button không, hay chỉ message.
+
+---
+
+## Unresolved
+
+> Thiếu info, chặn implement nếu không clarify. Mỗi item cần tạo issue.
+
+### REQ-020 — {{short title}}
+
+**Status:** unresolved
+
+**Question:**
+{{Câu hỏi cụ thể cần stakeholder trả lời}}
+
+**Related issue:** ISSUE-003
+
+---
+
+## Non-functional Requirements
+
+### NFR-001 — Performance
+
+{{Example: audio preview start trong 500ms p50}}
+
+**Source:**
+- `assets/sources/spec.md` L80
+
+### NFR-002 — Accessibility
+
+{{Example: contentDescription cho mọi image}}
+
+**Source:**
+- Project default (`docs/design-guidelines.md`)

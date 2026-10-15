@@ -1,0 +1,121 @@
+# Issues: {{feature-title}}
+
+> Conflicts, assumptions, blockers phát hiện trong reconciliation. Mỗi issue có severity + resolution hint + status.
+
+## Severity
+
+- **blocker** — chặn implement, phải resolve hoặc user approve pass qua
+- **high** — không chặn start nhưng phải resolve trong implement
+- **info** — assumption đã document, không cần action
+
+## Types
+
+Xem `knowledge/input-analysis/reconciliation-matrix.md` cho full matrix.
+
+- `SOURCE_CONFLICT` — spec và design mâu thuẫn
+- `MISSING_DESIGN` — spec yêu cầu state/behavior nhưng không có design
+- `MISSING_BEHAVIOR` — design có component nhưng spec không mô tả action
+- `MISSING_API` — spec cần data nhưng không có API contract
+- `MISSING_ASSET` — screenshot chứa asset chưa có file
+- `DUPLICATE_REQUIREMENT` — spec có yêu cầu trùng (đã merge)
+- `UNSUPPORTED_INPUT` — adapter không xử lý được file
+
+---
+
+## ISSUE-001 — Button label conflict
+
+**Type:** SOURCE_CONFLICT
+**Severity:** blocker
+**Status:** open
+
+**Description:**
+Spec section 3 (L45) ghi label "Buy", screenshot `detail.png` cho thấy "Add to Cart".
+
+**Affected:** REQ-001, AC-001
+
+**Resolution hint:**
+- Hỏi PM confirm label đúng
+- Nếu "Add to Cart": update spec
+- Nếu "Buy": update design screenshot
+
+**Blocker because:** label ảnh hưởng string resource + analytics event name.
+
+---
+
+## ISSUE-002 — Missing offline screenshot
+
+**Type:** MISSING_DESIGN
+**Severity:** high
+**Status:** open
+
+**Description:**
+Spec L80 yêu cầu offline state, nhưng không có screenshot cho offline screen.
+
+**Affected:** AC-004
+
+**Resolution hint:**
+Dùng component offline mặc định từ project design system (`feature/common/OfflineState.kt`).
+
+**Not blocker because:** downstream agent có default pattern, chỉ cần note trong plan.
+
+---
+
+## ISSUE-003 — Unresolved behavior
+
+**Type:** MISSING_BEHAVIOR
+**Severity:** blocker
+**Status:** open
+
+**Description:**
+Behavior khi preview audio fail trên cellular chưa clarify (fallback low-quality? disable? warning?).
+
+**Affected:** REQ-003 (unresolved)
+
+**Resolution hint:** PM input required.
+
+---
+
+## ISSUE-004 — Play button navigation ambiguous
+
+**Type:** MISSING_BEHAVIOR
+**Severity:** high
+**Status:** open
+
+**Description:**
+Tap Play button → inline playback hay nav tới full player screen?
+
+**Affected:** REQ-002, navigation section
+
+**Resolution hint:**
+- Nếu inline: implement audio player trong detail screen
+- Nếu nav: thêm route `audio-player` + wire NavHost
+
+**Default assumption nếu không resolve:** inline (pattern của feature AudioPreview hiện tại).
+
+---
+
+## ISSUE-005 — Top-right icon ambiguous
+
+**Type:** MISSING_BEHAVIOR
+**Severity:** info
+**Status:** accepted
+
+**Description:**
+Screenshot có icon top-right nhưng không rõ semantic (bookmark/favorite/share).
+
+**Resolution:** accepted với assumption ASSUME-002 (bookmark theo pattern app).
+
+---
+
+## Resolution tracking
+
+| Issue | Severity | Status | Owner | Resolved at |
+|---|---|---|---|---|
+| ISSUE-001 | blocker | open | PM | — |
+| ISSUE-002 | high | open | designer | — |
+| ISSUE-003 | blocker | open | PM | — |
+| ISSUE-004 | high | open | PM | — |
+| ISSUE-005 | info | accepted | — | 2026-10-15 |
+
+**Blocker count:** 2 open
+**Handoff gate:** blocker count phải = 0 (hoặc user explicit approve) trước khi downstream workflow start.

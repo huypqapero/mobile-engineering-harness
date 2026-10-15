@@ -1,0 +1,532 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/schemas/feature-brief/v1.json",
+  "title": "Feature Brief Manifest",
+  "description": "Schema cho briefs/<slug>/brief.yaml. Validate bởi skill input-validate-brief gate CONTRACT-001.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "version",
+    "generated_at",
+    "goal",
+    "sources",
+    "requirements",
+    "acceptance_criteria"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "description": "kebab-case feature slug, unique trong briefs/"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Bump khi re-generate từ spec update"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 với timezone"
+    },
+    "generated_by": {
+      "type": "string"
+    },
+    "goal": {
+      "type": "string",
+      "minLength": 1,
+      "description": "1-2 câu outcome, không process"
+    },
+    "sources": {
+      "type": "object",
+      "required": ["spec"],
+      "additionalProperties": false,
+      "properties": {
+        "spec": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/sourceEntry" }
+        },
+        "design": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sourceEntry" }
+        },
+        "api": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sourceEntry" }
+        },
+        "repository": {
+          "type": "object"
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/requirement" }
+    },
+    "screens": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/screen" }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/acceptanceCriterion" }
+    },
+    "issues": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/issue" }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/assumption" }
+    },
+    "downstream": {
+      "type": "object",
+      "properties": {
+        "recommended_workflow": { "type": "string" },
+        "recommended_skills": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "estimated_scope": {
+          "type": "string",
+          "enum": ["single-feature", "multi-feature", "sdk-extraction"]
+        }
+      }
+    },
+    "fetch_notes": {
+      "type": "object",
+      "description": "Informational notes từ adapter fetch (Confluence/Figma). Không block pipeline.",
+      "additionalProperties": false,
+      "properties": {
+        "confluence_open_items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["quote"],
+            "properties": {
+              "author": { "type": "string" },
+              "quote": { "type": "string" },
+              "location": { "type": "string" }
+            }
+          }
+        },
+        "suspicious_content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["pattern", "location"],
+            "properties": {
+              "pattern": { "type": "string" },
+              "location": { "type": "string" },
+              "snippet": { "type": "string" }
+            }
+          }
+        },
+        "remote_components": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["library_key", "component_key"],
+            "properties": {
+              "library_key": { "type": "string" },
+              "component_key": { "type": "string" },
+              "component_name": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "validation": { "$ref": "#/$defs/validation" }
+  },
+
+  "$defs": {
+    "sourceEntry": {
+      "type": "object",
+      "required": ["path", "checksum", "format"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^assets/sources/.+"
+        },
+        "checksum": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "markdown",
+            "confluence",
+            "docs",
+            "pdf",
+            "jira",
+            "screenshot",
+            "figma",
+            "svg",
+            "openapi"
+          ]
+        },
+        "origin": {
+          "type": "string",
+          "description": "Origin URI. Local: path gốc trong product repo. Remote: confluence://<space>/pages/<id>#v<N> hoặc figma://file/<key>?node=<id>&version=<ts>"
+        },
+        "origin_metadata": {
+          "type": "object",
+          "description": "Adapter-specific metadata (Confluence version/author, Figma file_key/variables)",
+          "additionalProperties": true,
+          "properties": {
+            "fetched_at": { "type": "string", "format": "date-time" },
+            "page_id": { "type": "string" },
+            "space_key": { "type": "string" },
+            "version": { "type": "integer" },
+            "last_author": { "type": "string" },
+            "last_modified": { "type": "string", "format": "date-time" },
+            "file_key": { "type": "string" },
+            "file_name": { "type": "string" },
+            "node_id": { "type": "string" },
+            "has_variables": { "type": "boolean" },
+            "variable_collections": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "mcp_adapter": {
+              "type": "string",
+              "enum": ["framelink-figma", "TalkToFigma", "mcp-atlassian"]
+            }
+          }
+        }
+      }
+    },
+
+    "requirement": {
+      "type": "object",
+      "required": ["id", "type", "description", "evidence_status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(REQ|NFR)-[0-9]{3}$"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "functional",
+            "non-functional",
+            "navigation",
+            "validation",
+            "ui"
+          ]
+        },
+        "description": { "type": "string", "minLength": 1 },
+        "evidence_status": {
+          "type": "string",
+          "enum": ["confirmed", "inferred", "unresolved"]
+        },
+        "source_references": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/sourceReference" }
+        },
+        "acceptance_criteria_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^AC-[0-9]{3}$"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "evidence_status": { "const": "confirmed" }
+            }
+          },
+          "then": {
+            "properties": {
+              "source_references": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "required": ["path", "locator", "quote"]
+                }
+              }
+            },
+            "required": ["source_references"]
+          }
+        }
+      ]
+    },
+
+    "sourceReference": {
+      "type": "object",
+      "required": ["path", "locator"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path trong assets/sources/ hoặc 'project-default'"
+        },
+        "locator": {
+          "type": "string",
+          "description": "Line (L23), range (L23-L28), hoặc full-image"
+        },
+        "quote": { "type": "string" },
+        "note": { "type": "string" }
+      }
+    },
+
+    "screen": {
+      "type": "object",
+      "required": ["id", "name", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+        },
+        "name": { "type": "string" },
+        "source": {
+          "type": "string",
+          "pattern": "^assets/sources/.+"
+        },
+        "layout_hint": {
+          "type": "string",
+          "enum": [
+            "vertical-scroll",
+            "horizontal-scroll",
+            "grid",
+            "fixed",
+            "modal",
+            "bottom-sheet",
+            "dialog"
+          ]
+        },
+        "states_confirmed": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["content", "loading", "error", "empty", "offline", "disabled"]
+          }
+        },
+        "states_missing": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["content", "loading", "error", "empty", "offline", "disabled"]
+          }
+        },
+        "components_inferred": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/component" }
+        },
+        "components_ambiguous": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ambiguousComponent" }
+        }
+      }
+    },
+
+    "component": {
+      "type": "object",
+      "required": ["id", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": [
+            "image",
+            "icon",
+            "text",
+            "text-field",
+            "button",
+            "primary-button",
+            "secondary-button",
+            "text-button",
+            "card",
+            "surface",
+            "divider",
+            "app-bar",
+            "bottom-bar",
+            "bottom-sheet",
+            "dialog",
+            "snackbar",
+            "list-item",
+            "grid-item",
+            "checkbox",
+            "radio",
+            "switch",
+            "slider",
+            "tab",
+            "chip",
+            "badge",
+            "custom"
+          ]
+        },
+        "position": { "type": "string" },
+        "action_ref": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^REQ-[0-9]{3}$"
+            },
+            { "type": "null" }
+          ]
+        },
+        "description": { "type": "string" }
+      }
+    },
+
+    "ambiguousComponent": {
+      "type": "object",
+      "required": ["id", "candidates"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "position": { "type": "string" },
+        "visual": { "type": "string" },
+        "candidates": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "resolution": {
+          "type": "string",
+          "enum": ["human-review", "auto-first-candidate", "deferred"]
+        }
+      }
+    },
+
+    "acceptanceCriterion": {
+      "type": "object",
+      "required": ["id", "description", "requirement_ids", "verifiable"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^AC-[0-9]{3}$"
+        },
+        "description": { "type": "string", "minLength": 1 },
+        "requirement_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^(REQ|NFR)-[0-9]{3}$"
+          }
+        },
+        "verifiable": { "type": "boolean" },
+        "test_hint": { "type": "string" }
+      }
+    },
+
+    "issue": {
+      "type": "object",
+      "required": ["id", "type", "severity", "status", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^ISSUE-[0-9]{3}$"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "SOURCE_CONFLICT",
+            "MISSING_DESIGN",
+            "MISSING_BEHAVIOR",
+            "MISSING_API",
+            "MISSING_ASSET",
+            "DUPLICATE_REQUIREMENT",
+            "UNSUPPORTED_INPUT",
+            "AMBIGUOUS_COMPONENT",
+            "UNRESOLVED_NAVIGATION"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["blocker", "high", "info"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["open", "resolved", "accepted"]
+        },
+        "description": { "type": "string" },
+        "affected_requirements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(REQ|NFR)-[0-9]{3}$"
+          }
+        },
+        "resolution_hint": { "type": "string" },
+        "resolved_by_assumption": {
+          "type": "string",
+          "pattern": "^ASSUME-[0-9]{3}$"
+        }
+      }
+    },
+
+    "assumption": {
+      "type": "object",
+      "required": ["id", "description", "rationale"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^ASSUME-[0-9]{3}$"
+        },
+        "description": { "type": "string" },
+        "rationale": { "type": "string" },
+        "issue_resolved": {
+          "type": "string",
+          "pattern": "^ISSUE-[0-9]{3}$"
+        }
+      }
+    },
+
+    "validation": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pending", "passed", "failed"]
+        },
+        "gates_passed": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "gates_failed": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "validated_at": {
+          "oneOf": [
+            { "type": "string", "format": "date-time" },
+            { "type": "null" }
+          ]
+        },
+        "validated_by": {
+          "oneOf": [{ "type": "string" }, { "type": "null" }]
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

@@ -23,6 +23,13 @@ Context project (resolve từ `overlay.yaml`):
 
 | Task | Skill chính |
 |---|---|
+| Chuẩn hóa spec + screenshot thành Feature Brief | `input-prepare-feature` |
+| Fetch Confluence page + attachment qua MCP | `input-fetch-confluence` |
+| Fetch Figma file + node tree + variables qua MCP | `input-fetch-figma` |
+| Extract requirement + AC từ spec | `input-analyze-spec` |
+| Extract screen contract từ screenshot/Figma | `input-analyze-design` |
+| Reconcile conflict giữa spec + design | `input-reconcile` |
+| Validate Feature Brief qua 12 quality gates | `input-validate-brief` |
 | Tạo feature mới end-to-end | `android-feature` |
 | Build/sửa Compose UI | `android-compose` |
 | Thiết kế UiState/Intent/Effect, reducer, side-effect | `android-mvi` |
@@ -43,6 +50,7 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 
 | Workflow | Khi nào |
 |---|---|
+| `workflows/prepare-feature-brief.md` | Chuẩn hóa spec + design nguồn thành Feature Brief (5 phases: fetch → analyze spec → analyze design → reconcile → validate). Upstream của feature-development. |
 | `workflows/feature-development.md` | Implement feature mới end-to-end (5 stages: inspect → plan → implement → verify → report) |
 | `workflows/fix-bug.md` | Debug + fix bug (reproduce → isolate → cause → fix → verify) |
 | `workflows/review-pull-request.md` | Review PR / diff theo 10 dimensions với evidence-based findings |
@@ -55,6 +63,8 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 
 Trong workflow, agent có thể chuyển mindset qua các role (xem `agents/*.md`):
 
+- `input-analyst.md` — Spec → requirements + AC + flow (input layer, Phase P2)
+- `design-analyst.md` — Screenshot → screen contract + states + ambiguity (input layer, Phase P3)
 - `architect.md` — Plan + inspect + decisions + spec decomposition (parallel mode)
 - `implementer.md` — Execute theo plan, minimal scope
 - `reviewer.md` — Independent audit, evidence-based findings
@@ -108,6 +118,18 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `knowledge/patterns/common-patterns.md`
 - `knowledge/security/essentials.md`
 - `knowledge/performance/essentials.md`
+- `knowledge/input-analysis/requirement-extraction-rules.md` — REQ-RULE-001..006
+- `knowledge/input-analysis/screenshot-reading-rules.md` — DESIGN-RULE-001..012
+- `knowledge/input-analysis/reconciliation-matrix.md` — matrix + severity rules
+- `knowledge/input-analysis/confluence-fetch-rules.md` — CONF-RULE-001..012 cho MCP adapter
+- `knowledge/input-analysis/figma-fetch-rules.md` — FIG-RULE-001..008 + design rule overrides
+- `skills/input-prepare-feature/SKILL.md` — orchestrator input layer
+- `skills/input-fetch-confluence/SKILL.md` — MCP adapter Confluence
+- `skills/input-fetch-figma/SKILL.md` — MCP adapter Figma
+- `skills/input-analyze-spec/SKILL.md`
+- `skills/input-analyze-design/SKILL.md`
+- `skills/input-reconcile/SKILL.md`
+- `skills/input-validate-brief/SKILL.md`
 - `skills/android-feature/SKILL.md`
 - `skills/android-compose/SKILL.md`
 - `skills/android-mvi/SKILL.md`
@@ -126,7 +148,9 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `blueprints/compose-screen/README.md`
 - `blueprints/repository/README.md`
 - `blueprints/usecase/README.md`
-- `blueprints/task-contract/README.md` + `template.yaml` — standardized task YAML
+- `blueprints/task-contract/README.md` + `template.yaml` — standardized plan YAML (how to build)
+- `blueprints/feature-brief/README.md` + 5 templates — standardized input brief (what to build + why)
+- `workflows/prepare-feature-brief.md` — input layer pipeline
 - `workflows/feature-development.md`
 - `workflows/fix-bug.md`
 - `workflows/review-pull-request.md`
@@ -134,6 +158,8 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `workflows/release-validation.md`
 - `workflows/parallel-feature-development.md`
 - `workflows/harness-maintenance.md` — meta (Guardian lifecycle)
+- `agents/input-analyst.md` — spec analysis role
+- `agents/design-analyst.md` — screenshot analysis role
 - `agents/architect.md`
 - `agents/implementer.md`
 - `agents/reviewer.md`
@@ -144,6 +170,8 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `verification/scripts/verify.sh.template`
 - `verification/detekt/README.md` + `detekt-config-template.yml`
 - `verification/lint/README.md`
+- `verification/brief-schema/README.md` + `brief.schema.json` — JSON schema cho Feature Brief
+- `briefs/README.md` — output directory input layer
 - `evaluations/templates/e01..e05.md`
 - `evaluations/rubrics/README.md` — scoring rubric chung
 - `evaluations/regression/README.md` — trend tracking qua versions
