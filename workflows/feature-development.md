@@ -122,7 +122,7 @@ Orchestrate việc implement feature end-to-end. Trạng thái máy, không chec
 
 - Build fail do code có sẵn (không phải code mới) → stop, report ra
 - Need new dependency library → stop, confirm với user
-- Platform SDK integration (ExoPlayer, AVPlayer) → load skill `android-sdk-structure` nếu có
+- Platform SDK integration (ExoPlayer, AVPlayer) → tuân ARCH-010 (chỉ ở `{{MODULE_DATA}}/{androidMain,iosMain}` qua `expect/actual`), xem `knowledge/patterns/common-patterns.md §Adapter`. Không phải `android-sdk-structure` (skill đó dùng để tách feature thành library)
 
 ---
 

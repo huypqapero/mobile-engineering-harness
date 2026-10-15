@@ -144,7 +144,8 @@ Load thêm khi task yêu cầu:
 - Compose heavy UI → `knowledge/compose/essentials.md`
 - Complex state transition → `knowledge/mvi/essentials.md`
 - Concurrent operations → `knowledge/coroutines/essentials.md`
-- Platform SDK integration → `android-sdk-structure` skill (nếu có)
+- Platform SDK integration (ExoPlayer, AVPlayer) → ARCH-010 + `knowledge/patterns/common-patterns.md §Adapter`
+- Feature cần dùng lại ở 2+ sản phẩm → `android-sdk-structure` skill (tách thành library)
 
 ## Output contract
 

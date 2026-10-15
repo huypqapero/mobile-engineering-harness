@@ -140,7 +140,7 @@ Steps:
 4. Update DI binding
 5. Verify no cross-feature import
 
-Chi tiết trong `android-sdk-structure` skill (future khi có).
+Chi tiết (pre-check, module layout, public API, tuỳ biến UI/luồng, versioning): `skills/android-sdk-structure/SKILL.md`.
 
 ## Common refactor smells to detect
 
