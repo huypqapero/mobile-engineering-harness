@@ -4,6 +4,22 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.14.1] — 2026-10-15
+
+### Added
+
+- `README.md`: section **"Update to latest"** consolidate update workflow cho downstream product consume harness. Cover 6-step workflow symlink mode, submodule mode variant, rollback procedure, breaking change check, pin strategy cho development vs CI vs multi-product org.
+
+### Changed
+
+- `README.md` table of contents: thêm entry "Update to latest" (section 2), renumber các section sau.
+
+### Rationale
+
+Trước v0.14.1: workflow update rải trên 3 chỗ trong README (Install, CLI reference, Best practices "Khi update harness" — section này thực chất là checklist cho harness maintainer release version mới, không phải user downstream). User downstream phải tự ghép commands từ `mehcli self-update` + `mehcli update` + git submodule docs. Rollback + pin strategy chưa document.
+
+Zero code change. Pure documentation consolidation.
+
 ## [0.14.0] — 2026-10-15
 
 ### Added — Confluence + Figma MCP Adapters
