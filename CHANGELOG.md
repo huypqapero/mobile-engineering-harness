@@ -4,7 +4,50 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
-## [0.11.0] — 2026-10-14
+## [0.12.0] — 2026-10-15
+
+### Added — Harness Guardian (meta-agent)
+
+Agent chuyên maintain + evolve chính harness. Khác với 5 roles khác (dùng harness để develop product), Guardian **phát triển harness itself**.
+
+#### Agent role
+- **`agents/harness-guardian.md`** — meta-agent với 3 modes (audit / maintain / evolve), 6 capability areas (knowledge audit, policy audit, skill maintenance, blueprint maintenance, evaluation, release management). Permission levels L0-L3 governance.
+
+#### Skill
+- **`skills/harness-maintenance/SKILL.md`** — 7-step lifecycle procedure cho harness maintenance với 3 modes execution.
+
+#### Workflow
+- **`workflows/harness-maintenance.md`** — 7-stage change lifecycle: signal → triage → impact → draft → validate → review → release.
+
+#### Knowledge
+- **`knowledge/harness-governance/essentials.md`** — permission levels L0-L3 + Protected Baseline (12 ADR cốt lõi) + infrastructure enforcement patterns.
+
+### Changed
+- `AGENTS.md`: task routing + workflows + agent roles + file index refresh cho Guardian additions.
+
+### Rationale
+
+ChatGPT "Harness Guardian" model (2026-10-15) đề xuất dedicated meta-agent maintain harness. Harness evolve liên tục (Kotlin/Android/Compose version bump, rule drift, skill improvement từ feedback) → cần Guardian dedicated prevent degrade.
+
+Key design decisions:
+- **Protected Baseline**: 12 ADR cốt lõi không được Guardian tự modify (require user approve L3)
+- **No self-approve**: Guardian không approve own PR; independent reviewer required L2+
+- **Infrastructure enforcement**: GitHub branch protection + CODEOWNERS + token scope, không chỉ prompt
+- **Consolidated skill start**: 1 skill cover 6 capability areas; split khi evidence
+
+### Migration from 0.11.0
+
+Zero migration. Guardian là addition purely, không change existing rule/skill.
+
+**Usage**: invoke explicit via prompt, không auto-trigger giữa product development.
+
+```
+Prompt: "Harness Guardian, audit mode: review knowledge/coroutines/essentials.md"
+Prompt: "Harness Guardian, maintain mode: fix broken links"
+Prompt: "Harness Guardian, evolve mode: propose rule cho pattern X"
+```
+
+## [0.11.0] — 2026-10-15
 
 ### Changed
 - **ARCH-004** viết lại: Repository impl không kế thừa base class; API service trả `ApiResult<Dto>` qua `ApiResultCallAdapterFactory` (Retrofit), `ApiResultConverterFactory` (Ktorfit) hoặc `HttpClient.safeRequest` / `safeCall` (Ktor thuần). Rubric giữ severity HIGH.

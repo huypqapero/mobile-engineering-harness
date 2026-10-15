@@ -35,6 +35,7 @@ Context project (resolve từ `overlay.yaml`):
 | Review PR, diff, module | `android-code-review` |
 | Viết unit/UI/integration test | `android-testing` |
 | Orchestrate multi-agent / parallel feature build | `android-orchestrator` |
+| Maintain / audit / evolve chính harness (meta-agent) | `harness-maintenance` (Guardian) |
 
 Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùng file.
 
@@ -48,6 +49,7 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 | `workflows/refactor-module.md` | Preserve behavior refactor (baseline → plan → refactor → compare → verify) |
 | `workflows/release-validation.md` | Release candidate validation (preflight → build → smoke → artifact → regression → sign-off) |
 | `workflows/parallel-feature-development.md` | Build N feature độc lập song song từ spec (decompose → isolation → spawn → aggregate → review → verify) |
+| `workflows/harness-maintenance.md` | Maintain + evolve harness (signal → triage → impact → draft → validate → review → release) — bởi Guardian |
 
 ## Agent roles
 
@@ -58,6 +60,7 @@ Trong workflow, agent có thể chuyển mindset qua các role (xem `agents/*.md
 - `reviewer.md` — Independent audit, evidence-based findings
 - `test-engineer.md` — Behavior coverage, deterministic test
 - `orchestrator.md` — Coordinate multi-agent spawn + aggregate (team/parallel-features mode)
+- `harness-guardian.md` — Meta-agent: maintain + evolve chính harness (không touch product code)
 
 Giai đoạn solo (1 agent): 1 agent chuyển mindset qua các role. Giai đoạn multi-agent: subagent dedicated per role.
 
@@ -90,6 +93,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `constitution/definition-of-done.md`
 - `knowledge/agent-orchestration/essentials.md` — orchestration modes + Claude Code Task tool patterns
 - `knowledge/agent-orchestration/model-tier.md` — model tier routing (lite/balanced/deep)
+- `knowledge/harness-governance/essentials.md` — permission levels L0-L3 + protected baseline
 - `knowledge/architecture/architecture-profiles.md` — profile cmp/kmp/android-only + migration
 - `knowledge/build-strategy/essentials.md` — 4-level build strategy (fast → regression)
 - `knowledge/auto-fix/essentials.md` — auto-fix loop + fingerprint + attempt limit
@@ -116,6 +120,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `skills/android-code-review/SKILL.md`
 - `skills/android-testing/SKILL.md`
 - `skills/android-orchestrator/SKILL.md`
+- `skills/harness-maintenance/SKILL.md` — Guardian procedure (meta)
 - `blueprints/reference-feature/README.md`
 - `blueprints/network-service/README.md`
 - `blueprints/compose-screen/README.md`
@@ -128,11 +133,13 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `workflows/refactor-module.md`
 - `workflows/release-validation.md`
 - `workflows/parallel-feature-development.md`
+- `workflows/harness-maintenance.md` — meta (Guardian lifecycle)
 - `agents/architect.md`
 - `agents/implementer.md`
 - `agents/reviewer.md`
 - `agents/test-engineer.md`
 - `agents/orchestrator.md`
+- `agents/harness-guardian.md` — meta (maintain harness)
 - `verification/architecture-tests/TemplateArchitectureRulesTest.kt`
 - `verification/scripts/verify.sh.template`
 - `verification/detekt/README.md` + `detekt-config-template.yml`
