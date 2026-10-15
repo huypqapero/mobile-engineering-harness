@@ -4,6 +4,25 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.13.0] — 2026-10-15
+
+### Added
+- **`skills/android-spec-ingest`**: bước tiền xử lý tuỳ chọn. Skill lấy nội dung nghiệp vụ từ Confluence page và UI từ Figma file/frame, rồi sinh `docs/specs/<feature>.md` gồm mô tả, AC, 5 UI states mỗi màn, API/data, open questions và Sources (link + ID + version + thời điểm lấy). Ảnh frame được export vào `docs/specs/<feature>/design/`. Dữ liệu lấy qua MCP (Figma MCP, Atlassian Rovo MCP hoặc `mcp-atlassian`). Không có MCP thì dùng REST với token trong env. Không có cả hai thì skill trả BLOCKED kèm hướng dẫn cấu hình.
+- **`blueprints/feature-spec/`**: template chung cho `docs/specs/<feature>.md`, dùng cho cả spec viết tay lẫn spec ingest. Template quy định marker `[INFERRED → OQ-n]` / `[MISSING → OQ-n]`, tiêu chí `Blocking` và vòng đời `status: draft → ready`.
+- **`overlay.schema.yaml §spec_sources`** (optional): `confluence.{enabled, access, base_url, space}` và `figma.{enabled, access, export_images}`. Mặc định cả hai nguồn đều tắt.
+- `mehcli install` validate `spec_sources`. Nguồn chỉ được là `confluence` hoặc `figma`. `access` phải thuộc `auto | mcp | rest`. `enabled` và `export_images` phải là boolean. Overlay bị từ chối nếu chứa credential: key có chữ `token`, `password`, `secret`, `api_key`, `credential` hoặc `pat`, URL kèm password, hoặc giá trị mang tiền tố token (`figd_`, `ATATT`).
+- Skill chỉ gọi tool MCP đọc (có allowlist cho Figma MCP, Atlassian Rovo MCP và `mcp-atlassian`); REST chỉ gọi `GET`.
+
+### Changed
+- `android-orchestrator` có thêm **Step 0 — Spec intake**. Khi có link và nguồn bật, Step 0 chạy ingest. Spec có `generated_by` và `status: draft` thì orchestrator dừng hỏi user, kể cả khi lần sau user không đưa lại link. Spec cũ không có frontmatter này và request không có link thì flow giữ nguyên như cũ.
+- `android-feature`, `workflows/feature-development.md`, `workflows/parallel-feature-development.md`, `agents/architect.md` và `AGENTS.md` được cập nhật để nhận spec sinh từ ingest. Architect chép `Sources` và `Open questions` sang từng feature plan.
+
+### Credential
+Repo và overlay không chứa token. Credential lấy từ OAuth của MCP (`/mcp`) hoặc từ env: `FIGMA_ACCESS_TOKEN`, `CONFLUENCE_USERNAME` + `CONFLUENCE_API_TOKEN` (Cloud), `CONFLUENCE_PERSONAL_TOKEN` (Data Center).
+
+### Rationale
+Team giữ spec nghiệp vụ trên Confluence và UI trên Figma. Trước đây phải export tay sang markdown, nên dễ thiếu 5 UI states, copy text, component, và không truy được nguồn. Ingest chỉ là bước tiền xử lý; `docs/specs/*.md` vẫn là nguồn duy nhất mà agent đọc khi plan.
+
 ## [0.12.0] — 2026-10-15
 
 ### Added — Harness Guardian (meta-agent)

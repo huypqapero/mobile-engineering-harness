@@ -141,6 +141,29 @@ orchestration:
     # Task-level override trong plans/<task-id>.yaml §model_tier
     # Chi tiết: knowledge/agent-orchestration/model-tier.md
 
+spec_sources:                         # Optional. Ingest spec từ Confluence + Figma (skills/android-spec-ingest).
+                                      # Bỏ trống block hoặc enabled: false → hành vi cũ (spec trong docs/specs/ hoặc prompt).
+                                      # Ingest chỉ chạy khi nguồn bật VÀ user đưa link.
+                                      # KHÔNG ghi token/password vào file này. `mehcli install` từ chối key có chữ token/password/
+                                      # secret/api_key/credential/pat, URL chứa password, giá trị dạng token (figd_, ATATT...).
+                                      # Đặt tên key mới tránh các chữ đó (ví dụ không dùng `design_tokens`).
+                                      # Credential lấy từ MCP (OAuth qua /mcp) hoặc env:
+                                      #   FIGMA_ACCESS_TOKEN                                  (Figma REST)
+                                      #   CONFLUENCE_USERNAME + CONFLUENCE_API_TOKEN          (Confluence Cloud REST / mcp-atlassian)
+                                      #   CONFLUENCE_PERSONAL_TOKEN                           (Confluence Data Center)
+  confluence:
+    enabled: false
+    access: auto                      # Options:
+                                      #   - auto (MCP nếu runtime có Atlassian MCP; không có → REST nếu env có token; không có → BLOCKED)
+                                      #   - mcp  (chỉ Atlassian Rovo MCP / mcp-atlassian)
+                                      #   - rest (chỉ REST API + env token)
+    base_url: ""                      # Ví dụ: https://yourcompany.atlassian.net (Cloud) hoặc https://confluence.yourcompany.com (DC)
+    space: ""                         # Optional. Space key mặc định, ví dụ: MOBILE
+  figma:
+    enabled: false
+    access: auto                      # Options: auto | mcp | rest (như confluence.access)
+    export_images: true               # Export PNG 1x các frame được tham chiếu → docs/specs/<feature>/design/
+
 detekt:
   enabled: true
   baseline_file: "detekt-baseline.xml"

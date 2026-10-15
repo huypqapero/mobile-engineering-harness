@@ -13,6 +13,7 @@ priority: P0
 - Task cross-module risk cao → cần independent reviewer
 - `orchestration.mode: team | parallel-features | auto` trong overlay.yaml
 - Task size > threshold trong `auto_threshold`
+- Request kèm link Confluence/Figma và `spec_sources` bật → Step 0 chạy `android-spec-ingest` trước
 
 ## Prerequisites
 
@@ -20,8 +21,34 @@ priority: P0
 2. `.harness/overlay.schema.yaml §orchestration` — config fields
 3. Claude Code `Task` tool available
 4. `agents/architect.md`, `agents/implementer.md`, `agents/reviewer.md`, `agents/test-engineer.md`, `agents/orchestrator.md`
+5. `skills/android-spec-ingest/SKILL.md` — chỉ khi user đưa link Confluence/Figma (Step 0)
 
 ## Execution procedure
+
+### Step 0 — Spec intake (optional ingest)
+
+Chạy trước Step 1.
+
+```
+INPUT: request của user + overlay.yaml.spec_sources + docs/specs/
+├─ Không có link
+│   ├─ Spec liên quan có frontmatter generated_by VÀ status: draft
+│   │     → dừng, hỏi các OQ Blocking: yes (re-entry android-spec-ingest Step 8) → status: ready → Step 1
+│   └─ Còn lại (kể cả spec cũ không có frontmatter)  → Step 1 (flow cũ)
+├─ Có link, nguồn tương ứng không bật / không có block spec_sources
+│     → in ngay: "spec_sources.<nguồn>.enabled=false → bỏ qua ingest; bật trong overlay để dùng"
+│     → Step 1 (flow cũ)
+└─ Có link, nguồn bật → chạy android-spec-ingest (skill quyết định với spec đã tồn tại, Step 1.4)
+      ├─ SKIPPED                         → Step 1 (flow cũ)
+      ├─ DONE (spec status: ready)       → Step 1 với spec docs/specs/<feature>.md
+      └─ BLOCKED (status: draft, thiếu MCP/env, hoặc user cần chọn ghi đè)
+            → dừng, hỏi user. User trả lời OQ → cập nhật dòng OQ trong spec
+              (Trả lời, Blocking: no), status: ready → Step 1
+```
+
+Gate `status: draft` chỉ áp dụng cho spec có field `generated_by` (format `blueprints/feature-spec`); spec cũ không có
+frontmatter này giữ nguyên hành vi. Step 0 chỉ tạo/cập nhật file spec. Từ Step 1 trở đi mọi subagent đọc
+`docs/specs/<feature>.md`, không gọi lại Confluence/Figma.
 
 ### Step 1 — Resolve mode
 
@@ -35,7 +62,7 @@ Read `overlay.yaml.orchestration.mode`:
 ### Step 2 — Auto decision
 
 ```
-INPUT: task description + spec
+INPUT: task description + spec (docs/specs/<feature>.md — viết tay hoặc sinh từ Step 0)
 ├─ feature_count > 1 AND features_independent → parallel-features
 ├─ loc_changed > 300 → team
 ├─ cross_module touched → team
@@ -78,6 +105,9 @@ Spawn **1 architect subagent** đọc toàn spec → produce N feature plans:
 Task(subagent_type: "architect-mindset", prompt: """
   Read spec at docs/specs/<feature-set>.md
   Decompose into N independent feature plans.
+  If spec has "## Sources" / "## Open questions" (blueprints/feature-spec), copy the
+  Sources rows and the OQ rows relevant to each feature into that feature plan.
+  Several specs → qualify OQ ids as <feature>#OQ-n to avoid collisions.
   
   Each feature plan must have:
   - Scope boundary (packages owned)
@@ -268,9 +298,12 @@ Total: 27 min (vs ~55 min single-threaded)
 | Handoff doc incomplete → aggregator fail | Validate template, request subagent fix |
 | Reviewer có Edit tool → fix instead of flag | Tool subset: Read + Grep only |
 | Parallel chạy nhiều lần duplicate feature | Idempotency check: skip feature nếu plan + handoff đã complete |
+| Spawn subagent khi spec ingest còn `status: draft` | Step 0: dừng hỏi user, chỉ đi tiếp khi `status: ready` |
+| Subagent tự đọc lại Confluence/Figma | Chỉ đọc `docs/specs/<feature>.md`; nguồn ngoài chỉ dùng ở Step 0 |
 
 ## Output contract
 
+- Spec intake result (Step 0): skipped + lý do, hoặc spec path + status
 - Mode decision + rationale (in orchestration report)
 - Plans per feature (parallel-features mode)
 - Isolation check YAML

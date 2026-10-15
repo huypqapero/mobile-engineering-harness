@@ -35,6 +35,7 @@ Context project (resolve từ `overlay.yaml`):
 | Review PR, diff, module | `android-code-review` |
 | Viết unit/UI/integration test | `android-testing` |
 | Orchestrate multi-agent / parallel feature build | `android-orchestrator` |
+| Sinh spec từ link Confluence / Figma (tuỳ chọn, cần `spec_sources`) | `android-spec-ingest` |
 | Maintain / audit / evolve chính harness (meta-agent) | `harness-maintenance` (Guardian) |
 
 Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùng file.
@@ -120,6 +121,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `skills/android-code-review/SKILL.md`
 - `skills/android-testing/SKILL.md`
 - `skills/android-orchestrator/SKILL.md`
+- `skills/android-spec-ingest/SKILL.md`
 - `skills/harness-maintenance/SKILL.md` — Guardian procedure (meta)
 - `blueprints/reference-feature/README.md`
 - `blueprints/network-service/README.md`
@@ -127,6 +129,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `blueprints/repository/README.md`
 - `blueprints/usecase/README.md`
 - `blueprints/task-contract/README.md` + `template.yaml` — standardized task YAML
+- `blueprints/feature-spec/README.md` + `template.md` — format chung `docs/specs/<feature>.md` (viết tay hoặc `android-spec-ingest`)
 - `workflows/feature-development.md`
 - `workflows/fix-bug.md`
 - `workflows/review-pull-request.md`
