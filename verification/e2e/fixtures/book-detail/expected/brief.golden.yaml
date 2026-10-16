@@ -1,0 +1,283 @@
+# Golden snapshot — expected brief.yaml output cho fixture book-detail.
+# Diff validator: validators/diff_golden.py ignore timestamps + checksums (noise).
+#
+# Regenerate: run `./scripts/run-e2e.sh book-detail --update-golden` sau khi
+# agent produce actual brief và human review intentional change.
+
+id: book-detail
+title: Book Detail Screen
+version: 1
+generated_at: "2026-10-16T10:30:00+07:00"
+generated_by: input-analyst-agent
+
+goal: >
+  User mở màn hình chi tiết sách, xem metadata (title, author, cover),
+  tap preview để nghe 30 giây audio.
+
+sources:
+  spec:
+    - path: assets/sources/spec.md
+      format: markdown
+      origin: verification/e2e/fixtures/book-detail/input/spec.md
+      checksum: "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  design:
+    - path: assets/sources/screenshots/book-detail-content.png
+      format: screenshot
+      origin: verification/e2e/fixtures/book-detail/input/screenshots/book-detail-content.png
+      checksum: "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    - path: assets/sources/screenshots/book-detail-loading.png
+      format: screenshot
+      origin: verification/e2e/fixtures/book-detail/input/screenshots/book-detail-loading.png
+      checksum: "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+    - path: assets/sources/screenshots/book-detail-error.png
+      format: screenshot
+      origin: verification/e2e/fixtures/book-detail/input/screenshots/book-detail-error.png
+      checksum: "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+
+requirements:
+  - id: REQ-001
+    type: functional
+    description: User tap preview button phát 30s audio preview.
+    evidence_status: confirmed
+    source_references:
+      - path: assets/sources/spec.md
+        locator: L24-L28
+        quote: User tap Buy button, playback 30s audio preview bắt đầu trong 500ms.
+    acceptance_criteria_ids: [AC-001]
+
+  - id: REQ-002
+    type: functional
+    description: Nav từ Book List tap item → Book Detail với bookId.
+    evidence_status: confirmed
+    source_references:
+      - path: assets/sources/spec.md
+        locator: L15-L19
+        quote: User tap item ở Book List screen, nav tới Book Detail screen với bookId.
+    acceptance_criteria_ids: [AC-002]
+
+  - id: REQ-003
+    type: ui
+    description: Error state hiển thị message + Retry button.
+    evidence_status: confirmed
+    source_references:
+      - path: assets/sources/spec.md
+        locator: L34
+        quote: BR-002 Error state hiển thị message + retry button.
+    acceptance_criteria_ids: [AC-003]
+
+  - id: REQ-004
+    type: ui
+    description: Offline state hiển thị cached data hoặc offline component.
+    evidence_status: confirmed
+    source_references:
+      - path: assets/sources/spec.md
+        locator: L35
+        quote: BR-003 Offline mode hiển thị cached data nếu có, else offline component.
+    acceptance_criteria_ids: [AC-004]
+
+  - id: NFR-001
+    type: non-functional
+    description: Scroll 60fps trên Pixel 6 baseline device.
+    evidence_status: confirmed
+    source_references:
+      - path: assets/sources/spec.md
+        locator: L40
+        quote: Performance scroll 60fps trên Pixel 6 baseline.
+
+  - id: NFR-002
+    type: non-functional
+    description: Mọi image + button có contentDescription non-null.
+    evidence_status: confirmed
+    source_references:
+      - path: assets/sources/spec.md
+        locator: L41
+        quote: Accessibility contentDescription cho mọi image + button.
+
+  - id: REQ-010
+    type: ui
+    description: Top-right icon action (candidates bookmark/favorite/share).
+    evidence_status: inferred
+    source_references:
+      - path: assets/sources/screenshots/book-detail-content.png
+        locator: full-image
+        note: Icon visible top-right không có label; spec không mô tả.
+    acceptance_criteria_ids: []
+
+  - id: REQ-020
+    type: functional
+    description: Behavior khi preview audio fail trên cellular.
+    evidence_status: unresolved
+    source_references:
+      - path: assets/sources/spec.md
+        locator: L46
+        quote: OI-01 Behavior khi preview audio fail trên cellular network?
+    acceptance_criteria_ids: []
+
+  - id: REQ-021
+    type: navigation
+    description: Tap preview → inline playback hay nav tới full player screen.
+    evidence_status: unresolved
+    source_references:
+      - path: assets/sources/spec.md
+        locator: L47
+        quote: OI-02 Tap play → inline playback hay nav tới full player screen?
+    acceptance_criteria_ids: []
+
+screens:
+  - id: book-detail-content
+    name: Book Detail / Content
+    source: assets/sources/screenshots/book-detail-content.png
+    layout_hint: vertical-scroll
+    states_confirmed: [content]
+    states_missing: [empty]
+    components_inferred:
+      - id: book-cover
+        type: image
+        position: top-center
+      - id: book-title
+        type: text
+        position: center
+      - id: book-author
+        type: text
+        position: center
+      - id: preview-button
+        type: primary-button
+        action_ref: REQ-001
+    components_ambiguous:
+      - id: top-right-icon
+        position: top-right
+        visual: outlined icon
+        candidates: [bookmark, favorite, share]
+        resolution: human-review
+
+  - id: book-detail-loading
+    name: Book Detail / Loading
+    source: assets/sources/screenshots/book-detail-loading.png
+    layout_hint: vertical-scroll
+    states_confirmed: [loading]
+    states_missing: []
+    components_inferred:
+      - id: loading-indicator
+        type: custom
+        position: top
+        description: LinearProgressIndicator
+      - id: skeleton-placeholder
+        type: custom
+        position: center
+        description: Skeleton cho cover + metadata
+
+  - id: book-detail-error
+    name: Book Detail / Error
+    source: assets/sources/screenshots/book-detail-error.png
+    layout_hint: fixed
+    states_confirmed: [error]
+    states_missing: []
+    components_inferred:
+      - id: error-illustration
+        type: image
+        position: center
+      - id: error-message
+        type: text
+        position: center
+      - id: retry-button
+        type: primary-button
+        action_ref: REQ-003
+
+acceptance_criteria:
+  - id: AC-001
+    description: Tap preview button → audio playback bắt đầu trong 500ms (p50).
+    requirement_ids: [REQ-001]
+    verifiable: true
+    test_hint: ViewModel unit test — intent OnPlayClicked → effect StartPlayback trong 500ms.
+
+  - id: AC-002
+    description: Màn hình render book metadata khi API trả success.
+    requirement_ids: [REQ-002]
+    verifiable: true
+    test_hint: ViewModel state transition initial → loading → content(book).
+
+  - id: AC-003
+    description: Error state có Retry button, tap Retry → re-fetch metadata.
+    requirement_ids: [REQ-003]
+    verifiable: true
+    test_hint: ViewModel error path render Retry, tap → re-fetch.
+
+  - id: AC-004
+    description: Offline state hiển thị cached data hoặc offline component.
+    requirement_ids: [REQ-004]
+    verifiable: true
+    test_hint: Repository fake offline → ViewModel state offline, UI render.
+
+issues:
+  - id: ISSUE-001
+    type: SOURCE_CONFLICT
+    severity: blocker
+    status: open
+    description: >
+      Spec L24 ghi "Buy" button, screenshot book-detail-content.png cho thấy "Add to Cart".
+      Ảnh hưởng string resource + analytics event name.
+    affected_requirements: [REQ-001]
+    resolution_hint: Hỏi PM confirm label đúng.
+
+  - id: ISSUE-002
+    type: MISSING_DESIGN
+    severity: high
+    status: resolved
+    description: Spec L35 yêu cầu offline state, không có screenshot cho offline.
+    affected_requirements: [REQ-004]
+    resolution_hint: Dùng project default offline component.
+    resolved_by_assumption: ASSUME-001
+
+  - id: ISSUE-003
+    type: AMBIGUOUS_COMPONENT
+    severity: high
+    status: open
+    description: Top-right icon candidates bookmark/favorite/share không rõ semantic.
+    affected_requirements: []
+    resolution_hint: Hỏi designer confirm icon meaning, hoặc check Figma source.
+
+  - id: ISSUE-004
+    type: MISSING_BEHAVIOR
+    severity: blocker
+    status: open
+    description: Behavior preview fail trên cellular (OI-01) chưa clarify.
+    affected_requirements: [REQ-020]
+    resolution_hint: PM input required.
+
+  - id: ISSUE-005
+    type: UNRESOLVED_NAVIGATION
+    severity: high
+    status: open
+    description: Tap preview inline hay nav full player (OI-02) chưa clarify.
+    affected_requirements: [REQ-021]
+    resolution_hint: PM confirm.
+
+assumptions:
+  - id: ASSUME-001
+    description: Offline state dùng project default OfflineComponent fullscreen.
+    rationale: Project convention từ knowledge/compose/essentials.md.
+    issue_resolved: ISSUE-002
+
+downstream:
+  recommended_workflow: feature-development
+  recommended_skills: [android-feature, android-compose, android-mvi]
+  estimated_scope: single-feature
+
+validation:
+  status: passed
+  gates_passed:
+    - INPUT-001
+    - SPEC-001
+    - SPEC-002
+    - SPEC-003
+    - DESIGN-001
+    - DESIGN-002
+    - DESIGN-003
+    - CONTRACT-001
+    - CONTRACT-002
+    - HANDOFF-001
+  gates_failed:
+    - RECON-001
+  warnings:
+    - "RECON-001: 2 blocker issues open (ISSUE-001, ISSUE-004). Brief BLOCKED without --force-handoff."
+  notes: Fixture intentional blockers để test gate enforcement.

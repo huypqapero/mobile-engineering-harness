@@ -1,0 +1,26 @@
+# Expected plan.yaml structure cho fixture book-detail downstream feature-development.
+# Optional artifact — chỉ check nếu actual/plan.yaml tồn tại.
+
+min_acceptance_criteria: 4
+
+required_scope_modules:
+  - presenter/feature/book-detail
+  - domain/model/book
+  - domain/usecase/book
+  - data/repository/book
+
+brief_id_required: true
+
+# Expected files mà plan phải nhắc tới (có thể subset nếu agent decompose khác).
+expected_files:
+  - presenter/.../feature/book-detail/BookDetailApi.kt
+  - presenter/.../feature/book-detail/BookDetailScreen.kt
+  - presenter/.../feature/book-detail/BookDetailViewModel.kt
+  - presenter/.../feature/book-detail/BookDetailContract.kt
+  - domain/.../model/book/BookDetail.kt
+  - domain/.../usecase/book/GetBookDetailUseCase.kt
+  - domain/.../repository/BookRepository.kt
+  - data/.../repository/BookRepositoryImpl.kt
+  - data/.../mapper/BookMapper.kt
+  - data/.../remote/BookApi.kt
+  - data/.../dto/BookDto.kt

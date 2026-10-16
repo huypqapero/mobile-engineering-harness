@@ -4,6 +4,116 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.15.0] — 2026-10-16
+
+### Added — E2E Verification Suite
+
+Full pipeline regression test cho harness. Chạy fixtures qua 5 stages (brief → plan → code → gates → report) và so sánh output với golden snapshots + semantic rules.
+
+#### Workflow
+
+- **`workflows/verify-e2e.md`** — 5-stage pipeline với fix loop, rollback, agent role, report format.
+
+#### Scripts (bash orchestrator)
+
+- **`verification/e2e/scripts/run-e2e.sh`** — entry point với options `--all`, `--stages`, `--update-golden`, `--verbose`.
+- **`verification/e2e/scripts/stage-1-brief.sh`** — validate brief: schema + semantic + golden diff.
+- **`verification/e2e/scripts/stage-2-plan.sh`** — validate plan artifact (optional).
+- **`verification/e2e/scripts/stage-3-code.sh`** — dry Konsist check (optional, static).
+- **`verification/e2e/scripts/stage-4-gates.sh`** — cross-reference gates: file existence, link resolution, orphan check.
+
+#### Validators (Python)
+
+- **`verification/e2e/validators/validate_brief.py`** — JSON schema + semantic rules enforcement (min_confirmed_requirements, max_blocker_issues, all_ac_bind_confirmed, components_ambiguous_resolved).
+- **`verification/e2e/validators/validate_plan.py`** — task-contract schema + expected structure.
+- **`verification/e2e/validators/validate_code_structure.py`** — dry Konsist static check: expected files, forbidden/required regex patterns.
+- **`verification/e2e/validators/diff_golden.py`** — snapshot comparator, ignore noise fields (timestamps, checksums).
+- **`verification/e2e/validators/report_builder.py`** — consolidate markdown report với stage breakdown.
+
+#### Fixture
+
+- **`verification/e2e/fixtures/book-detail/`** — pilot fixture với intentional conflicts:
+  - `config.yaml` — fixture metadata
+  - `input/spec.md` + `input/screenshots/` — source
+  - `expected/brief.golden.yaml` — golden snapshot
+  - `expected/brief.semantics.yaml` — semantic rules
+  - `expected/plan.structure.yaml` — plan expected structure
+  - `expected/code.konsist.expected.yaml` — code rules dry check
+
+Fixture intentional issues:
+- SOURCE_CONFLICT (button label spec vs screenshot)
+- MISSING_DESIGN (offline state không có screenshot)
+- AMBIGUOUS_COMPONENT (top-right icon candidates)
+- MISSING_BEHAVIOR (OI-01 cellular behavior)
+- UNRESOLVED_NAVIGATION (OI-02 inline vs full player)
+
+#### Documentation
+
+- **`verification/e2e/README.md`** — layout + hybrid validation strategy + fixture design.
+- **`verification/e2e/runbook.md`** — detailed how-to-run, exit codes, troubleshoot, CI integration preview.
+
+### Changed
+
+- `AGENTS.md`: task routing +1 row (verify-e2e), workflows +1 row, file index refresh với 5 e2e paths.
+
+### Rationale
+
+Trước v0.15: harness không có integration test. Khi update skill/schema/workflow, maintainer phải chạy manual check qua product repo thật để confirm không regression. Risk cao: không catch được output format drift, không catch được semantic quality degrade.
+
+v0.15 bridge gap:
+- **Automated regression detect**: khi harness thay đổi, chạy `./run-e2e.sh --all` → confirm fixtures vẫn PASS.
+- **Hybrid validation**: golden snapshot catch structural drift (schema, field layout), semantic assertion catch content quality degrade (REQ coverage, AC verifiability).
+- **No agent dependency**: validators chạy static trên artifacts, không spawn Claude Code/Codex → deterministic, CI-friendly.
+- **Fixture ownership**: `book-detail` pilot là canonical example cho downstream team onboard.
+
+Key design decisions:
+- **Bash + Python stack**: match install.sh convention (bash orchestrator, Python validator). Zero extra dependency vì jsonschema + pyyaml đã có trong Guardian dependency.
+- **Static code check**: Stage 3 không spawn Gradle/Konsist thật (require Android project). Static regex + file list enough cho harness-level e2e.
+- **Golden ignore noise**: timestamps + checksums là noise (variable mỗi run). diff_golden strip trước khi compare.
+- **Golden update require human**: `--update-golden` không chạy auto trong CI. Golden regenerate luôn qua maintainer review.
+- **Stage skip gracefully**: Stage 2 (plan) + 3 (code) skip nếu artifact missing. Fixture không bắt buộc có đủ 5 stages.
+- **Smoke test passed trên dev machine**: pilot fixture book-detail chạy end-to-end với mock actual = golden, confirm pipeline logic.
+
+### Migration from 0.14.1
+
+Zero breaking change. E2e là tool mới, additive. Existing workflows không bị impact.
+
+**Usage**:
+
+```bash
+# Install deps (one-time)
+pip3 install pyyaml jsonschema
+
+# Run single fixture
+./verification/e2e/scripts/run-e2e.sh book-detail
+
+# Run all fixtures
+./verification/e2e/scripts/run-e2e.sh --all
+
+# Debug stage specific
+./verification/e2e/scripts/run-e2e.sh book-detail --stages 1,4 --verbose
+
+# Update golden sau intentional harness change
+./verification/e2e/scripts/run-e2e.sh book-detail --update-golden
+```
+
+### Integration với Guardian
+
+Guardian workflow `harness-maintenance.md` có thể trigger e2e trong `audit mode` để confirm fixtures stable trước khi propose change. E2e fail → Guardian document regression, không merge. E2e pass → regenerate golden nếu intentional, commit vào PR.
+
+### Scope boundaries
+
+- **IN scope v0.15.0**: Bash orchestrator, Python validators, book-detail pilot fixture, 5 stages, hybrid validation.
+- **OUT scope (Wave 2+)**: Agent spawn integration (auto-run Claude Code CLI để produce actual output), multi-fixture parallel run, GitHub Actions CI workflow, benchmark mode (token cost, execution time per skill).
+
+### Smoke test verification
+
+Pilot fixture book-detail chạy local trên dev machine:
+- Deps installed: pyyaml 6.x, jsonschema 4.x
+- `actual/brief.yaml = expected/brief.golden.yaml` (identity test) → PASS all stages
+- Report format đẹp, markdown parse OK
+- Exit code 0 với overall PARTIAL (vì Stage 2+3 skip do fixture không có plan/code artifact)
+
 ## [0.14.1] — 2026-10-15
 
 ### Added

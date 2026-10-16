@@ -1,0 +1,49 @@
+# Fixture metadata
+id: book-detail
+title: Book Detail Screen (pilot fixture)
+version: 1
+harness_version_tested: v0.14.1
+
+description: >
+  Canonical pilot fixture cho e2e harness regression. Feature đọc chi tiết sách
+  với audio preview. Có intentional ambiguity + conflict để test reconciliation.
+
+scope:
+  spec_source: local-markdown
+  design_source: local-screenshot
+  downstream_workflow: feature-development
+
+input:
+  spec: input/spec.md
+  screenshots:
+    - input/screenshots/book-detail-content.png
+    - input/screenshots/book-detail-loading.png
+    - input/screenshots/book-detail-error.png
+
+expected_artifacts:
+  brief:
+    golden: expected/brief.golden.yaml
+    semantics: expected/brief.semantics.yaml
+    required: true
+  plan:
+    structure: expected/plan.structure.yaml
+    required: false
+  code:
+    konsist: expected/code.konsist.expected.yaml
+    required: false
+
+intentional_issues:
+  - type: SOURCE_CONFLICT
+    description: Button label mismatch (spec "Buy" vs screenshot "Add to Cart")
+    expected_severity: blocker
+  - type: MISSING_DESIGN
+    description: Offline state spec yêu cầu nhưng không có screenshot
+    expected_severity: high
+  - type: AMBIGUOUS_COMPONENT
+    description: Top-right icon không có label (candidates bookmark/favorite/share)
+    expected_severity: high
+
+notes:
+  - Fixture không có real screenshots PNG để commit (placeholder .md trong input/screenshots/)
+  - Khi test thật, user cung cấp screenshots qua agent run manual
+  - Golden brief/plan/code đại diện output ideal sau khi agent process

@@ -30,6 +30,7 @@ Context project (resolve từ `overlay.yaml`):
 | Extract screen contract từ screenshot/Figma | `input-analyze-design` |
 | Reconcile conflict giữa spec + design | `input-reconcile` |
 | Validate Feature Brief qua 12 quality gates | `input-validate-brief` |
+| Run e2e regression test pipeline qua fixtures | `verify-e2e` workflow (bash + Python) |
 | Tạo feature mới end-to-end | `android-feature` |
 | Build/sửa Compose UI | `android-compose` |
 | Thiết kế UiState/Intent/Effect, reducer, side-effect | `android-mvi` |
@@ -58,6 +59,7 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 | `workflows/release-validation.md` | Release candidate validation (preflight → build → smoke → artifact → regression → sign-off) |
 | `workflows/parallel-feature-development.md` | Build N feature độc lập song song từ spec (decompose → isolation → spawn → aggregate → review → verify) |
 | `workflows/harness-maintenance.md` | Maintain + evolve harness (signal → triage → impact → draft → validate → review → release) — bởi Guardian |
+| `workflows/verify-e2e.md` | E2e regression test pipeline qua fixtures (5 stages: brief → plan → code → gates → report). Hybrid validation (golden snapshot + semantic assertion). |
 
 ## Agent roles
 
@@ -171,6 +173,10 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `verification/detekt/README.md` + `detekt-config-template.yml`
 - `verification/lint/README.md`
 - `verification/brief-schema/README.md` + `brief.schema.json` — JSON schema cho Feature Brief
+- `verification/e2e/README.md` + `runbook.md` — e2e regression test suite
+- `verification/e2e/scripts/run-e2e.sh` + stage-1..4 — bash orchestrator
+- `verification/e2e/validators/` — Python validators (brief, plan, code, diff, report)
+- `verification/e2e/fixtures/book-detail/` — pilot fixture với intentional conflict
 - `briefs/README.md` — output directory input layer
 - `evaluations/templates/e01..e05.md`
 - `evaluations/rubrics/README.md` — scoring rubric chung

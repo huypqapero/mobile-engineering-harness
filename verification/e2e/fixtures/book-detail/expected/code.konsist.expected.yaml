@@ -1,0 +1,50 @@
+# Expected code structure sau khi feature-development implement fixture book-detail.
+# Optional artifact — chỉ check nếu actual/code/ tồn tại.
+#
+# Dry static check (validate_code_structure.py). Không spawn Konsist/Gradle.
+
+expected_files:
+  - presenter/feature/book-detail/BookDetailScreen.kt
+  - presenter/feature/book-detail/BookDetailViewModel.kt
+  - presenter/feature/book-detail/BookDetailContract.kt
+  - domain/model/book/BookDetail.kt
+  - domain/usecase/book/GetBookDetailUseCase.kt
+  - domain/repository/BookRepository.kt
+  - data/repository/BookRepositoryImpl.kt
+  - data/mapper/BookMapper.kt
+  - data/remote/BookApi.kt
+  - data/dto/BookDto.kt
+
+forbidden_patterns:
+  - path_glob: domain/**/*.kt
+    regex: "import android\\."
+    message: "ARCH-001 domain module không import Android"
+
+  - path_glob: domain/**/*.kt
+    regex: "import.*compose"
+    message: "ARCH-001 domain không import Compose"
+
+  - path_glob: presenter/**/*.kt
+    regex: "import.*data\\.repository\\.(?!.*Repository$)"
+    message: "ARCH-002 presenter không import data impl (chỉ interface domain)"
+
+  - path_glob: data/repository/**Impl.kt
+    regex: "class.*Impl.*: BaseRepository"
+    message: "ARCH-004 Repository impl không kế thừa BaseRepository (dùng ApiResult)"
+
+required_patterns:
+  - path: presenter/feature/book-detail/BookDetailViewModel.kt
+    regex: "class BookDetailViewModel.*BaseViewModel"
+    message: "ARCH-003 ViewModel extend BaseViewModel"
+
+  - path: presenter/feature/book-detail/BookDetailContract.kt
+    regex: "sealed .*Intent"
+    message: "ARCH-007 MVI Intent sealed"
+
+  - path: domain/repository/BookRepository.kt
+    regex: "^interface BookRepository"
+    message: "ARCH-004 Repository là interface ở domain"
+
+  - path: data/mapper/BookMapper.kt
+    regex: "object BookMapper"
+    message: "ARCH-005 Mapper object + extensions"

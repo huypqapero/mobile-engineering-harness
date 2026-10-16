@@ -1,0 +1,38 @@
+# Semantic rules apply tới brief.yaml output của fixture book-detail.
+# Validator: validators/validate_brief.py enforce rules này.
+
+# Minimum confirmed requirements từ spec
+min_confirmed_requirements: 3
+
+# Maximum blocker issues chưa resolve. Fixture có 2 intentional blockers
+# (ISSUE-001 button label SOURCE_CONFLICT + ISSUE-004 cellular behavior MISSING_BEHAVIOR)
+# để test gate RECON-001 enforcement. User cần resolve hoặc --force-handoff
+# downstream workflow.
+max_blocker_issues: 2
+
+# Maximum unresolved requirement. Fixture có 2 open items (OI-01, OI-02)
+# nên expected 2 unresolved REQ.
+max_unresolved_requirements: 3
+
+# Minimum AC
+min_acceptance_criteria: 4
+
+# Required requirement types phải present
+required_requirement_types:
+  - functional
+  - ui
+  - non-functional
+
+# Mọi AC chỉ bind confirmed REQ (REQ-RULE-005)
+all_ac_bind_confirmed: true
+
+# Mọi confirmed/inferred REQ phải có source_references
+all_requirements_have_source: true
+
+# Ambiguous component phải có candidates list (fixture có top-right-icon)
+# Note: ambiguous != unresolved. Agent có thể giữ ambiguous trong brief,
+# chỉ cần có candidates ≥ 2. Max 2 cho fixture này.
+max_components_ambiguous: 3
+
+# Brief phải pass validation gate (status: passed)
+has_validation_pass: true
