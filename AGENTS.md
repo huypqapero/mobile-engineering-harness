@@ -132,7 +132,8 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `knowledge/input-analysis/reconciliation-matrix.md` — matrix + severity rules
 - `knowledge/input-analysis/confluence-fetch-rules.md` — CONF-RULE-001..012 cho MCP adapter
 - `knowledge/input-analysis/figma-fetch-rules.md` — FIG-RULE-001..008 + design rule overrides
-- `knowledge/e2e-runtime/device-driver-contract.md` — abstract driver interface (10 methods)
+- `knowledge/e2e-runtime/device-driver-contract.md` — abstract driver interface (10 methods) + 5 implementation paths comparison
+- `knowledge/e2e-runtime/custom-apk-driver.md` — architecture + HTTP protocol + UiAutomation cheat sheet + 3 acquisition options (200+ cases/round scale)
 - `knowledge/e2e-runtime/guard-round-pattern.md` — full vs verify round orchestration
 - `knowledge/e2e-runtime/interruption-patterns.md` — ad/permission/dialog auto-dismiss
 - `knowledge/e2e-runtime/runner-neutral-step.md` — step file design rationale

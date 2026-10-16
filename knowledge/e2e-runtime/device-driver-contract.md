@@ -209,6 +209,20 @@ Driver report structured error, runner decide retry/skip/abort theo policy.
 - `timeout`: screenshot current state, mark step failed
 - `forbidden_op`: abort case, report violation
 
+## Implementation paths
+
+5 paths implement driver contract, trade-off giữa latency, setup cost, maintenance:
+
+| Path | Latency/call | Setup | Unicode | Use case |
+|---|---|---|---|---|
+| ARTEMIS MCP | ~1-2s | Zero (có sẵn env) | ✅ | Default, < 50 cases |
+| Maestro CLI | ~200-500ms | Install Maestro | ✅ | 50-200 cases |
+| Appium server | ~1-3s | Appium + driver | ✅ | Team có skill sẵn |
+| **Custom APK** | **~30-100ms** | **2-3 tuần build** | **✅ chuẩn** | **200+ cases, Unicode strict** |
+| Pure ADB + vision | ~3-5s | Zero | 🟡 | Fallback cho SDK closed UI |
+
+**Chi tiết Custom APK path**: xem `knowledge/e2e-runtime/custom-apk-driver.md` — architecture, protocol spec (HTTP over ADB forward), UiAutomation API cheat sheet, 3 acquisition options (build riêng / fork learn-app / vendor binary).
+
 ## Implementation examples
 
 ### ARTEMIS MCP adapter (Wave 2 target)

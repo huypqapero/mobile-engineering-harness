@@ -4,6 +4,73 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.17.0] — 2026-10-16
+
+### Added — Custom APK Driver Pattern
+
+Pattern cho custom APK driver — hiệu suất cao (~30-100ms/call) cho E2E test volume lớn (200+ cases/round) hoặc yêu cầu Unicode input chuẩn (dấu tiếng Việt). Thay thế ARTEMIS MCP (~1-2s/call) khi scale vượt threshold.
+
+**Harness không ship binary APK.** Document pattern + architecture + protocol spec để downstream product build APK driver riêng, hoặc tham khảo implementation có sẵn (learn-app-plugin private repo).
+
+#### Knowledge (1)
+
+- **`knowledge/e2e-runtime/custom-apk-driver.md`** (~500 LoC):
+  - Decision matrix khi nào cần APK driver (volume threshold, latency, Unicode)
+  - Architecture overview: host runner ↔ ADB forward ↔ instrumentation HTTP server trên device
+  - HTTP protocol spec: `/ping /tree /shot /tap /settext` + extensions `/swipe /long_press /launch /shell /broadcast`
+  - UiAutomation API cheat sheet (getWindows, walk tree, injectInputEvent, ACTION_SET_TEXT, takeScreenshot)
+  - Project structure (Android library module với instrumentation entry)
+  - Unicode input strategies: clipboard vs accessibility setText
+  - Element locator priority (resource id → test-tag → content-description → text → regex → fallback)
+  - Jetpack Compose semantics considerations
+  - Build + sign + install workflow
+  - CI integration example (GitHub Actions pipeline)
+  - Testing driver reliability (self-test suite + metrics endpoint)
+  - **3 acquisition options**: build riêng (recommended, 2-3 tuần), fork learn-app (nhanh nhất với access), vendor binary APK (temporary PoC)
+  - Integration mapping APK endpoints → 10 methods driver contract
+  - 7 anti-patterns
+
+### Changed
+
+- `knowledge/e2e-runtime/device-driver-contract.md`: thêm section "Implementation paths" với bảng so sánh 5 paths (ARTEMIS / Maestro / Appium / Custom APK / ADB+vision), cross-reference tới `custom-apk-driver.md`.
+- `AGENTS.md`: file index add `custom-apk-driver.md`.
+
+### Rationale
+
+User explicit chọn APK custom path cho downstream product scale 200+ cases/round. ARTEMIS MCP (~1.5s × 30 steps × 200 cases = 2.5 giờ/round) không scale được. APK driver (~30ms × 30 × 200 = 3 phút/round) giảm 50x.
+
+Scope decisions:
+- **Pattern-only, không ship binary**: giữ harness repo nature (markdown + minimal Python/Bash). Downstream build APK trong project riêng theo doc.
+- **HTTP over ADB forward**: protocol đã chứng minh work bởi learn-app-plugin, simpler hơn broadcast intent / content provider.
+- **Persistent UiAutomation**: key insight cho performance — 1 instrumentation process giữ connection suốt run, không spawn mới mỗi call.
+- **Accessibility setText cho Unicode**: avoid `adb shell input text` limitations với dấu tiếng Việt.
+- **3 acquisition options**: user có flexibility (build riêng cho long-term, fork learn-app cho nhanh, vendor binary cho PoC).
+
+Learn-app-plugin DriverInstrumentation.java inspected (public API scope):
+- Port 7912 default
+- ServerSocket bind 127.0.0.1 only
+- Endpoints `/ping /config /tree /shot /tap /settext`
+- UiAutomation flags: FLAG_RETRIEVE_INTERACTIVE_WINDOWS + FLAG_INCLUDE_NOT_IMPORTANT_VIEWS + FLAG_REPORT_VIEW_IDS
+- Guarded tap với ad detection built-in
+
+Harness doc tổng quát hóa, không copy ad detection product-specific.
+
+### Migration from 0.16.0
+
+Zero breaking change. Pure documentation addition.
+
+### Scope boundaries
+
+- **IN scope v0.17.0**: Documentation pattern + protocol spec + acquisition options
+- **OUT scope**: Shipping binary APK, Android project trong harness repo, auto-install workflow
+- **OUT scope (future Wave 3)**: `tools/harness-device-driver/` scaffold, APK CI build pipeline, driver marketplace
+
+### Not implemented in Wave
+
+- No actual APK built (downstream responsibility)
+- No install script (downstream orchestrator)
+- No example product repo demonstrating Option A build (future)
+
 ## [0.16.0] — 2026-10-16
 
 ### Added — Learn-plugin E2E Pattern Port (Wave 1)
