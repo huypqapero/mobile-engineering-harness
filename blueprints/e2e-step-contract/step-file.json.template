@@ -1,0 +1,37 @@
+{
+  "case": "TC-001-example",
+  "description": "Short case description, Vietnamese OK",
+  "preconditions": [
+    "App installed with debug build + hook receiver",
+    "API fake return success"
+  ],
+  "metadata": {
+    "ad_aware": true,
+    "timeout_seconds": 60,
+    "require_remote_config": {
+      "feature_x_enabled": true
+    },
+    "require_locale": "vi"
+  },
+  "steps": [
+    { "launch": { "clearState": true } },
+    { "wait": { "node": "home-screen", "timeout": 5000 } },
+    { "tap": { "node": "primary-cta" } },
+    { "wait": { "node": "target-screen" } },
+    { "screenshot": { "name": "target-screen-initial" } },
+    { "assert": { "node": "title", "text": "Expected Title" } },
+    { "type": { "node": "input-field", "text": "sample với dấu tiếng Việt" } },
+    { "tap": { "node": "submit-button" } },
+    { "wait": { "node": "result-content", "timeout": 10000 } },
+    { "screenshot": { "name": "target-screen-result" } },
+    { "assert": { "node": "status", "text_regex": "^(success|completed)$" } },
+    { "hook": {
+        "action": "com.debug.CLEAR_CACHE",
+        "receiver": "$APP_ID/.debug.DebugReceiver"
+      }
+    }
+  ],
+  "cleanup": [
+    { "shell": "input keyevent KEYCODE_HOME" }
+  ]
+}

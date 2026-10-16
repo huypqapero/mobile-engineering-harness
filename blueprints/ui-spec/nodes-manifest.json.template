@@ -1,0 +1,26 @@
+[
+  {
+    "slug": "book-detail-content",
+    "frameId": "1:234",
+    "kind": "screen"
+  },
+  {
+    "slug": "book-detail-loading",
+    "frameId": "1:235",
+    "kind": "state",
+    "parent": "book-detail-content"
+  },
+  {
+    "slug": "book-detail-error",
+    "frameId": "1:236",
+    "kind": "state",
+    "parent": "book-detail-content"
+  },
+  {
+    "slug": "popup-reward",
+    "frameId": "3:9",
+    "nodeId": "3:12",
+    "parent": "book-detail-content",
+    "kind": "popup"
+  }
+]

@@ -4,6 +4,111 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.16.0] — 2026-10-16
+
+### Added — Learn-plugin E2E Pattern Port (Wave 1)
+
+Port **cốt lõi E2E patterns** từ `hung-apero/learn-app-plugin` sang harness dưới dạng **pattern + schema + agent template**, zero runtime code. Downstream product build runner theo pattern khi cần.
+
+#### Agents (3)
+
+- **`agents/ui-judge.md`** — Visual compare screenshot vs Figma + ui-spec, verdict chặn (critical) vs nên sửa (minor). Read-only, record qua state CLI hoặc result file. Generic cho mọi Android app.
+- **`agents/e2e-author.md`** — Write runner-neutral JSON step files. Enforce 4 forbidden ops (force-stop $APP_ID, pm clear, hardcode packageId, raw locale change). Alternative patterns provided.
+- **`agents/lesson-miner.md`** — Distill tester bugs từ Jira/GitHub/Linear thành structured lessons (symptom + cause + rule + how_to_test + affected_files). PR cho dev review, không auto-merge.
+
+#### Blueprints (2)
+
+- **`blueprints/e2e-step-contract/`** — Runner-neutral JSON step file schema:
+  - `README.md` — Design rationale, action types, placeholders, metadata flags
+  - `step-file.json.template` — Reference template
+  - `step-file.schema.json` — JSON Schema Draft 2020-12 với forbidden ops regex enforce
+  - `forbidden-ops.md` — FORBID-001..004 chi tiết (force-stop, pm clear, hardcode AppID, raw locale)
+- **`blueprints/ui-spec/`** — Per-node UI contract (screen/popup/sheet/dialog/state):
+  - `README.md` — Sections (Reach + Door + Elements + Tokens + Copy + Assets)
+  - `node-spec.md.template` — Template per node
+  - `nodes-manifest.json.template` — Index manifest `_nodes.json` schema
+
+#### Knowledge (5)
+
+- **`knowledge/e2e-runtime/device-driver-contract.md`** — Abstract driver interface 10 methods (fetchHierarchy, tap, type, swipe, wait, assert, screenshot, shell, launch, hook). Performance targets. Portability requirements. ARTEMIS adapter example.
+- **`knowledge/e2e-runtime/guard-round-pattern.md`** — Full round vs verify round orchestration. State machine. Early-stop logic (3 cases same fingerprint). APK cache + round pin. Streaming bug coordination. Resumption after crash.
+- **`knowledge/e2e-runtime/interruption-patterns.md`** — Ad popup / permission dialog / system dialog / in-app modal detection + dismiss. Watch mode cho rewarded ads. Max consecutive = 3 fail. Fixture `adsOffRemoteConfig` flag.
+- **`knowledge/e2e-runtime/runner-neutral-step.md`** — Design principles declarative, node slug vs view id, JSON over YAML, placeholder resolution, forbidden ops schema-level, metadata flags. So sánh với Maestro / Appium / Espresso / Detox.
+- **`knowledge/visual-compare/figma-vs-screenshot.md`** — Perceptual hash (phash default) + SSIM optional. Thresholds (0-5 near-identical, 6-10 minor, 11-20 significant, 21+ very different). Pre-processing (resize, crop system UI, mask dynamic). Per-node override.
+
+#### Workflows (2)
+
+- **`workflows/guard-round.md`** — E2E runtime round orchestration pattern. 5 stages: Open → Build → Install → Run (streaming) → Close. Full vs verify matrix. Rollback strategy. Agent roles mapping.
+- **`workflows/mine-lessons.md`** — Bug tracker → structured lessons pipeline. 5 stages: Fetch → Classify → Distill → Merge → PR. Dev review required. Integration với plan-reviewer / test-writer / architect / Guardian.
+
+#### Verification extension
+
+- **`verification/e2e/scripts/stage-5-ui-visual.sh`** — Optional stage 5 cho visual UI compare. Skip gracefully nếu missing deps hoặc rules file.
+- **`verification/e2e/validators/validate_ui_visual.py`** — Pillow + imagehash validator. Pre-process (resize + crop + mask). Perceptual hash default + SSIM optional per node. Classification 4 tiers.
+
+### Changed
+
+- `AGENTS.md`: task routing +6 rows (ui-judge, e2e-author, lesson-miner, visual compare, guard-round, mine-lessons), workflows +2, agent roles +3, file index refresh.
+
+### Rationale
+
+`hung-apero/learn-app-plugin` là **product-specific orchestrator** (dòng Learn app) với full runtime E2E stack (90+ test files, built-in APK driver, Firebase/Discord integration). Harness generic không nên copy product-specific infrastructure, nhưng **pattern + schema + agent template** là valuable universally.
+
+Wave 1 port:
+- **Portable (DO port)**: UI judge pattern, E2E step schema, device driver contract, guard round orchestration, interruption handling, lesson mining, visual compare technique
+- **Product-specific (DO NOT port)**: Built-in APK driver, Feature Store catalog, Firebase Remote Config hook, Discord bot, Google Play compliance, Learn SDK vendored
+
+Key design decisions:
+- **Zero runtime code**: harness ship pattern + schema + agent markdown. Downstream build runner adapter khi cần (ARTEMIS MCP, Appium, Maestro, custom APK).
+- **Agent template approach**: ui-judge/e2e-author/lesson-miner là generic role prompts, không tie với state CLI implementation của learn-app-plugin.
+- **Schema enforcement**: step file forbidden ops ở JSON Schema regex level, 4 defense layers (schema + author lint + driver pre-exec scan + report trace).
+- **Visual compare pre-filter**: perceptual hash fast + deterministic, call ui-judge LLM chỉ khi distance >= 6 (giảm cost + latency).
+- **Dev-review gate cho lessons**: lesson-miner không auto-publish; PR cho dev approve → next run consume.
+- **Mapping Learn 9-step → harness workflows**: không copy state machine (`spec → scout → ask → clear → update-spec → planning → coding → testing → notify`); map từng step vào existing workflows (feature-development, verify-e2e, guard-round).
+
+### Scope boundaries
+
+- **IN scope v0.16.0**: Agent templates, blueprints, knowledge, workflows, visual compare validator (ui-visual stage 5)
+- **OUT scope (Wave 2+)**: ARTEMIS MCP adapter wrap, real device driver implementation, state CLI tool, autopilot hooks, pool emulator parallel coordination, journey schema
+
+### Smoke test
+
+- Pillow + imagehash installed cục bộ, validator chạy với synthetic fixture (perceptual_distance=0 cho identical placeholders).
+- JSON schema step-file validated syntax OK.
+- Stage 5 shell script executable, skip gracefully khi fixture không có `expected/ui/visual.rules.yaml`.
+
+### Migration from 0.15.0
+
+Zero breaking change. Pure addition.
+
+**Usage examples**:
+
+```bash
+# Visual compare (nếu fixture có screenshots thật + Figma reference)
+./verification/e2e/scripts/stage-5-ui-visual.sh verification/e2e/fixtures/book-detail /tmp/results.yaml
+
+# ui-judge agent (invoke manual qua Claude Code):
+# Prompt: "ui-judge grade node book-detail-content với
+#   Figma: expected/ui/figma/book-detail-content.png
+#   Shot: actual/ui/screenshots/book-detail-content.png
+#   Spec: ui-spec/book-detail-content.md"
+
+# e2e-author (invoke manual):
+# Prompt: "e2e-author write step file cho test case TC-001 với
+#   UI spec: ui-spec/*.md, output briefs/<slug>/actual/e2e/TC-001.json"
+
+# lesson-miner (require tracker MCP):
+# Prompt: "lesson-miner mine bugs cho app ABC từ Jira project ABC since 2026-07-01"
+```
+
+### Not implemented in Wave 1
+
+- No actual runner (downstream build theo pattern)
+- No state CLI (dùng existing task-contract blueprint khi cần)
+- No ARTEMIS adapter wrap (Wave 2 nếu team có real device test need)
+- No streaming bug coordination infrastructure
+- No pool emulator parallel runner
+
 ## [0.15.0] — 2026-10-16
 
 ### Added — E2E Verification Suite

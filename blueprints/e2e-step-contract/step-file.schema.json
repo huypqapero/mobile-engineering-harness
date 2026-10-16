@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/schemas/e2e-step/v1.json",
+  "title": "E2E Step File",
+  "type": "object",
+  "required": ["case", "description", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "case": {
+      "type": "string",
+      "pattern": "^TC-[0-9]{3,}-[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "description": { "type": "string", "minLength": 1 },
+    "preconditions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ad_aware": { "type": "boolean" },
+        "timeout_seconds": { "type": "integer", "minimum": 1, "maximum": 1800 },
+        "require_remote_config": { "type": "object" },
+        "require_locale": { "type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$" },
+        "audio_input": { "type": "string" }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/action" }
+    },
+    "cleanup": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/action" }
+    }
+  },
+
+  "$defs": {
+    "action": {
+      "oneOf": [
+        { "required": ["launch"], "properties": { "launch": { "$ref": "#/$defs/launchAction" } } },
+        { "required": ["tap"], "properties": { "tap": { "$ref": "#/$defs/tapAction" } } },
+        { "required": ["long_press"], "properties": { "long_press": { "$ref": "#/$defs/longPressAction" } } },
+        { "required": ["type"], "properties": { "type": { "$ref": "#/$defs/typeAction" } } },
+        { "required": ["swipe"], "properties": { "swipe": { "$ref": "#/$defs/swipeAction" } } },
+        { "required": ["scroll_to"], "properties": { "scroll_to": { "$ref": "#/$defs/scrollToAction" } } },
+        { "required": ["wait"], "properties": { "wait": { "$ref": "#/$defs/waitAction" } } },
+        { "required": ["assert"], "properties": { "assert": { "$ref": "#/$defs/assertAction" } } },
+        { "required": ["screenshot"], "properties": { "screenshot": { "$ref": "#/$defs/screenshotAction" } } },
+        { "required": ["shell"], "properties": { "shell": { "$ref": "#/$defs/shellAction" } } },
+        { "required": ["hook"], "properties": { "hook": { "$ref": "#/$defs/hookAction" } } },
+        { "required": ["speak"], "properties": { "speak": { "$ref": "#/$defs/speakAction" } } },
+        { "required": ["press_key"], "properties": { "press_key": { "$ref": "#/$defs/pressKeyAction" } } }
+      ]
+    },
+
+    "launchAction": {
+      "oneOf": [
+        { "const": true },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "clearState": { "type": "boolean" },
+            "deepLink": { "type": "string" },
+            "activity": { "type": "string" }
+          }
+        }
+      ]
+    },
+
+    "tapAction": {
+      "type": "object",
+      "oneOf": [
+        { "required": ["node"], "properties": { "node": { "type": "string" } } },
+        { "required": ["coords"], "properties": { "coords": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 } } }
+      ]
+    },
+
+    "longPressAction": {
+      "type": "object",
+      "required": ["node", "ms"],
+      "additionalProperties": false,
+      "properties": {
+        "node": { "type": "string" },
+        "ms": { "type": "integer", "minimum": 100 }
+      }
+    },
+
+    "typeAction": {
+      "type": "object",
+      "required": ["node", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "node": { "type": "string" },
+        "text": { "type": "string" },
+        "clear_first": { "type": "boolean" }
+      }
+    },
+
+    "swipeAction": {
+      "type": "object",
+      "required": ["direction"],
+      "additionalProperties": false,
+      "properties": {
+        "direction": { "enum": ["up", "down", "left", "right"] },
+        "distance": { "type": "integer", "minimum": 1 },
+        "duration_ms": { "type": "integer", "minimum": 100 },
+        "from_node": { "type": "string" }
+      }
+    },
+
+    "scrollToAction": {
+      "type": "object",
+      "required": ["node"],
+      "additionalProperties": false,
+      "properties": {
+        "node": { "type": "string" },
+        "direction": { "enum": ["up", "down"] },
+        "max_swipes": { "type": "integer", "minimum": 1, "maximum": 20 }
+      }
+    },
+
+    "waitAction": {
+      "type": "object",
+      "oneOf": [
+        { "required": ["ms"], "properties": { "ms": { "type": "integer", "minimum": 10 } } },
+        {
+          "required": ["node"],
+          "properties": {
+            "node": { "type": "string" },
+            "timeout": { "type": "integer", "minimum": 100 }
+          }
+        }
+      ]
+    },
+
+    "assertAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "node": { "type": "string" },
+        "text": { "type": "string" },
+        "text_regex": { "type": "string" },
+        "exists": { "type": "boolean" },
+        "visible": { "type": "boolean" },
+        "shell": { "type": "string" },
+        "contains": { "type": "string" },
+        "equals": {}
+      }
+    },
+
+    "screenshotAction": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+        "crop": {
+          "type": "object",
+          "required": ["x", "y", "width", "height"],
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" },
+            "width": { "type": "integer" },
+            "height": { "type": "integer" }
+          }
+        }
+      }
+    },
+
+    "shellAction": {
+      "type": "string",
+      "pattern": "^(?!.*\\bam\\s+force-stop\\s+\\$APP_ID)(?!.*\\bpm\\s+clear\\b).*",
+      "description": "Raw adb shell. Rejects force-stop $APP_ID and pm clear via regex."
+    },
+
+    "hookAction": {
+      "type": "object",
+      "required": ["action"],
+      "additionalProperties": false,
+      "properties": {
+        "action": { "type": "string" },
+        "receiver": { "type": "string" },
+        "extras": { "type": "object" }
+      }
+    },
+
+    "speakAction": {
+      "type": "object",
+      "required": ["text"],
+      "additionalProperties": false,
+      "properties": {
+        "text": { "type": "string" },
+        "lang": { "type": "string" }
+      }
+    },
+
+    "pressKeyAction": {
+      "type": "string",
+      "enum": [
+        "HOME",
+        "BACK",
+        "MENU",
+        "APP_SWITCH",
+        "VOLUME_UP",
+        "VOLUME_DOWN",
+        "POWER",
+        "ENTER",
+        "ESCAPE",
+        "DEL",
+        "TAB"
+      ]
+    }
+  }
+}

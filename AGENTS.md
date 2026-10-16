@@ -31,6 +31,11 @@ Context project (resolve từ `overlay.yaml`):
 | Reconcile conflict giữa spec + design | `input-reconcile` |
 | Validate Feature Brief qua 12 quality gates | `input-validate-brief` |
 | Run e2e regression test pipeline qua fixtures | `verify-e2e` workflow (bash + Python) |
+| Chấm UI compare screenshot vs Figma + spec | `ui-judge` agent |
+| Write runner-neutral E2E step files JSON | `e2e-author` agent |
+| Distill tester bugs từ Jira/GitHub thành lessons | `lesson-miner` agent + `mine-lessons` workflow |
+| Orchestrate E2E runtime round (full/verify) với streaming bugs | `guard-round` workflow |
+| Visual compare Figma vs screenshot (perceptual hash + SSIM) | `validate_ui_visual.py` + stage-5-ui-visual |
 | Tạo feature mới end-to-end | `android-feature` |
 | Build/sửa Compose UI | `android-compose` |
 | Thiết kế UiState/Intent/Effect, reducer, side-effect | `android-mvi` |
@@ -60,6 +65,8 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 | `workflows/parallel-feature-development.md` | Build N feature độc lập song song từ spec (decompose → isolation → spawn → aggregate → review → verify) |
 | `workflows/harness-maintenance.md` | Maintain + evolve harness (signal → triage → impact → draft → validate → review → release) — bởi Guardian |
 | `workflows/verify-e2e.md` | E2e regression test pipeline qua fixtures (5 stages: brief → plan → code → gates → report). Hybrid validation (golden snapshot + semantic assertion). |
+| `workflows/guard-round.md` | E2E runtime round orchestration (full vs verify, streaming bugs, early-stop, APK cache + round pin). Pattern-only, downstream build runner. |
+| `workflows/mine-lessons.md` | Convert tester bugs → structured lessons feed back vào next-run plan checks + review rules. |
 
 ## Agent roles
 
@@ -125,6 +132,11 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `knowledge/input-analysis/reconciliation-matrix.md` — matrix + severity rules
 - `knowledge/input-analysis/confluence-fetch-rules.md` — CONF-RULE-001..012 cho MCP adapter
 - `knowledge/input-analysis/figma-fetch-rules.md` — FIG-RULE-001..008 + design rule overrides
+- `knowledge/e2e-runtime/device-driver-contract.md` — abstract driver interface (10 methods)
+- `knowledge/e2e-runtime/guard-round-pattern.md` — full vs verify round orchestration
+- `knowledge/e2e-runtime/interruption-patterns.md` — ad/permission/dialog auto-dismiss
+- `knowledge/e2e-runtime/runner-neutral-step.md` — step file design rationale
+- `knowledge/visual-compare/figma-vs-screenshot.md` — perceptual hash + SSIM thresholds
 - `skills/input-prepare-feature/SKILL.md` — orchestrator input layer
 - `skills/input-fetch-confluence/SKILL.md` — MCP adapter Confluence
 - `skills/input-fetch-figma/SKILL.md` — MCP adapter Figma
@@ -152,6 +164,8 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `blueprints/usecase/README.md`
 - `blueprints/task-contract/README.md` + `template.yaml` — standardized plan YAML (how to build)
 - `blueprints/feature-brief/README.md` + 5 templates — standardized input brief (what to build + why)
+- `blueprints/e2e-step-contract/README.md` + schema + template + forbidden-ops — runner-neutral E2E step files
+- `blueprints/ui-spec/README.md` + templates — per-node UI contract (Reach + Door + Elements + Tokens + Copy)
 - `workflows/prepare-feature-brief.md` — input layer pipeline
 - `workflows/feature-development.md`
 - `workflows/fix-bug.md`
@@ -162,6 +176,9 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `workflows/harness-maintenance.md` — meta (Guardian lifecycle)
 - `agents/input-analyst.md` — spec analysis role
 - `agents/design-analyst.md` — screenshot analysis role
+- `agents/ui-judge.md` — visual compare screenshot vs Figma + spec
+- `agents/e2e-author.md` — write runner-neutral step files
+- `agents/lesson-miner.md` — distill tester bugs thành lessons
 - `agents/architect.md`
 - `agents/implementer.md`
 - `agents/reviewer.md`
@@ -177,6 +194,8 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `verification/e2e/scripts/run-e2e.sh` + stage-1..4 — bash orchestrator
 - `verification/e2e/validators/` — Python validators (brief, plan, code, diff, report)
 - `verification/e2e/fixtures/book-detail/` — pilot fixture với intentional conflict
+- `verification/e2e/scripts/stage-5-ui-visual.sh` — optional UI visual compare stage
+- `verification/e2e/validators/validate_ui_visual.py` — perceptual hash + SSIM validator
 - `briefs/README.md` — output directory input layer
 - `evaluations/templates/e01..e05.md`
 - `evaluations/rubrics/README.md` — scoring rubric chung

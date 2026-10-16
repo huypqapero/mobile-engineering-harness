@@ -1,0 +1,69 @@
+# {{node-slug}}
+
+## Reach
+
+{{Mô tả cách driver mở node này. Ví dụ:}}
+Home → tab "Học" → tap item "Chương 1" → tap "Play preview"
+
+{{Hoặc dạng preset + deep link:}}
+Preset: user-logged-in-with-books
+Deep link: $DEEP_LINK_HOST/book/42?preview=true
+
+## Door
+
+{{Ai vẽ node:}}
+sdk: learning-path — LearningPathUiConfig.verdict
+
+{{Hoặc:}}
+app — presenter/feature/book-detail/BookDetailScreen.kt
+
+## Elements
+
+{{Element tree theo order visual, nested với dot notation:}}
+
+1. app-bar
+   1.1. back-button (icon)
+   1.2. title (text, headline-small)
+2. content-scroll
+   2.1. cover-image (image, large, corner-radius-md)
+   2.2. book-title (text, headline-large)
+   2.3. book-author (text, body-medium)
+   2.4. play-button (primary-button)
+
+## Tokens
+
+{{Semantic token references, không exact hex:}}
+
+AppColors.primary — play-button background
+AppColors.onPrimary — play-button text
+AppTypography.headline-large — book-title
+AppTypography.body-medium — book-author
+AppSpacing.lg — content padding
+AppRadius.md — cover-image corner
+
+## Copy
+
+### vi
+
+- app-bar.title: Chi tiết sách
+- play-button: Nghe thử
+
+### en
+
+- app-bar.title: Book Detail
+- play-button: Play preview
+
+## Assets
+
+- app-bar.back-button: ic_back_24.xml
+- play-button.icon: ic_play_arrow_24.xml
+
+## Preset (optional)
+
+{{Fixture setup script name:}}
+user-logged-in-with-books
+
+## Door exceptions (optional)
+
+{{Element override nếu Door là SDK:}}
+- play-button: app override via LearningPathUiConfig.customButton
