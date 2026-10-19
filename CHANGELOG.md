@@ -4,6 +4,161 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.20.0] — 2026-10-19
+
+### Added — Harness-init skill + D-full overlay runtime integration
+
+Consumer onboarding thu về **1 skill invocation**: `/harness-init` auto-detect gradle stack, interactive branding, render overlay, validate schema, và install project-local Claude Code symlinks + SessionStart hook. Giữ nguyên 17 placeholder trong harness source; model resolve runtime từ `.harness-overlay/overlay.yaml`.
+
+#### Skill — harness-init
+
+- **`skills/harness-init/SKILL.md`** — 9-step procedure cho consumer bootstrap.
+- **`skills/harness-init/scripts/detect-stack.sh`** — auto-detect UI/DI/Network/Database framework + package root + modules từ `libs.versions.toml`, `settings.gradle.kts`, `AndroidManifest.xml`.
+- **`skills/harness-init/scripts/render-overlay.sh`** — build `.harness-overlay/overlay.yaml` từ stack JSON + branding env vars.
+- **`skills/harness-init/scripts/validate-overlay.py`** — schema check: required keys, enum values, dependency conflicts (vd `targets contains ios` + `ui=xml-android`).
+- **`skills/harness-init/references/overlay-schema-mapping.md`** — detection matrix + decision guides cho multi-module, ambiguous DI/Network/DB stacks.
+
+#### D-full placeholder resolution
+
+- **`AGENTS.md`** thêm 2 section:
+  - `## Overlay bootstrap check` — nhắc trigger `harness-init` khi overlay missing; skills abort với `BLOCKED` nếu overlay thiếu field.
+  - `## Placeholder resolution` — mapping table 17 placeholder → overlay path (`{{MODULE_APP}}` → `modules.app`, `{{PRODUCT_NAME}}` → `product.name`, v.v.).
+- **20 SKILL.md** append `## Overlay gate (D-full)` section + `## Harness context` (workflow + guardrails pointer).
+- **`install.sh`** header mark `init` subcommand DEPRECATED; prefer skill `harness-init`.
+
+#### Scripts (consumer install/uninstall)
+
+- **`scripts/activate-claude-agents.sh`** — symlink `agents/*.md` → consumer `.claude/agents/` (install/uninstall/status).
+- **`scripts/check-overlay.sh`** — SessionStart hook script, remind trigger `harness-init` khi `.harness-overlay/overlay.yaml` missing.
+- **`scripts/install-session-hook.sh`** — patch consumer `.claude/settings.json` SessionStart entry + symlink hook vào `.claude/hooks/`.
+- **`scripts/uninstall-all.sh`** — orchestrate full teardown (skills + agents + hook); `--purge` flag xóa luôn `.harness-overlay/`.
+
+#### README
+
+- `## Install` thêm "Alternative: skill-based onboarding qua Claude Code" subsection (gọi `/harness-init` thay vì `mehcli init`).
+- `## Install` thêm "Uninstall / offboarding" subsection với `uninstall-all.sh` command + giải thích scope khác `mehcli uninstall`.
+
+#### Rationale (D-full vs D-lite)
+
+Thảo luận trade-off: giữ 17 placeholder + auto-trigger harness-init (D-full) vs bỏ 9 placeholder hardcode default (D-lite). Chọn D-full vì:
+
+- Zero code change trong 39 harness source file (safer khi upstream evolve).
+- Overlay là **explicit audit trail** cho consumer convention (vd `stack.di=hilt` doc rõ).
+- Multi-product consume harness mà convention khác nhau: mỗi product có overlay riêng, không chia default.
+- Rollback khi default sai: sửa overlay 1 file thay vì bulk patch 39 file.
+
+Mitigation ~5% miss-resolve risk:
+- Hard-enforce SessionStart hook `check-overlay.sh` (deterministic).
+- Soft-enforce `## Overlay gate (D-full)` ở top mỗi SKILL.md.
+- Mapping table full ở `AGENTS.md §Placeholder resolution`.
+
+### Added — Workflow + session skills (học từ ak catalog)
+
+Add 4 skill cover gap với ak pattern: fast scouting, pre-implement brainstorm gate, end-to-end pipeline, session handoff. Harness skill count: 16 → 20 → 21 (+ harness-init).
+
+#### Skills (4)
+
+- **`skills/coding-scout/SKILL.md`** — Fast codebase scouting. Native Glob/Grep/Read wrapper trả về file paths + layer classification + blast radius + suggested next skill. Read-only, không spawn agent cho simple query. Pattern từ `ak-scout`.
+- **`skills/coding-brainstorm/SKILL.md`** — Gate skill trước implementation. Lock outcome contract (desired/constraints/non-goals/AC) + enumerate 2-3 approach với trade-off matrix (6 dimension) + red team mỗi approach + recommend primary + fallback. Hard cap 3 approach. Pattern từ `ak-brainstorm`.
+- **`skills/coding-vibe/SKILL.md`** — End-to-end pipeline orchestrator. Chain brainstorm → scout → implement (feature/diagnose/refactor) → test → review → ship PR với 7 explicit quality gates. Max retry per stage documented. Auto `harness-handoff` khi retry exceed. Pattern từ `ak-vibe` nhưng chain Android/KMP skills thay vì React.
+- **`skills/harness-handoff/SKILL.md`** — Portable session continuation contract (markdown). Capture outcome, decisions, verification state, blockers với attempted + next step, file inventory, environment state, explicit next action. Self-contained — successor không cần chat history. `--redact` strip secrets. Pattern từ `ak-handoff` (chỉ file, không dispatch).
+
+#### Updated cross-refs
+
+- `AGENTS.md` task routing table + file index — thêm 4 skill mới
+- `scripts/activate-claude-skills.sh install` reinstalls → 20 symlinks trong `~/.claude/skills/`
+
+#### Rationale
+
+Phân tích ak catalog (~160 skills) vs harness (16) tìm pattern đáng học. Scope harness vertical Android nên không copy marketing/design kits. Add 4 skill cover 4 use case thiếu:
+
+1. **Scout:** trước đây ad-hoc grep per task; giờ consistent discovery + layer classify
+2. **Brainstorm:** gate chống scope creep + decision debt; outcome contract reusable cho downstream `coding-feature`
+3. **Vibe:** entry point one-shot cho user muốn full pipeline, không phải orchestrate từng skill thủ công
+4. **Handoff:** critical cho long task cross-session (Android cross-module feature thường > 1 session) + model switch (opus → sonnet)
+
+Giữ skill count ở 20 — không copy toàn bộ ak catalog. Nguyên tắc: adopt pattern, không clone content; respect harness vertical scope.
+
+## [0.19.0] — 2026-10-19
+
+### Changed — Skill naming convention (prefix normalization)
+
+Chuẩn hóa 15/16 skill name sang 3 prefix domain để dễ phân biệt trong catalog `/skill`:
+
+- **`coding-`** (10 skills): implementation + review + diagnose
+- **`business-`** (4 skills): spec/design pipeline (fetch, analyze, prepare, validate)
+- **`testing-`** (1 skill): test authoring
+- **`harness-maintenance`** giữ nguyên (meta skill, không fit 3 nhóm)
+
+#### Rename mapping
+
+| Cũ | Mới |
+|---|---|
+| `android-feature` | `coding-feature` |
+| `android-mvi` | `coding-mvi` |
+| `android-compose` | `coding-compose` |
+| `android-coroutines` | `coding-coroutines` |
+| `android-network` | `coding-network` |
+| `android-database` | `coding-database` |
+| `android-refactor` | `coding-refactor` |
+| `android-diagnose` | `coding-diagnose` |
+| `android-code-review` | `coding-review` |
+| `android-orchestrator` | `coding-orchestrator` |
+| `android-testing` | `testing-android` |
+| `input-fetch` | `business-fetch` |
+| `input-analyze` | `business-analyze` |
+| `input-prepare-feature` | `business-prepare-feature` |
+| `input-validate-brief` | `business-validate-brief` |
+
+#### Updated cross-refs
+
+Toàn bộ reference across `AGENTS.md`, `README.md`, `workflows/*.md`, `agents/*.md`, `knowledge/**/*.md`, `skills/**/SKILL.md` được rewrite bằng `scripts/rename-skills.sh` + `scripts/rename-skills-pass2.sh` (longest-first substring replace tránh prefix collision).
+
+#### Tooling
+
+- `scripts/rename-skills.sh` — one-shot folder rename + frontmatter `name:` patch + initial cross-ref sweep
+- `scripts/rename-skills-pass2.sh` — second-pass substring replace cho mọi residual (plan filenames, SKILL.md H1 headers, string references trong harness-maintenance examples)
+
+#### Rationale
+
+User không phân biệt được skill `android-*` nào là code vs test vs orchestration khi quét catalog `/skill`. Prefix domain-based giúp agent + user route nhanh: `coding-*` = implementation lane, `business-*` = requirement/design lane, `testing-*` = quality lane. Rename không đổi behavior, chỉ đổi identifier.
+
+## [0.18.0] — 2026-10-19
+
+### Changed — Skill consolidation (20 → 16)
+
+Gộp skill phase-level thành dispatcher skills để giảm catalog noise + unify tool chain cho overlap thật, giữ nguyên invocation lẻ qua flag `--source|--phase|--mode`.
+
+#### Merged
+
+- **`skills/input-fetch/SKILL.md`** (new) — merge `input-fetch-confluence` + `input-fetch-figma`. Dispatcher `--source confluence|figma`. Cùng output contract (snapshot vào `assets/sources/` + record origin/sha256 trong `brief.yaml.sources[]`), khác MCP adapter + extraction procedure.
+- **`skills/input-analyze/SKILL.md`** (new) — merge `input-analyze-spec` + `input-analyze-design` + `input-reconcile`. Dispatcher `--phase spec|design|reconcile|all`. Mỗi phase vẫn callable độc lập cho refresh section.
+- **`skills/android-diagnose/SKILL.md`** (new) — merge `android-debug` + `android-performance`. Dispatcher `--mode bug|perf`. Bug mode reactive (reproduce → isolate → prove → fix); perf mode measurement-driven loop (measure → hypothesize → optimize → re-measure). Common tool chain preserved.
+
+#### Removed
+
+- `skills/input-fetch-confluence/`
+- `skills/input-fetch-figma/`
+- `skills/input-analyze-spec/`
+- `skills/input-analyze-design/`
+- `skills/input-reconcile/`
+- `skills/android-debug/`
+- `skills/android-performance/`
+
+#### Updated cross-refs
+
+`AGENTS.md`, `README.md`, `workflows/prepare-feature-brief.md`, `workflows/fix-bug.md`, `agents/input-analyst.md`, `agents/design-analyst.md`, `knowledge/auto-fix/essentials.md`, `knowledge/performance/essentials.md`, `knowledge/input-analysis/*.md` — route sang skill mới + flag syntax.
+
+#### Tooling
+
+- `scripts/activate-claude-skills.sh` (new, from v0.17.1 dev) — symlink skills vào `~/.claude/skills/` để expose cho Claude Code `/skill`. Commands: `install|uninstall|status`, flags `--from|--target|--prefix|--force|--dry-run`.
+
+#### Rationale
+
+Input pipeline over-decomposed theo phase: 7 skill cho 1 orchestrator (`input-prepare-feature`). Phase chỉ chạy trong pipeline hiếm khi gọi lẻ ngoài orchestrator — chuyển thành phase flag giảm catalog slot + description noise cho Claude Code `/skill` discovery, không mất khả năng refresh section. Android debug vs performance có trigger overlap (ANR, jank, memory, recomposition) + dùng chung Profiler/Perfetto/logcat → gộp thành diagnose dispatcher.
+
+Total: 20 → 16 skills (11 android + 4 input + 1 maintenance). Giữ nguyên: `input-prepare-feature`, `input-validate-brief`, 10 `android-*` còn lại, `harness-maintenance`.
+
 ## [0.17.0] — 2026-10-16
 
 ### Added — Custom APK Driver Pattern
