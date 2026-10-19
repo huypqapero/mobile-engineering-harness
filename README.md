@@ -51,6 +51,35 @@ mehcli install --overlay /path/to/your/android-project/.harness-overlay
 
 Setup time ~15 phút.
 
+### Alternative: skill-based onboarding qua Claude Code
+
+Nếu dùng Claude Code, consumer có thể gọi skill `harness-init` thay vì `mehcli init`:
+
+```
+/harness-init
+```
+
+Skill tự:
+1. Scout `settings.gradle.kts` + `libs.versions.toml` → auto-detect stack.
+2. Hỏi 3 branding key (PRODUCT_NAME, THEME_PREFIX, THEME_CLASS).
+3. Render `.harness-overlay/overlay.yaml` + validate schema.
+4. Install 21 skills + 11 agents vào project-local `./.claude/`.
+5. Install SessionStart hook check overlay existence.
+
+### Uninstall / offboarding
+
+Khi deprecate harness khỏi product repo:
+
+```bash
+# Remove skills + agents + hook, giữ overlay
+.harness-overlay/upstream/scripts/uninstall-all.sh --target .
+
+# Full teardown: thêm xóa .harness-overlay/
+.harness-overlay/upstream/scripts/uninstall-all.sh --target . --purge
+```
+
+`mehcli uninstall --overlay <path>` chỉ remove rendered templates, không touch Claude Code symlink hoặc hook — dùng `uninstall-all.sh` cho full teardown.
+
 ### Install + run luôn (1 lệnh)
 
 ```bash
@@ -355,7 +384,7 @@ User: "Implement Login feature với Google OAuth + save token"
 
 AI resolution:
 1. Load CLAUDE.md + AGENTS.md
-2. Route task → skills/android-feature
+2. Route task → skills/coding-feature
 3. Load constitution/architecture-rules + concurrency-rules
 4. Load blueprint reference-feature
 5. Follow workflow feature-development
@@ -370,7 +399,7 @@ AI resolution:
 User: "Review PR #42"
 
 AI resolution:
-1. Route task → skills/android-code-review + workflow/review-pull-request
+1. Route task → skills/coding-review + workflow/review-pull-request
 2. Agent role: reviewer
 3. Scan diff 10 dimensions
 4. Each finding: Rule ID, severity, file:line, evidence, fix
@@ -383,7 +412,7 @@ AI resolution:
 User: "Fix crash in BookDetail khi offline"
 
 AI resolution:
-1. Route task → skills/android-debug + workflow/fix-bug
+1. Route task → skills/coding-diagnose (`--mode bug`) + workflow/fix-bug
 2. Agent role: debugger
 3. Stages: reproduce → isolate → cause → fix → verify
 4. Fix tại cause, không mask symptom

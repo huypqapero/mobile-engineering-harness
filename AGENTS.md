@@ -10,6 +10,41 @@ Context project (resolve từ `overlay.yaml`):
 - DI: {{DI_FRAMEWORK}}
 - Stack: {{UI_FRAMEWORK}} + {{NETWORK_FRAMEWORK}} + {{DATABASE_FRAMEWORK}}
 
+## Overlay bootstrap check
+
+Trước mọi coding/business/testing task, verify `.harness-overlay/overlay.yaml` tồn tại ở consumer project root. Nếu không:
+
+1. Trigger skill `harness-init` để scaffold overlay (auto-detect gradle + hỏi branding).
+2. Sau khi overlay ready, continue task gốc.
+
+Skills không được tự ý hardcode value thay cho overlay. Nếu overlay trống hoặc missing field, abort với status `BLOCKED` và chỉ dẫn user chạy `harness-init`.
+
+## Placeholder resolution
+
+Khi SKILL.md, knowledge, blueprint, workflow chứa `{{X}}`, resolve bằng cách Read `.harness-overlay/overlay.yaml` và map:
+
+| Placeholder | Overlay path | Ví dụ value |
+|---|---|---|
+| `{{PRODUCT_NAME}}` | `product.name` | `Acme` |
+| `{{PACKAGE_ROOT}}` | `product.package` | `com.acme.app` |
+| `{{PACKAGE_ROOT_PATH}}` | derived từ `product.package` (dot → slash) | `com/acme/app` |
+| `{{MODULE_APP}}` | `modules.app` | `composeApp` |
+| `{{MODULE_PRESENTER}}` | `modules.presenter` | `presenter` |
+| `{{MODULE_DOMAIN}}` | `modules.domain` | `domain` |
+| `{{MODULE_DATA}}` | `modules.data` | `data` |
+| `{{THEME_PREFIX}}` | `ui.theme_prefix` | `Acme` |
+| `{{THEME_CLASS}}` | `ui.theme_class` | `AcmeTheme` |
+| `{{UI_FRAMEWORK}}` | `stack.ui` | `compose-multiplatform` |
+| `{{MVI_BASE_CLASS}}` | `stack.mvi` | `BaseViewModel` |
+| `{{DI_FRAMEWORK}}` | `stack.di` | `koin` |
+| `{{NETWORK_FRAMEWORK}}` | `stack.network` | `ktor` |
+| `{{DATABASE_FRAMEWORK}}` | `stack.database` | `sqldelight` |
+| `{{FEATURES_ROOT}}` | `features_root` | `feature` |
+| `{{ORCHESTRATION_HANDOFF_DIR}}` | fixed `plans/handoff/` | `plans/handoff/` |
+| `{{VARS}}` | n/a (legacy, bỏ qua) | — |
+
+Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cached values trong context.
+
 ## Thứ tự đọc khi nhận task
 
 1. **Project root** `CLAUDE.md` — rule project-specific (cao nhất)
@@ -23,31 +58,35 @@ Context project (resolve từ `overlay.yaml`):
 
 | Task | Skill chính |
 |---|---|
-| Chuẩn hóa spec + screenshot thành Feature Brief | `input-prepare-feature` |
-| Fetch Confluence page + attachment qua MCP | `input-fetch-confluence` |
-| Fetch Figma file + node tree + variables qua MCP | `input-fetch-figma` |
-| Extract requirement + AC từ spec | `input-analyze-spec` |
-| Extract screen contract từ screenshot/Figma | `input-analyze-design` |
-| Reconcile conflict giữa spec + design | `input-reconcile` |
-| Validate Feature Brief qua 12 quality gates | `input-validate-brief` |
+| Chuẩn hóa spec + screenshot thành Feature Brief | `business-prepare-feature` |
+| Fetch Confluence page + attachment qua MCP | `business-fetch --source confluence` |
+| Fetch Figma file + node tree + variables qua MCP | `business-fetch --source figma` |
+| Extract requirement + AC từ spec | `business-analyze --phase spec` |
+| Extract screen contract từ screenshot/Figma | `business-analyze --phase design` |
+| Reconcile conflict giữa spec + design | `business-analyze --phase reconcile` |
+| Validate Feature Brief qua 12 quality gates | `business-validate-brief` |
 | Run e2e regression test pipeline qua fixtures | `verify-e2e` workflow (bash + Python) |
 | Chấm UI compare screenshot vs Figma + spec | `ui-judge` agent |
 | Write runner-neutral E2E step files JSON | `e2e-author` agent |
 | Distill tester bugs từ Jira/GitHub thành lessons | `lesson-miner` agent + `mine-lessons` workflow |
 | Orchestrate E2E runtime round (full/verify) với streaming bugs | `guard-round` workflow |
 | Visual compare Figma vs screenshot (perceptual hash + SSIM) | `validate_ui_visual.py` + stage-5-ui-visual |
-| Tạo feature mới end-to-end | `android-feature` |
-| Build/sửa Compose UI | `android-compose` |
-| Thiết kế UiState/Intent/Effect, reducer, side-effect | `android-mvi` |
-| Async / Flow / cancellation / concurrency | `android-coroutines` |
-| API integration, Ktor service, DTO + mapper | `android-network` |
-| Local DB SQLDelight, schema, migration, offline-first | `android-database` |
-| Refactor module preserve-behavior | `android-refactor` |
-| Debug crash / ANR / memory leak / flaky | `android-debug` |
-| Performance profile + optimize startup/UI/memory/network | `android-performance` |
-| Review PR, diff, module | `android-code-review` |
-| Viết unit/UI/integration test | `android-testing` |
-| Orchestrate multi-agent / parallel feature build | `android-orchestrator` |
+| Tạo feature mới end-to-end | `coding-feature` |
+| Build/sửa Compose UI | `coding-compose` |
+| Thiết kế UiState/Intent/Effect, reducer, side-effect | `coding-mvi` |
+| Async / Flow / cancellation / concurrency | `coding-coroutines` |
+| API integration, Ktor service, DTO + mapper | `coding-network` |
+| Local DB SQLDelight, schema, migration, offline-first | `coding-database` |
+| Refactor module preserve-behavior | `coding-refactor` |
+| Debug crash / ANR / memory leak / flaky | `coding-diagnose --mode bug` |
+| Performance profile + optimize startup/UI/memory/network | `coding-diagnose --mode perf` |
+| Review PR, diff, module | `coding-review` |
+| Viết unit/UI/integration test | `testing-android` |
+| Orchestrate multi-agent / parallel feature build | `coding-orchestrator` |
+| Scout codebase — tìm file/caller/blast radius trước khi touch | `coding-scout` |
+| Brainstorm trade-off trước implementation (lock outcome contract) | `coding-brainstorm` |
+| One-shot pipeline brainstorm→scout→implement→test→review→ship | `coding-vibe` |
+| Session continuation contract (switch model, long task, handoff human) | `harness-handoff` |
 | Maintain / audit / evolve chính harness (meta-agent) | `harness-maintenance` (Guardian) |
 
 Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùng file.
@@ -138,25 +177,25 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `knowledge/e2e-runtime/interruption-patterns.md` — ad/permission/dialog auto-dismiss
 - `knowledge/e2e-runtime/runner-neutral-step.md` — step file design rationale
 - `knowledge/visual-compare/figma-vs-screenshot.md` — perceptual hash + SSIM thresholds
-- `skills/input-prepare-feature/SKILL.md` — orchestrator input layer
-- `skills/input-fetch-confluence/SKILL.md` — MCP adapter Confluence
-- `skills/input-fetch-figma/SKILL.md` — MCP adapter Figma
-- `skills/input-analyze-spec/SKILL.md`
-- `skills/input-analyze-design/SKILL.md`
-- `skills/input-reconcile/SKILL.md`
-- `skills/input-validate-brief/SKILL.md`
-- `skills/android-feature/SKILL.md`
-- `skills/android-compose/SKILL.md`
-- `skills/android-mvi/SKILL.md`
-- `skills/android-coroutines/SKILL.md`
-- `skills/android-network/SKILL.md`
-- `skills/android-database/SKILL.md`
-- `skills/android-refactor/SKILL.md`
-- `skills/android-debug/SKILL.md`
-- `skills/android-performance/SKILL.md`
-- `skills/android-code-review/SKILL.md`
-- `skills/android-testing/SKILL.md`
-- `skills/android-orchestrator/SKILL.md`
+- `skills/business-prepare-feature/SKILL.md` — orchestrator input layer
+- `skills/business-fetch/SKILL.md` — MCP adapter Confluence/Figma (dispatcher `--source`)
+- `skills/business-analyze/SKILL.md` — spec/design/reconcile dispatcher (`--phase`)
+- `skills/business-validate-brief/SKILL.md`
+- `skills/coding-feature/SKILL.md`
+- `skills/coding-compose/SKILL.md`
+- `skills/coding-mvi/SKILL.md`
+- `skills/coding-coroutines/SKILL.md`
+- `skills/coding-network/SKILL.md`
+- `skills/coding-database/SKILL.md`
+- `skills/coding-refactor/SKILL.md`
+- `skills/coding-diagnose/SKILL.md` — bug/perf dispatcher (`--mode`)
+- `skills/coding-review/SKILL.md`
+- `skills/testing-android/SKILL.md`
+- `skills/coding-orchestrator/SKILL.md`
+- `skills/coding-scout/SKILL.md` — fast codebase discovery (read-only)
+- `skills/coding-brainstorm/SKILL.md` — trade-off + outcome lock gate
+- `skills/coding-vibe/SKILL.md` — end-to-end pipeline (brainstorm→scout→implement→test→review→ship)
+- `skills/harness-handoff/SKILL.md` — session continuation contract (markdown)
 - `skills/harness-maintenance/SKILL.md` — Guardian procedure (meta)
 - `blueprints/reference-feature/README.md`
 - `blueprints/network-service/README.md`

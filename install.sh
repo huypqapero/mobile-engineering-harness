@@ -3,9 +3,15 @@
 #
 # Subcommands:
 #   init         --project <path>              Scaffold .harness-overlay/ with schema template
+#                                               (DEPRECATED: prefer skill `harness-init` — auto-detect
+#                                               gradle stack + interactive branding; falls back here only
+#                                               if Claude Code harness-init skill unavailable)
 #   install      --overlay <path>              Render templates + write manifest
 #   update       --overlay <path>              Alias for install (idempotent re-render)
 #   uninstall    --overlay <path> [--purge]    Remove rendered files; --purge nukes entire overlay
+#                                               (for a full consumer teardown including Claude Code
+#                                               symlinks + hook, run `scripts/uninstall-all.sh --target .
+#                                               [--purge]` instead)
 #   task validate --plan <path>                Validate task contract YAML schema (R-01)
 #   self-update                                Pull latest upstream in installed location
 #   version                                    Print installed harness version
