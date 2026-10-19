@@ -192,7 +192,7 @@ Wontfix = business decision, không phải bug cần lesson. Skip distill.
 
 ## Pair với
 
-- **plan-reviewer / android-code-review**: next run apply lessons `rule` check
+- **plan-reviewer / coding-review**: next run apply lessons `rule` check
 - **test-writer / e2e-author**: translate `how_to_test` thành regression test case
 - **planner**: lesson có `affected_files` → plan touching those files phải reference lesson
 - **harness-guardian**: lesson aggregate thành proposal update constitution rule nếu pattern repeat ≥ 3 lessons

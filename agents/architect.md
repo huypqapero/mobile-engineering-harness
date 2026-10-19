@@ -208,7 +208,7 @@ Nếu phụ thuộc → declare `cross_dep`, orchestrator sẽ sequential cho ch
 
 ## Pair với skills
 
-- `android-feature` khi task tạo feature mới
-- `android-mvi` khi design state contract phức tạp
-- `android-orchestrator` khi orchestrate multi-feature parallel
+- `coding-feature` khi task tạo feature mới
+- `coding-mvi` khi design state contract phức tạp
+- `coding-orchestrator` khi orchestrate multi-feature parallel
 - `android-sdk-structure` (future) khi extract feature SDK

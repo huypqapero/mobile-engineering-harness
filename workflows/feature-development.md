@@ -73,9 +73,9 @@ Orchestrate việc implement feature end-to-end. Trạng thái máy, không chec
    - Remote config key mới
    - Risk (nếu có)
 2. Choose skill route:
-   - Primary: `android-feature`
-   - UI-heavy → secondary: `android-compose`
-   - State complex → secondary: `android-mvi`
+   - Primary: `coding-feature`
+   - UI-heavy → secondary: `coding-compose`
+   - State complex → secondary: `coding-mvi`
 
 ### Completion criteria
 
@@ -169,7 +169,7 @@ Orchestrate việc implement feature end-to-end. Trạng thái máy, không chec
 
 ### Actions
 
-Write report tại `plans/reports/android-feature-261014-XXXX-<feature>.md`:
+Write report tại `plans/reports/coding-feature-261014-XXXX-<feature>.md`:
 
 ```
 Status: VERIFIED | VERIFIED_WITH_LIMITATIONS | BLOCKED | FAILED
@@ -232,7 +232,7 @@ Giai đoạn solo (1 agent) → 1 agent thực hiện cả 5 stages, chuyển sk
 - Stage 4: "Test Engineer"
 - Stage 5: "Reviewer" (self-review)
 
-Giai đoạn team (sau khi harness ổn) → delegate Stage 4 cho `android-code-review` agent độc lập.
+Giai đoạn team (sau khi harness ổn) → delegate Stage 4 cho `coding-review` agent độc lập.
 
 ## Final output schema
 

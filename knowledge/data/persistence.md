@@ -52,7 +52,7 @@ Target: KMP (share schema iOS/desktop)?
 
 ## SQLDelight patterns
 
-Chi tiết: `.harness/skills/android-database/SKILL.md`.
+Chi tiết: `.harness/skills/coding-database/SKILL.md`.
 
 ### Schema basics
 
@@ -110,7 +110,7 @@ actual class DatabaseDriverFactory {
 
 ## Room patterns
 
-Chi tiết: `.harness/skills/android-database/SKILL.md §Room section`.
+Chi tiết: `.harness/skills/coding-database/SKILL.md §Room section`.
 
 ### Schema basics
 
@@ -405,5 +405,5 @@ fun `migrate v1 to v2 adds author column`() {
 
 - SQLDelight: https://cashapp.github.io/sqldelight
 - DataStore: https://developer.android.com/topic/libraries/architecture/datastore
-- `.harness/skills/android-database/SKILL.md`
+- `.harness/skills/coding-database/SKILL.md`
 - `.harness/knowledge/data/caching.md`

@@ -120,7 +120,7 @@ Agent **không tự route**; report + wait user hoặc orchestrator decide.
 
 **MUST** classify trước retry. Classification wrong → retry wrong fix.
 
-Chi tiết classifier: xem `skills/android-debug/SKILL.md §Failure classifier`.
+Chi tiết classifier: xem `skills/coding-diagnose/SKILL.md §Failure classifier`.
 
 ## Special cases — stop immediately
 
@@ -233,7 +233,7 @@ orchestration:
 
 ## References
 
-- `skills/android-debug/SKILL.md §Failure classifier`
+- `skills/coding-diagnose/SKILL.md §Failure classifier`
 - `workflows/fix-bug.md §Auto-fix section`
 - `agents/orchestrator.md §Fast failure`
 - `blueprints/task-contract/template.yaml §execution.max_fix_attempts`

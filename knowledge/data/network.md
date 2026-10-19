@@ -83,7 +83,7 @@ inline fun <T> ApiResult<T>.onSuccess(action: (T) -> Unit): ApiResult<T> {
 fun <T> ApiResult<T>.getOrNull(): T? = (this as? ApiResult.Success)?.data
 ```
 
-Extension là `inline` → lambda gọi được `suspend fun` (ví dụ `local.upsert(...)` trong `onSuccess`). `DomainError` định nghĩa ở `{{MODULE_DOMAIN}}/core/` (xem `skills/android-network §Error contract`).
+Extension là `inline` → lambda gọi được `suspend fun` (ví dụ `local.upsert(...)` trong `onSuccess`). `DomainError` định nghĩa ở `{{MODULE_DOMAIN}}/core/` (xem `skills/coding-network §Error contract`).
 
 ### Error mapping — `ErrorMapper`
 
@@ -817,4 +817,4 @@ Product đang dùng pattern cũ (`Repository impl : BaseRepository(ioDispatcher)
 - Ktor Client: https://ktor.io/docs/client-create-new-application.html
 - Ktorfit: https://foso.github.io/Ktorfit/
 - kotlinx.serialization: https://github.com/Kotlin/kotlinx.serialization
-- `.harness/skills/android-network/SKILL.md`
+- `.harness/skills/coding-network/SKILL.md`

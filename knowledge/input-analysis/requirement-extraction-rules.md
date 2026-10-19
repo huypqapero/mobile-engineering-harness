@@ -1,6 +1,6 @@
 # Requirement Extraction Rules
 
-Rules trích xuất requirement từ spec markdown + design screenshot thành entries trong `brief.yaml`. Áp dụng cho skill `input-analyze-spec` và `input-reconcile`.
+Rules trích xuất requirement từ spec markdown + design screenshot thành entries trong `brief.yaml`. Áp dụng cho skill `business-analyze --phase spec` và `business-analyze --phase reconcile`.
 
 ## Mục đích
 
@@ -160,7 +160,7 @@ Không tự tạo type mới. Nếu không fit → chọn gần nhất + note tr
    - Screenshot có, spec không có → tạo inferred requirement + MISSING_BEHAVIOR issue
 6. **Assign ID** theo convention REQ-001.
 7. **Write prose** vào `requirements.md`, bind YAML vào `brief.yaml`.
-8. **Validate** — gọi `input-validate-brief` skill check REQ-RULE-001..006.
+8. **Validate** — gọi `business-validate-brief` skill check REQ-RULE-001..006.
 
 ## Required policies
 

@@ -1,6 +1,6 @@
 # Figma Fetch Rules
 
-Rules fetch Figma file + node tree + image export qua `framelink-figma` MCP (primary) hoặc `TalkToFigma` MCP (fallback live canvas), normalize sang screen contract để feed vào `input-analyze-design`. Áp dụng cho skill `input-fetch-figma`.
+Rules fetch Figma file + node tree + image export qua `framelink-figma` MCP (primary) hoặc `TalkToFigma` MCP (fallback live canvas), normalize sang screen contract để feed vào `business-analyze --phase design`. Áp dụng cho skill `business-fetch --source figma`.
 
 ## Mục đích
 
@@ -73,7 +73,7 @@ Figma variables (color/number/string) là design token source truth. Khi có var
     has_variables: true
     variable_collections: [tokens-color, tokens-spacing, tokens-typography]
   ```
-- Downstream `input-analyze-design` có variables → được phép `confirmed` thay vì `inferred` cho color/spacing (xem override rule DESIGN-RULE-OVERRIDE-FIGMA bên dưới)
+- Downstream `business-analyze --phase design` có variables → được phép `confirmed` thay vì `inferred` cho color/spacing (xem override rule DESIGN-RULE-OVERRIDE-FIGMA bên dưới)
 
 ### FIG-RULE-005 — Component instance resolution
 
@@ -125,7 +125,7 @@ Không áp `background_color_estimate: blue` nữa.
 Node có `constraints.horizontal: SCALE` + fixed width:
 
 - Width/height confirmed trong Figma context
-- Downstream `input-analyze-design` vẫn note: implementation có thể dùng flexible modifier thay vì hardcoded dp
+- Downstream `business-analyze --phase design` vẫn note: implementation có thể dùng flexible modifier thay vì hardcoded dp
 
 ### DESIGN-RULE-OVERRIDE-007 — Layout confirmed
 
@@ -260,7 +260,7 @@ sources:
 
 ### AP-001 — Analyze trong adapter
 
-Fetch skill map Figma components sang Compose. CẤM. `input-analyze-design` làm việc này.
+Fetch skill map Figma components sang Compose. CẤM. `business-analyze --phase design` làm việc này.
 
 ### AP-002 — Follow prototyping link as nav
 
@@ -334,7 +334,7 @@ Lose hierarchy khi serialize. Preserve full tree để downstream phân tích co
 
 ## Downstream handoff
 
-Figma output → `input-analyze-design`:
+Figma output → `business-analyze --phase design`:
 
 - Primary input: `screen-contracts.json` (structured) + PNG screenshots (visual fallback)
 - Design analyst dùng structured data trước, screenshot cho visual confirm

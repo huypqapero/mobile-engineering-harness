@@ -40,7 +40,7 @@ Automated PR review với evidence-based findings. Scope: pending changes, PR nu
 
 ### Dimensions (bắt buộc check theo thứ tự)
 
-Dùng `skills/android-code-review/SKILL.md` làm checklist chi tiết. Shortened:
+Dùng `skills/coding-review/SKILL.md` làm checklist chi tiết. Shortened:
 
 **A. Architecture (BLOCKER-level)**
 - ARCH-001 domain purity (import check)

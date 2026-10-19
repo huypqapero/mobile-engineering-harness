@@ -95,7 +95,7 @@ Vào `briefs/<slug>/`:
 
 ### Validation
 
-16. **Dry-run `input-validate-brief`** rules trước khi handoff
+16. **Dry-run `business-validate-brief`** rules trước khi handoff
 17. **Blocker count = 0** hoặc user explicit override
 
 ## Decision frameworks
@@ -168,7 +168,7 @@ Analysis complete khi:
 - `brief.yaml` requirements + AC entries valid schema
 - Spec-only issues documented
 
-Trao analysis + issue list → `input-reconcile` skill cross-reference với Design Analyst output.
+Trao analysis + issue list → `business-analyze --phase reconcile` cross-reference với Design Analyst output.
 
 ## Handoff to Downstream workflow
 
@@ -181,10 +181,10 @@ Downstream `feature-development` Stage 1 Inspect đọc `briefs/<slug>/` làm au
 
 ## Pair với skills
 
-- `input-prepare-feature` (orchestrator) — invoke Input Analyst role trong Phase P2
-- `input-analyze-spec` — single-shot extract từ spec
-- `input-reconcile` — cross-reference với design
-- `input-validate-brief` — schema + consistency gates
+- `business-prepare-feature` (orchestrator) — invoke Input Analyst role trong Phase P2
+- `business-analyze --phase spec` — single-shot extract từ spec
+- `business-analyze --phase reconcile` — cross-reference với design
+- `business-validate-brief` — schema + consistency gates
 
 ## Pair với agents
 

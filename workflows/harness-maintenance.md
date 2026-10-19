@@ -72,7 +72,7 @@ Impact estimate: medium (knowledge/coroutines/essentials.md section Dispatcher)
 # registry/rule-registry.yaml
 - id: CORO-002
   knowledge: [coroutines/essentials.md]
-  skills: [android-coroutines, android-feature]
+  skills: [coding-coroutines, coding-feature]
   blueprints: [reference-feature]
 ```
 
@@ -98,7 +98,7 @@ rules_affected:
 knowledge_affected:
   - coroutines/essentials.md §Dispatcher
 skills_affected:
-  - android-coroutines §Step 2 Dispatcher selection
+  - coding-coroutines §Step 2 Dispatcher selection
 blueprints_affected: []
 agents_affected: []
 evals_affected:

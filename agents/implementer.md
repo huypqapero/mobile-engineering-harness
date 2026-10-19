@@ -25,7 +25,7 @@ Execute theo plan — viết code tối thiểu đáp ứng scope, không scope 
 
 - `plan.md` từ Architect
 - `blueprints/reference-feature/README.md` (hoặc live blueprint overlay)
-- Skill tương ứng (`android-feature`, `android-compose`, `android-mvi`, `android-coroutines`, ...)
+- Skill tương ứng (`coding-feature`, `coding-compose`, `coding-mvi`, `coding-coroutines`, ...)
 - Constitution rules
 
 ## Workflow
@@ -37,7 +37,7 @@ Execute theo plan — viết code tối thiểu đáp ứng scope, không scope 
 
 ### Step 2 — Execute bottom-up
 
-Thứ tự chuẩn (từ `android-feature` skill):
+Thứ tự chuẩn (từ `coding-feature` skill):
 
 1. Domain model + Repository interface (nếu mới)
 2. DTO + Mapper
@@ -151,7 +151,7 @@ Khi Implementer done:
 
 ## Pair với skills
 
-- `android-feature` — execute full feature
-- `android-compose` — khi touch UI
-- `android-mvi` — khi design state contract
-- `android-coroutines` — khi async
+- `coding-feature` — execute full feature
+- `coding-compose` — khi touch UI
+- `coding-mvi` — khi design state contract
+- `coding-coroutines` — khi async

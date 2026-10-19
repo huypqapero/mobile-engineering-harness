@@ -190,7 +190,7 @@ Analysis complete khi:
 - `brief.yaml` screens entries valid schema
 - Design-only issues documented
 
-Trao analysis + issue list → `input-reconcile` skill cross-reference với Input Analyst output.
+Trao analysis + issue list → `business-analyze --phase reconcile` cross-reference với Input Analyst output.
 
 ## Edge cases
 
@@ -221,10 +221,10 @@ Trao analysis + issue list → `input-reconcile` skill cross-reference với Inp
 
 ## Pair với skills
 
-- `input-prepare-feature` (orchestrator) — invoke Design Analyst role trong Phase P3
-- `input-analyze-design` — single-shot screen contract từ screenshot
-- `input-reconcile` — cross-reference với spec
-- `input-validate-brief` — schema + consistency gates
+- `business-prepare-feature` (orchestrator) — invoke Design Analyst role trong Phase P3
+- `business-analyze --phase design` — single-shot screen contract từ screenshot
+- `business-analyze --phase reconcile` — cross-reference với spec
+- `business-validate-brief` — schema + consistency gates
 
 ## Pair với agents
 

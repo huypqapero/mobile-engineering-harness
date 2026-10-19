@@ -345,4 +345,4 @@ queries.transaction {
 - Android Performance docs: https://developer.android.com/topic/performance
 - Compose stability: https://developer.android.com/jetpack/compose/performance/stability
 - Macrobenchmark: https://developer.android.com/topic/performance/benchmarking/macrobenchmark-overview
-- `.harness/skills/android-performance/SKILL.md`
+- `.harness/skills/coding-diagnose/SKILL.md` (mode `perf`)

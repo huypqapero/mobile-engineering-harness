@@ -17,9 +17,9 @@ priority: P1
 
 ## Prerequisites
 
-1. `.harness/agents/harness-guardian.md` — role mindset
-2. `.harness/knowledge/harness-governance/essentials.md` — permission levels + protected baseline
-3. `.harness/workflows/harness-maintenance.md` — change lifecycle
+1. `agents/harness-guardian.md` — role mindset
+2. `knowledge/harness-governance/essentials.md` — permission levels + protected baseline
+3. `workflows/harness-maintenance.md` — change lifecycle
 4. GitHub repo access với `gh` CLI
 5. (Optional) `registry/*.yaml` cho impact analysis fast
 
@@ -56,7 +56,7 @@ Scope limited:
 Guardian research + draft proposal + benchmark:
 - New rule candidate (ví dụ "add rule for Compose SharedTransitionLayout")
 - ADR revision candidate (ví dụ "revise ADR-007 for Compose 1.9 state hoisting")
-- Skill restructure (ví dụ "split android-compose into 3 focused skills")
+- Skill restructure (ví dụ "split coding-compose into 3 focused skills")
 
 Produce `plans/proposals/PROPOSAL-NNN.md`. Không auto-apply L3.
 
@@ -85,7 +85,7 @@ Nếu có `registry/`, query YAML. Else grep + manual trace:
 grep -rln "ARCH-007" constitution/ knowledge/ skills/ blueprints/ workflows/ agents/ evaluations/
 
 # Find skill consumers
-grep -rln "android-mvi" workflows/ agents/ AGENTS.md
+grep -rln "coding-mvi" workflows/ agents/ AGENTS.md
 
 # Find knowledge dependents
 grep -rln "knowledge/coroutines/essentials.md" skills/ blueprints/
@@ -96,7 +96,7 @@ Output: impact map
 affected:
   rules: [ARCH-007, MVI-001]
   knowledge: [mvi/essentials.md, presentation/ui-state.md]
-  skills: [android-mvi, android-feature, android-code-review]
+  skills: [coding-mvi, coding-feature, coding-review]
   blueprints: [reference-feature]
   evaluations: [E02, E09]
   agents: [architect, implementer, reviewer]
@@ -134,7 +134,7 @@ Need update.
 ## Scope
 Files touched:
 - knowledge/coroutines/essentials.md §Dispatcher table
-- Possibly skills/android-coroutines/SKILL.md §Dispatcher selection
+- Possibly skills/coding-coroutines/SKILL.md §Dispatcher selection
 
 ## Rules affected
 - CORO-002 (dispatcher inject) — no change
@@ -323,3 +323,19 @@ User tự setup. Harness document pattern, không impl.
 - `workflows/harness-maintenance.md` — change lifecycle workflow
 - `knowledge/harness-governance/essentials.md` — permission levels detail
 - ChatGPT reference: "Harness Guardian" model (2026-10-15)
+
+---
+
+## Harness context
+
+- Workflow: `workflows/harness-maintenance.md`
+- Guardrails: `~/.claude/rules/primary-workflow.md, development-rules.md, review-audit-self-decision.md, orchestration-protocol.md`
+
+
+## Overlay gate (D-full)
+
+Trước Step 1, verify `.harness-overlay/overlay.yaml` tồn tại. Nếu không, abort với status `BLOCKED` và chỉ dẫn user:
+
+> Chưa có overlay. Chạy skill `harness-init` để scaffold trước, sau đó quay lại skill này.
+
+Khi gặp placeholder `{{X}}` trong procedure/code example, resolve bằng mapping ở `AGENTS.md §Placeholder resolution` (Read overlay 1 lần đầu session, cache qua context).

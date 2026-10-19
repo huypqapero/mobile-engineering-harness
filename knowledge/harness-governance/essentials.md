@@ -32,7 +32,7 @@ Change scope?
 | Update link to Compose 1.9 docs | L0 |
 | Add example to `knowledge/coroutines/essentials.md` | L1 |
 | Clarify ARCH-003 rule wording (same meaning) | L1 |
-| Modify Step 2 trong `skills/android-feature/SKILL.md` | L2 |
+| Modify Step 2 trong `skills/coding-feature/SKILL.md` | L2 |
 | Add new Konsist test cho `ARCH-015` | L2 |
 | Change Detekt default severity | L2 |
 | Add new rule `ARCH-015 Compose state hoisting pattern` | L3 |

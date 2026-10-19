@@ -1,6 +1,6 @@
 # Screenshot Reading Rules
 
-Rules đọc screenshot UI thành screen contract trong `design.md` + `brief.yaml`. Áp dụng cho skill `input-analyze-design`.
+Rules đọc screenshot UI thành screen contract trong `design.md` + `brief.yaml`. Áp dụng cho skill `business-analyze --phase design`.
 
 ## Mục đích
 

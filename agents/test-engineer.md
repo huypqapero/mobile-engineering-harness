@@ -26,7 +26,7 @@ Xác định behavior cần cover, viết test deterministic + strong assertion,
 ## Inputs
 
 - Contract (`<Feature>Contract.kt`) hoặc spec file
-- `.harness/skills/android-testing/SKILL.md`
+- `.harness/skills/testing-android/SKILL.md`
 - `.harness/knowledge/coroutines/essentials.md §Testing with runTest`
 - `.harness/knowledge/mvi/essentials.md §Testing MVI`
 - Existing fakes trong `src/commonTest/`
@@ -243,6 +243,6 @@ Report test coverage:
 
 ## Pair với skills
 
-- `android-testing` — procedure chính
-- `android-mvi` — khi test state transition
-- `android-coroutines` — khi test async
+- `testing-android` — procedure chính
+- `coding-mvi` — khi test state transition
+- `coding-coroutines` — khi test async

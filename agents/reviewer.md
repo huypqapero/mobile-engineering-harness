@@ -9,7 +9,7 @@ Independent code audit: catch violation rules, security issue, maintainability g
 ## Scope
 
 - Run quality gates (Konsist, Detekt, build, tests)
-- Review theo 10 dimensions (A-J từ `skills/android-code-review/SKILL.md`)
+- Review theo 10 dimensions (A-J từ `skills/coding-review/SKILL.md`)
 - Verify architecture + MVI + concurrency + Compose compliance
 - Flag security + accessibility issue
 - Audit test quality
@@ -26,7 +26,7 @@ Independent code audit: catch violation rules, security issue, maintainability g
 - Diff: `gh pr diff <N>` hoặc `git diff <base>..<head>`
 - Plan file (nếu có) — verify alignment
 - Constitution rules
-- `skills/android-code-review/SKILL.md`
+- `skills/coding-review/SKILL.md`
 - Related knowledge (coroutines, compose, mvi essentials)
 
 ## Workflow
@@ -185,6 +185,6 @@ gh pr review <N> --request-changes -b "..."
 
 ## Pair với skills
 
-- `android-code-review` — procedure chính
-- `android-mvi` khi review state contract
-- `android-coroutines` khi review async code
+- `coding-review` — procedure chính
+- `coding-mvi` khi review state contract
+- `coding-coroutines` khi review async code

@@ -52,9 +52,9 @@ Orchestrate việc chuyển spec + design nguồn thành Feature Brief package. 
    - `generated_by: input-analyst-agent`
 3. **Route theo source type**:
    - Spec `local` → copy markdown file + checksum sha256
-   - Spec `confluence` → invoke skill `input-fetch-confluence` → normalized markdown + attachments
+   - Spec `confluence` → invoke skill `business-fetch --source confluence` → normalized markdown + attachments
    - Design `local` → copy screenshots thư mục + checksum
-   - Design `figma` → invoke skill `input-fetch-figma` → node tree JSON + variables + PNG snapshots
+   - Design `figma` → invoke skill `business-fetch --source figma` → node tree JSON + variables + PNG snapshots
    - Design `confluence-attachments` → routed trong confluence fetch với `--design-source` flag
    - Design `none` → skip
 4. Populate `brief.yaml.sources[]` với path + checksum + format + origin metadata
@@ -65,12 +65,12 @@ Orchestrate việc chuyển spec + design nguồn thành Feature Brief package. 
 | Spec source | Design source | Skills invoked |
 |---|---|---|
 | local | local | — (direct copy) |
-| local | figma | `input-fetch-figma` |
+| local | figma | `business-fetch --source figma` |
 | local | none | — (direct copy spec) |
-| confluence | local | `input-fetch-confluence` |
-| confluence | figma | `input-fetch-confluence` + `input-fetch-figma` (parallel OK) |
-| confluence | confluence-attachments | `input-fetch-confluence --design-source: confluence-attachments` |
-| confluence | none | `input-fetch-confluence` (headless) |
+| confluence | local | `business-fetch --source confluence` |
+| confluence | figma | `business-fetch --source confluence` + `business-fetch --source figma` (parallel OK) |
+| confluence | confluence-attachments | `business-fetch --source confluence --design-source confluence-attachments` |
+| confluence | none | `business-fetch --source confluence` (headless) |
 
 ### Completion criteria
 
@@ -104,7 +104,7 @@ Fetch notes không block pipeline; serve informational cho downstream.
 ### Actions
 
 1. Switch role → `agents/input-analyst.md`
-2. Invoke skill `input-analyze-spec`:
+2. Invoke skill `business-analyze --phase spec`:
    - Input: `briefs/<slug>/assets/sources/spec.md`
    - Follow `knowledge/input-analysis/requirement-extraction-rules.md`
 3. Produce:
@@ -139,7 +139,7 @@ Phase P2 độc lập với Phase P3. Multi-agent setup có thể spawn parallel
 ### Actions
 
 1. Switch role → `agents/design-analyst.md`
-2. Invoke skill `input-analyze-design`:
+2. Invoke skill `business-analyze --phase design`:
    - Input: `briefs/<slug>/assets/sources/screenshots/`
    - Follow `knowledge/input-analysis/screenshot-reading-rules.md`
 3. Produce:
@@ -169,7 +169,7 @@ Phase P2 độc lập với Phase P3. Multi-agent setup có thể spawn parallel
 
 ### Actions
 
-1. Invoke skill `input-reconcile`:
+1. Invoke skill `business-analyze --phase reconcile`:
    - Input: spec analysis + design analysis
    - Follow `knowledge/input-analysis/reconciliation-matrix.md`
 2. Procedure:
@@ -210,7 +210,7 @@ Max 3 iteration fix cho cùng blocker; sau 3 lần không resolve → raise cho 
 
 ### Actions
 
-1. Invoke skill `input-validate-brief`:
+1. Invoke skill `business-validate-brief`:
    - Input: `briefs/<slug>/`
    - Schema: `verification/brief-schema/brief.schema.json`
 2. Chạy 12 gates (theo thứ tự):
@@ -248,7 +248,7 @@ Max 3 iteration fix cho cùng blocker; sau 3 lần không resolve → raise cho 
 
 ## Report
 
-Write report tại `plans/reports/input-prepare-feature-{date}-{slug}.md`:
+Write report tại `plans/reports/business-prepare-feature-{date}-{slug}.md`:
 
 ```
 Status: READY | BLOCKED | FAILED | READY_WITH_OVERRIDE
@@ -300,7 +300,7 @@ Open questions:
 Nếu brief sai scope hoặc source outdated:
 
 1. Delete `briefs/<slug>/` toàn bộ
-2. Re-run `input-prepare-feature` từ P1 với source updated
+2. Re-run `business-prepare-feature` từ P1 với source updated
 3. Nếu brief đã handoff downstream (plan created) → raise issue cho downstream team re-align
 
 **Không revert partial** — brief package là unit atomic.

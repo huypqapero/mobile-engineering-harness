@@ -1,6 +1,6 @@
 # Reconciliation Matrix
 
-Matrix xử lý conflict/gap giữa spec và design. Áp dụng cho skill `input-reconcile`.
+Matrix xử lý conflict/gap giữa spec và design. Áp dụng cho skill `business-analyze --phase reconcile`.
 
 ## Mục đích
 
@@ -47,8 +47,8 @@ Có ảnh hưởng behavior không?
 ### Phase R1 — Collect analysis output
 
 Input:
-- `ProductSpecification` từ `input-analyze-spec`
-- `DesignContract[]` từ `input-analyze-design`
+- `ProductSpecification` từ `business-analyze --phase spec`
+- `DesignContract[]` từ `business-analyze --phase design`
 - Optional: existing codebase context (nếu agent được provide)
 
 ### Phase R2 — Cross-reference pass
@@ -242,7 +242,7 @@ issues:
 Downgrade từ `blocker` → `high` chỉ khi:
 
 1. Project default rule exists (reference được)
-2. Downstream workflow có safety net (ví dụ `android-feature` Stage 2 Plan có open-question gate)
+2. Downstream workflow có safety net (ví dụ `coding-feature` Stage 2 Plan có open-question gate)
 3. User explicit accept assumption
 
 Escalate `info` → `high` khi:

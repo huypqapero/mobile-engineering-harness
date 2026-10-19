@@ -172,5 +172,5 @@ Fake preferred > Mock.
 
 - Google: [Data layer](https://developer.android.com/topic/architecture/data-layer)
 - Clean Architecture: Dependency Rule (domain owns interface)
-- `.harness/skills/android-network/SKILL.md`
-- `.harness/skills/android-database/SKILL.md`
+- `.harness/skills/coding-network/SKILL.md`
+- `.harness/skills/coding-database/SKILL.md`

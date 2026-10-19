@@ -29,7 +29,7 @@ Role khác biệt rõ với 5 roles khác:
 
 - Phát triển feature cho product consumer
 - Modify product overlay content
-- Execute `android-feature`/`android-compose`/etc. skills (consumer side)
+- Execute `coding-feature`/`coding-compose`/etc. skills (consumer side)
 - Business logic decisions
 
 ## Permission levels (governance)
@@ -78,7 +78,7 @@ Scheduled routine (daily/weekly). Produce report, không change:
 
 User invoke khi cần fix:
 - "Guardian, update knowledge coroutines với Kotlin 2.1 changes"
-- "Guardian, audit skill android-compose length + duplication"
+- "Guardian, audit skill coding-compose length + duplication"
 - "Guardian, verify Konsist test template still works với new Konsist version"
 
 Scope limited L0-L2.
@@ -214,7 +214,7 @@ Phần optional giúp Guardian impact analysis fast. 4 YAML files tại `registr
   title: MVI pattern lock
   related_rules: [ARCH-007, MVI-001..010]
   knowledge: [mvi/essentials.md]
-  skills: [android-mvi, android-feature]
+  skills: [coding-mvi, coding-feature]
   blueprints: [reference-feature]
   evaluations: [E01, E02]
 ```
@@ -253,7 +253,7 @@ Guardian query registry trước change → know scope impact. Nếu không có 
 Prompt: "Harness Guardian, audit mode: review knowledge/coroutines/ với Kotlin 2.1 changes.
 Produce audit report, không auto-change."
 
-Prompt: "Harness Guardian, maintain mode: fix broken link trong skills/android-feature/SKILL.md"
+Prompt: "Harness Guardian, maintain mode: fix broken link trong skills/coding-feature/SKILL.md"
 
 Prompt: "Harness Guardian, evolve mode: propose rule cho Compose SharedTransitionLayout pattern.
 Research official docs, draft proposal L2/L3, không merge."

@@ -101,7 +101,7 @@ Main agent (hoặc dedicated subagent) verify parallel safety.
        prompt=parallel_feature_prompt(feature),
    )
    ```
-2. Prompt template (xem `skills/android-orchestrator/SKILL.md §Parallel feature prompt`)
+2. Prompt template (xem `skills/coding-orchestrator/SKILL.md §Parallel feature prompt`)
 3. Wait all tasks in batch complete
 4. Collect handoff reports từ `plans/handoff/<feature>.md`
 
@@ -173,7 +173,7 @@ Spawn independent subagent reviewer với full diff.
 
 1. `git diff <base>..HEAD` → full aggregate diff
 2. Read all `plans/handoff/*.md` + `isolation-check.yaml`
-3. Audit theo 10 dimensions `skills/android-code-review/SKILL.md`:
+3. Audit theo 10 dimensions `skills/coding-review/SKILL.md`:
    - Architecture (ARCH-001..014)
    - SOLID
    - MVI
@@ -299,7 +299,7 @@ Speedup: 2x
 - Features có cross-dependency
 - Spec có cross-feature refactor
 - Budget cứng, không afford 3x cost
-- Feature count = 1 (dùng `android-feature` + single mode)
+- Feature count = 1 (dùng `coding-feature` + single mode)
 - Debug phase cần single-thread trace
 
 ## Anti-patterns bị cấm
@@ -315,6 +315,6 @@ Speedup: 2x
 
 ## Reference
 
-- `skills/android-orchestrator/SKILL.md` — procedure chi tiết
+- `skills/coding-orchestrator/SKILL.md` — procedure chi tiết
 - `knowledge/agent-orchestration/essentials.md` — modes + patterns
 - `agents/orchestrator.md`, `agents/architect.md`, `agents/implementer.md`, `agents/reviewer.md`

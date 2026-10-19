@@ -300,7 +300,7 @@ Pending-review lessons áp dụng vào next run plan check tự động → chư
 
 ## Downstream integration
 
-### `plan-reviewer` / `android-code-review` agent
+### `plan-reviewer` / `coding-review` agent
 
 - Khi review code, load approved lessons với `affected_files` match
 - Flag violations của lesson rule

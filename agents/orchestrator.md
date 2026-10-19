@@ -28,7 +28,7 @@ Decompose task → spawn subagents (role-specific) → coordinate handoff → ag
 - Task / user prompt
 - `overlay.yaml.orchestration.*` config
 - Spec file(s) (parallel-features mode)
-- `skills/android-orchestrator/SKILL.md` procedure
+- `skills/coding-orchestrator/SKILL.md` procedure
 - `workflows/parallel-feature-development.md` orchestration
 
 ## Workflow
@@ -37,7 +37,7 @@ Decompose task → spawn subagents (role-specific) → coordinate handoff → ag
 
 Dựa trên `orchestration.mode`:
 
-- `single` → không orchestrate, delegate `android-feature` skill
+- `single` → không orchestrate, delegate `coding-feature` skill
 - `team` → sequential Task spawn per role
 - `parallel-features` → multi-feature parallel spawn
 - `auto` → decision tree từ `knowledge/agent-orchestration/essentials.md §Mode decision tree`
@@ -229,10 +229,10 @@ Thiếu bất kỳ → reject + request re-spawn với explicit instruction.
 
 ## Pair với skills
 
-- `android-orchestrator` — procedure chính
-- `android-feature` — subagent dùng cho implementation
-- `android-code-review` — reviewer subagent
-- `android-testing` — test-engineer subagent
+- `coding-orchestrator` — procedure chính
+- `coding-feature` — subagent dùng cho implementation
+- `coding-review` — reviewer subagent
+- `testing-android` — test-engineer subagent
 
 ## Pair với workflows
 

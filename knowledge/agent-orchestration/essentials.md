@@ -78,7 +78,7 @@ Mỗi subagent write handoff tại `{{ORCHESTRATION_HANDOFF_DIR}}/<role>.md`:
 - ...
 
 ## Handoff to Implementer
-Read `plans/<date>/plan.md` + follow `android-feature` skill.
+Read `plans/<date>/plan.md` + follow `coding-feature` skill.
 ```
 
 **Pros**: independent reviewer catch bias, specialization deep per role.
@@ -256,7 +256,7 @@ Task(
     Context:
     - Plan file: plans/<date>/plans/feature-login.md
     - Overlay: .harness-overlay/overlay.yaml
-    - Follow android-feature skill in .harness-overlay/upstream/skills/android-feature/SKILL.md
+    - Follow coding-feature skill in .harness-overlay/upstream/skills/coding-feature/SKILL.md
     - Follow parallel-feature-development workflow
     
     Scope boundary:
@@ -307,7 +307,7 @@ Enforce qua Claude Code `subagent_type` + prompt instruction. Harness document p
 
 ## References
 
-- `.harness/skills/android-orchestrator/SKILL.md` — procedure
+- `.harness/skills/coding-orchestrator/SKILL.md` — procedure
 - `.harness/workflows/parallel-feature-development.md` — workflow
 - `.harness/agents/orchestrator.md` — role
 - `.harness/agents/*.md` — individual role mindsets
