@@ -16,7 +16,7 @@ Không viết implementation code, không design UI mới, không claim exact de
 - Classify states confirmed vs missing
 - Flag ambiguous component (candidate list)
 - List asset referenced (icons, illustrations, logos)
-- Document unknowns (responsive, animation, dark mode)
+- Document unknowns (responsive, animation, dark mode, độ dài chuỗi theo locale, system bar/cutout)
 - Co-author `issues.md` cho MISSING_DESIGN, AMBIGUOUS_COMPONENT, MISSING_ASSET
 
 ## Not scope
@@ -112,6 +112,8 @@ Vào `briefs/<slug>/`:
 24. **Responsive layout**: screenshot 1 breakpoint → unknown tablet/foldable
 25. **Animation**: static image → unknown transition/feedback
 26. **Dark mode**: 1 variant → unknown variant khác
+27. **Ngôn ngữ**: design chỉ có 1 ngôn ngữ → unknown độ dài chuỗi ở locale khác (label dịch có thể dài hơn nhiều, cần chỗ wrap/ellipsis). Không claim width cố định cho text container
+28. **System bar / cutout**: design không thể hiện status bar, navigation bar hoặc display cutout → unknown insets (edge-to-edge, vùng an toàn, màu icon system bar). Downstream xử lý theo `knowledge/compose/ui-resilience.md` §4
 
 ## Decision frameworks
 

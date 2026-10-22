@@ -4,6 +4,21 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [Unreleased]
+
+### Added — Compose UI resilience knowledge
+
+- **`knowledge/compose/ui-resilience.md`** — guidance chống text bị cắt/tràn và content bị system UI che: text theo locale (không cố định width/height, `weight`/`widthIn`, `maxLines` + `TextOverflow` có chủ đích), font scale đến 200% (Android 14 nonlinear), RTL (`start`/`end`, `Icons.AutoMirrored`), edge-to-edge + `WindowInsets` (target SDK 35/36), cách kiểm tra (preview font scale/RTL/locale, pseudo-locale `en-XA`/`ar-XB`, checklist test tay). Có bảng source set (`commonMain` vs Android-only) cho profile `cmp`/`kmp`/`android-only`. ([#9](https://github.com/huypqapero/mobile-engineering-harness/issues/9))
+
+### Changed
+
+- **`skills/coding-compose/SKILL.md`** — Prerequisites load `ui-resilience.md`; Step 7 thêm text theo locale, font scale, RTL, insets; Step 8 visual verify thêm preview font scale 2.0/RTL/chuỗi dài và kiểm tra insets trên device target SDK 35+; Validation + Common mistakes cập nhật.
+- **`skills/coding-review/SKILL.md`** — Prerequisites load `ui-resilience.md` khi diff có Compose UI; checklist "D. Compose" thêm 3 mục (text theo locale, font scale + RTL, insets), severity tối đa HIGH.
+- **`agents/design-analyst.md`** — Unknowns thêm: design chỉ 1 ngôn ngữ → unknown độ dài chuỗi; design không thể hiện system bar/cutout → unknown insets.
+- **`knowledge/compose/essentials.md`**, **`AGENTS.md`** — link sang file mới.
+
+Không thêm rule ID vào `constitution/`, không sửa ADR.
+
 ## [0.20.0] — 2026-10-19
 
 ### Added — Harness-init skill + D-full overlay runtime integration

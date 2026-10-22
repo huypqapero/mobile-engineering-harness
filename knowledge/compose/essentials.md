@@ -151,6 +151,8 @@ private fun HomeContentPreview() {
 
 Preview chỉ cho stateless composable. Không preview Route composable (có ViewModel).
 
+Preview thêm font scale lớn, RTL và chuỗi dài để bắt lỗi cắt/tràn text: xem `knowledge/compose/ui-resilience.md` §5.
+
 ## Common mistakes
 
 | Mistake | Fix |
@@ -167,4 +169,5 @@ Preview chỉ cho stateless composable. Không preview Route composable (có Vie
 - [Compose Multiplatform docs](https://www.jetbrains.com/lp/compose-multiplatform/)
 - [Compose runtime](https://developer.android.com/jetpack/compose/mental-model)
 - [State in Compose](https://developer.android.com/jetpack/compose/state)
+- `knowledge/compose/ui-resilience.md` — text theo locale, font scale, RTL, edge-to-edge/insets
 - `presenter/theme/*.kt`, `presenter/components/*`

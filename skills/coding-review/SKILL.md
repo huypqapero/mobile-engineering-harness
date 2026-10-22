@@ -24,6 +24,7 @@ priority: P0
 2. `constitution/concurrency-rules.md` — CORO-001..010
 3. `constitution/engineering-principles.md`
 4. Project `CLAUDE.md`
+5. Khi diff có Compose UI: `knowledge/compose/ui-resilience.md`
 
 ## Execution procedure
 
@@ -75,6 +76,11 @@ Checklist bắt buộc, theo thứ tự ưu tiên:
 - [ ] Stateless composable hoisted state?
 - [ ] Preview ≥ 2 state critical?
 - [ ] Accessibility: `contentDescription`, min touch target?
+- [ ] Text theo locale: container chứa text không cố định width/height, label dài có `weight`/`widthIn`, `maxLines` + `TextOverflow` có chủ đích? (`ui-resilience.md` §1)
+- [ ] Font scale + RTL: không `height(...)` cố định cắt text ở 200%, dùng `start`/`end` và icon auto-mirror? (§2, §3)
+- [ ] Insets: content không bị status bar / navigation bar / cutout / IME che khi edge-to-edge? (§4)
+
+Mục locale / font scale / RTL / insets: severity tối đa HIGH, vì không có rule MUST tương ứng.
 
 #### E. Coroutines (BLOCKER)
 

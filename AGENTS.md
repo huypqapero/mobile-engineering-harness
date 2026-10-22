@@ -157,6 +157,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `knowledge/auto-fix/essentials.md` — auto-fix loop + fingerprint + attempt limit
 - `knowledge/architecture/clean-mvi.md`
 - `knowledge/compose/essentials.md`
+- `knowledge/compose/ui-resilience.md` — text theo locale, font scale, RTL, edge-to-edge/WindowInsets + cách kiểm tra (pseudo-locale, preview đa locale)
 - `knowledge/mvi/essentials.md`
 - `knowledge/coroutines/essentials.md`
 - `knowledge/data/repository-pattern.md`

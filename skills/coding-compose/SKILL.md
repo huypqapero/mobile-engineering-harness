@@ -22,9 +22,10 @@ priority: P0
 ## Prerequisites
 
 1. `knowledge/compose/essentials.md`
-2. `docs/design-guidelines.md`
-3. `docs/ui-catalog/` cho component pattern
-4. `presenter/theme/*` cho token available
+2. `knowledge/compose/ui-resilience.md` — text theo locale, font scale, RTL, edge-to-edge/insets
+3. `docs/design-guidelines.md`
+4. `docs/ui-catalog/` cho component pattern
+5. `presenter/theme/*` cho token available
 
 ## Execution procedure
 
@@ -145,12 +146,16 @@ private fun BookDetailErrorPreview() {
 
 Preview mọi state visible, không chỉ success.
 
-### Step 7 — Accessibility
+### Step 7 — Accessibility + UI resilience
 
 - `contentDescription` cho mọi icon-only button
 - `semantics { heading() }` cho section header
 - Touch target ≥ 48dp (`Modifier.minimumInteractiveComponentSize()`)
 - Content scaling: không fix `fontSize` tuyệt đối, dùng `MaterialTheme.typography`
+- Text theo locale: container chứa text không cố định width/height; label dài trong Row dùng `Modifier.weight(1f)` hoặc `widthIn`; chỉ đặt `maxLines` + `TextOverflow.Ellipsis` khi cắt là chủ đích (xem `knowledge/compose/ui-resilience.md` §1)
+- Font scale: component chứa text dùng `heightIn(min = ...)` thay vì `height(...)` để không cắt text ở font scale 200% (§2)
+- RTL: dùng `start`/`end`, không `left`/`right` vật lý; icon có hướng dùng `Icons.AutoMirrored.*` (§3)
+- Insets: screen tự xử lý edge-to-edge — dùng `innerPadding` của `Scaffold` hoặc `safeDrawingPadding()` (đã gồm IME); thêm `imePadding()` cho screen có input khi chỉ padding system bars hoặc `innerPadding` (§4)
 
 ### Step 8 — Verify
 
@@ -160,7 +165,12 @@ Preview mọi state visible, không chỉ success.
 ./gradlew detekt
 ```
 
-Visual verify: preview render đủ states; dark theme pass.
+Visual verify (chi tiết `knowledge/compose/ui-resilience.md` §5):
+
+- Preview render đủ states; dark theme pass
+- Preview font scale 2.0 và RTL: text không bị cắt, layout không vỡ, layout mirror đúng. Dùng cách preview hợp với source set (`ui-resilience.md` §5)
+- Locale chuỗi dài: preview `locale = "de"` hoặc chạy pseudo-locale `en-XA` / `ar-XB` trên device (Android): không tràn, không cắt ngoài ý muốn
+- Khi có device/emulator: chạy edge-to-edge (target SDK 35+), content không nằm dưới status bar, navigation bar, cutout hoặc bàn phím. Không có device → ghi rõ "insets chưa verify trên device" trong report
 
 ## Required policies
 
@@ -216,6 +226,8 @@ LaunchedEffect(Unit) {
 | `remember { ... }` không key cho data phụ thuộc param | `remember(param) { ... }` |
 | Lambda inline `onClick = { ... }` → không stable → recompose | `onClick = viewModel::onAction` |
 | Preview chỉ success state | Preview đủ 5 state |
+| `Modifier.height(48.dp)` / `width(...)` cố định cho container chứa text | `heightIn(min = ...)`, `weight(1f)`, `widthIn(max = ...)` |
+| Content bị status bar / navigation bar che khi edge-to-edge | Dùng `innerPadding` của `Scaffold` hoặc `safeDrawingPadding()` |
 | Icon button không `contentDescription` | Thêm cho a11y |
 | Logic nghiệp vụ trong Composable | Delegate sang ViewModel |
 
@@ -230,6 +242,8 @@ LaunchedEffect(Unit) {
 
 - [ ] Preview render đúng mọi state critical
 - [ ] Dark theme pass
+- [ ] Font scale 200% + locale chuỗi dài + RTL không cắt/tràn text
+- [ ] Insets xử lý đúng (system bar, cutout, IME), hoặc report ghi rõ chưa verify trên device
 - [ ] Không hardcode color/spacing/typography
 - [ ] Lazy list có key
 - [ ] `collectAsStateWithLifecycle()` nếu collect Flow
