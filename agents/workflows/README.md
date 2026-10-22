@@ -1,6 +1,6 @@
 # Agent Workflows — Routing & Handoff
 
-Index các workflow điều hướng giữa 14 agent trong `/agents/`. Orchestrator là LLM agent runtime coordinator, đọc workflow phù hợp để decide spawn + handoff.
+Index các workflow điều hướng giữa 15 agent trong `/agents/`. Orchestrator là LLM agent runtime coordinator, đọc workflow phù hợp để decide spawn + handoff.
 
 ## 14 agent — vị trí trong pipeline
 
@@ -27,6 +27,7 @@ Tổng: **12 role-based agent** (product/engineering) + **2 subagent QA** + **3 
 | `bug-triage.md` | QA phát hiện bug sau implement | QA report | Coder (code bug) / Architect (design bug) / Product Analyst (spec bug) |
 | `release-gate.md` | Feature xong, chuẩn bị release | Tech Lead + PM co-sign request | Release approved |
 | `parallel-features.md` | Nhiều feature độc lập cùng sprint | PM request Tech Lead | Multiple features converge |
+| `library-flow.md` | Tạo & vận hành KMP/Android lib repo riêng (greenfield + extract) | Library Architect (trigger check ≥ 2 consumer) | Publish + consumer migrate |
 
 ## Nguyên tắc chung điều hướng
 

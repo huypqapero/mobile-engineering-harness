@@ -36,8 +36,20 @@ knowledge/
 └── cross-cutting/       Cross-cutting concerns
     ├── performance/        Startup, UI, memory, network
     ├── security/           OWASP, encryption, auth
-    └── build-strategy/     Gradle, variant, build-time
+    ├── build-strategy/     Gradle, variant, build-time
+    └── shared-library/     SDK publish artifact: mindset + pattern + layer + brainstorm + testing-kit + rules
 ```
+
+### `shared-library/` detail (SDK knowledge set)
+
+6 file, đọc theo thứ tự khi design SDK mới:
+
+1. `sdk-mindset.md` — ADR SDK-001..006: SDK ≠ feature module, 3 guarantee, anti-pattern
+2. `pattern-catalog.md` — design pattern canonical ↔ component ↔ ref SDK (OkHttp/Retrofit/Firebase/...)
+3. `layered-architecture.md` — 5-layer kernel-plugin, 3 SPI mandatory, Konsist enforcement
+4. `brainstorm-process.md` — Phase 0 top-down 10-step, use case matrix 3-axis, straw-man rule
+5. `testing-kit-rules.md` — `:lib-testing` artifact mandatory, fake/driver/assertion spec
+6. `essentials.md` — rule checklist cứng (LIB-SCOPE/API/CONFIG/PORT/DEP/PATTERN/PUBLISH/GOV)
 
 ## Category routing
 

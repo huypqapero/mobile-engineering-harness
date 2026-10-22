@@ -65,6 +65,8 @@ Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cac
 | Classify bug không rõ loại (code/design/spec), max 3 retry rồi escalate PM | `bug-triage` |
 | Release co-sign Tech Lead + PM (14 tech + 12 business checklist) | `release` |
 | Chạy N feature song song cùng sprint (isolation check + shared file aggregation) | `parallel-features` |
+| Tạo KMP/Android lib mới ở repo riêng + publish artifact (≥ 2 consumer) | `library-new` |
+| Tách code product thành lib riêng + migrate source product | `library-extract` |
 
 ### Component-level task
 
@@ -118,10 +120,11 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 | `workflows/verify-e2e.md` | E2e regression test pipeline qua fixtures (5 stages: brief → plan → code → gates → report). Hybrid validation (golden snapshot + semantic assertion). |
 | `workflows/guard-round.md` | E2E runtime round orchestration (full vs verify, streaming bugs, early-stop, APK cache + round pin). Pattern-only, downstream build runner. |
 | `workflows/mine-lessons.md` | Convert tester bugs → structured lessons feed back vào next-run plan checks + review rules. |
+| `agents/workflows/library-flow.md` | Tạo & vận hành KMP/Android lib ở repo riêng (greenfield + extract, 10 stage: trigger check → scout → contract → impl → dual review → QA matrix → publish → consumer migrate). |
 
 ## Agent roles
 
-14 agent chia 3 layer. Trong workflow, agent có thể chuyển mindset qua các role (solo mode) hoặc spawn subagent dedicated (multi-agent mode). Xem `agents/*.md` chi tiết, `agents/workflows/README.md` cho routing.
+15 agent chia 3 layer. Trong workflow, agent có thể chuyển mindset qua các role (solo mode) hoặc spawn subagent dedicated (multi-agent mode). Xem `agents/*.md` chi tiết, `agents/workflows/README.md` cho routing.
 
 ### Product lifecycle layer
 
@@ -134,6 +137,7 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 
 - `tech-lead.md` — Bridge business ↔ tech, plan review gate, bug triage, release co-sign (có fast-path skip)
 - `architect.md` — Plan + inspect + decisions + spec decomposition (parallel mode)
+- `library-architect.md` — Thiết kế KMP/Android library repo riêng: boundary, API contract, per-project config, versioning, publishing (cross-cutting, không bind product overlay)
 - `coder.md` — Execute theo plan, minimal scope
 - `reviewer.md` — Independent code audit, evidence-based findings
 - `qa.md` — Façade verification: Scope A (per-screen) + Scope B (full-flow E2E)
@@ -200,6 +204,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `knowledge/coding/patterns/common-patterns.md`
 - `knowledge/cross-cutting/security/essentials.md`
 - `knowledge/cross-cutting/performance/essentials.md`
+- `knowledge/cross-cutting/shared-library/essentials.md` — LIB-SCOPE/API/CONFIG/PORT/DEP/PLATFORM/RES/ERROR/TEST/DOC/PUBLISH/GOV rule set cho library repo riêng
 - `knowledge/product/input-analysis/requirement-extraction-rules.md` — REQ-RULE-001..006
 - `knowledge/product/input-analysis/screenshot-reading-rules.md` — DESIGN-RULE-001..012
 - `knowledge/product/input-analysis/reconciliation-matrix.md` — matrix + severity rules
@@ -236,6 +241,8 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `skills/coding-vibe/SKILL.md` — end-to-end pipeline (brainstorm→scout→implement→test→review→ship)
 - `skills/harness-handoff/SKILL.md` — session continuation contract (markdown)
 - `skills/harness-maintenance/SKILL.md` — Guardian procedure (meta)
+- `skills/library-new/SKILL.md` — greenfield KMP/Android lib repo riêng + publish artifact (trigger ≥ 2 consumer, contract-first)
+- `skills/library-extract/SKILL.md` — tách code product thành lib riêng (scout coupling → lift-and-shift vs clean-slate → extract + migrate source)
 - `blueprints/reference-feature/README.md`
 - `blueprints/network-service/README.md`
 - `blueprints/compose-screen/README.md`
@@ -259,6 +266,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `agents/design-analyst.md` — analyze design nguồn đã có (reverse)
 - `agents/tech-lead.md` — plan review gate + fast-path routing + bug triage
 - `agents/architect.md` — technical plan + spec decomposition
+- `agents/library-architect.md` — KMP/Android lib repo riêng: boundary + API contract + per-project config + versioning + publishing + governance (cross-cutting)
 - `agents/coder.md` — implement theo plan
 - `agents/reviewer.md` — independent code audit
 - `agents/qa.md` — façade Scope A + Scope B verification
@@ -273,6 +281,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `agents/workflows/bug-triage.md` — phân loại bug (code/design/spec)
 - `agents/workflows/release-gate.md` — Tech Lead + PM co-sign
 - `agents/workflows/parallel-features.md` — multiple feature song song
+- `agents/workflows/library-flow.md` — tạo & vận hành KMP/Android lib repo riêng (greenfield + extract mode)
 - `verification/architecture-tests/TemplateArchitectureRulesTest.kt`
 - `verification/scripts/verify.sh.template`
 - `verification/detekt/README.md` + `detekt-config-template.yml`

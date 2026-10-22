@@ -26,6 +26,8 @@ Match user intent theo keyword trước. Nếu match → trigger skill wrapper, 
 | "verify/test/QA X" | solo `qa` scope A hoặc B | — |
 | "plan/design arch X" | solo `architect` | — |
 | "chuẩn hóa spec + screenshot thành brief" | `/business-prepare-feature` | — |
+| "tạo lib X dùng chung cho A và B", "shared library mới" | `/library-new` | solo `library-architect` + `architect` + `coder` |
+| "tách module Y thành lib riêng", "extract code product → lib" | `/library-extract` | solo `library-architect` + `coding-scout` |
 | Mơ hồ, không match | **ask clarify, KHÔNG tự chế workflow** | — |
 
 Full routing table 30+ row: `AGENTS.md §Task routing`.
