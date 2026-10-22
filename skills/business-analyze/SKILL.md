@@ -337,7 +337,7 @@ Severity rules:
 
 Mỗi issue có default resolve:
 - Loading/error/empty component → `knowledge/coding/compose/essentials.md`
-- Offline strategy → constitution rule hoặc `knowledge/coding/data/essentials.md`
+- Offline strategy → constitution rule hoặc `knowledge/coding/data/caching.md` + `knowledge/coding/data/persistence.md`
 - Error mapping → `knowledge/coding/data/network.md`
 - Animation → project motion token
 

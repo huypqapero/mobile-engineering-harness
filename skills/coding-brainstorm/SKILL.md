@@ -37,7 +37,7 @@ Optional:
 
 ## Prerequisites
 
-1. `knowledge/coding/clean-arch/essentials.md` — Clean Arch invariant
+1. `knowledge/coding/clean-arch/clean-mvi.md` — Clean Arch invariant + MVI integration
 2. `knowledge/coding/mvi/essentials.md` — state/intent pattern
 3. `knowledge/coding/coroutines/essentials.md` — concurrency primitives
 4. Related `knowledge/*/essentials.md` theo domain task

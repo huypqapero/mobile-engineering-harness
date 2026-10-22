@@ -106,7 +106,7 @@ Default format (`--out md`):
 - ...
 
 **Related knowledge:**
-- `knowledge/coding/clean-arch/essentials.md §Clean Arch` (nếu scan touches architecture)
+- `knowledge/coding/clean-arch/clean-mvi.md` + `knowledge/coding/clean-arch/architecture-profiles.md` (nếu scan touches architecture)
 
 **Blast radius if changed:** <N callers, M modules>
 
