@@ -184,7 +184,7 @@ Scaffold { innerPadding ->
 - Màu icon status bar / navigation bar phải tương phản với background ở cả light và dark theme: `WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !isDark`.
 
 ```kotlin
-// ✅ {{MODULE_APP}}/src/androidMain/.../MainActivity.kt
+// ✅ {{MODULE_APP}}/src/androidMain/.../MainActivity.kt (profile android-only: src/main)
 override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
