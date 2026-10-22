@@ -18,10 +18,10 @@ Decompose task → spawn subagents (role-specific) → coordinate handoff → ag
 
 ## Not scope
 
-- Code implementation (Implementer)
+- Code implementation (Coder)
 - Business logic design (Architect)
 - Code review findings (Reviewer)
-- Deep testing (Test Engineer)
+- Deep testing (QA)
 
 ## Inputs
 
@@ -147,7 +147,7 @@ Write `plans/reports/orchestration-<date>.md` theo template `workflows/parallel-
 
 ### Delegate strictly
 
-- Không viết code implementation (Implementer role)
+- Không viết code implementation (Coder role)
 - Không design business logic (Architect role)
 - Không catch architecture smell (Reviewer role)
 - Orchestrator = coordinator, không producer
@@ -232,7 +232,7 @@ Thiếu bất kỳ → reject + request re-spawn với explicit instruction.
 - `coding-orchestrator` — procedure chính
 - `coding-feature` — subagent dùng cho implementation
 - `coding-review` — reviewer subagent
-- `testing-android` — test-engineer subagent
+- `testing-android` — qa subagent
 
 ## Pair với workflows
 
@@ -244,6 +244,6 @@ Thiếu bất kỳ → reject + request re-spawn với explicit instruction.
 - `architect` — spec decomposition
 - `implementer` — code owned package
 - `reviewer` — audit aggregate
-- `test-engineer` — behavior coverage
+- `qa` — behavior coverage
 
 Orchestrator sits ABOVE 4 roles — coordinate chúng, không thay thế.

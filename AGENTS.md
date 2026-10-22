@@ -56,6 +56,18 @@ Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cac
 
 ## Task routing
 
+### Pipeline entry (skill wrapper high-level — P0 priority)
+
+| Task | Skill |
+|---|---|
+| Implement feature mới end-to-end (BA → PM → Designer → Tech Lead → Architect → Coder → QA → Release) | `feature` |
+| Fix bug với fast-path triage (4 cond → fast/mini/full-flow) | `bugfix` |
+| Classify bug không rõ loại (code/design/spec), max 3 retry rồi escalate PM | `bug-triage` |
+| Release co-sign Tech Lead + PM (14 tech + 12 business checklist) | `release` |
+| Chạy N feature song song cùng sprint (isolation check + shared file aggregation) | `parallel-features` |
+
+### Component-level task
+
 | Task | Skill chính |
 |---|---|
 | Chuẩn hóa spec + screenshot thành Feature Brief | `business-prepare-feature` |
@@ -109,18 +121,40 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 
 ## Agent roles
 
-Trong workflow, agent có thể chuyển mindset qua các role (xem `agents/*.md`):
+14 agent chia 3 layer. Trong workflow, agent có thể chuyển mindset qua các role (solo mode) hoặc spawn subagent dedicated (multi-agent mode). Xem `agents/*.md` chi tiết, `agents/workflows/README.md` cho routing.
 
-- `input-analyst.md` — Spec → requirements + AC + flow (input layer, Phase P2)
-- `design-analyst.md` — Screenshot → screen contract + states + ambiguity (input layer, Phase P3)
+### Product lifecycle layer
+
+- `product-analyst.md` — BA: market research + spec + wireframe (functional)
+- `project-manager.md` — PM: backlog, deadline, feasibility, go-to-market, release co-sign
+- `designer.md` — Produce UI/UX final từ wireframe + PRD
+- `design-analyst.md` — Analyze design nguồn đã có (role khác designer — reverse engineer)
+
+### Engineering layer
+
+- `tech-lead.md` — Bridge business ↔ tech, plan review gate, bug triage, release co-sign (có fast-path skip)
 - `architect.md` — Plan + inspect + decisions + spec decomposition (parallel mode)
-- `implementer.md` — Execute theo plan, minimal scope
-- `reviewer.md` — Independent audit, evidence-based findings
-- `test-engineer.md` — Behavior coverage, deterministic test
-- `orchestrator.md` — Coordinate multi-agent spawn + aggregate (team/parallel-features mode)
-- `harness-guardian.md` — Meta-agent: maintain + evolve chính harness (không touch product code)
+- `coder.md` — Execute theo plan, minimal scope
+- `reviewer.md` — Independent code audit, evidence-based findings
+- `qa.md` — Façade verification: Scope A (per-screen) + Scope B (full-flow E2E)
+  - `e2e-author.md` — Subagent QA: write runner-neutral step files cho E2E
+  - `ui-judge.md` — Subagent QA: visual compare Figma vs app screenshot
 
-Giai đoạn solo (1 agent): 1 agent chuyển mindset qua các role. Giai đoạn multi-agent: subagent dedicated per role.
+### Meta layer
+
+- `orchestrator.md` — Coordinate multi-agent spawn + aggregate (team/parallel-features mode)
+- `lesson-miner.md` — Distill bug reports thành lessons feed next-run
+- `harness-guardian.md` — Meta: maintain + evolve chính harness (không touch product code)
+
+### Workflow routing
+
+`agents/workflows/` chứa 5 workflow điều hướng:
+
+- `feature-full-flow.md` — Full pipeline BA → PM → Designer → TechLead → Architect → Coder → Reviewer+QA → Release
+- `bugfix-fast-path.md` — Rút gọn khi thỏa 4 điều kiện fast-path của Tech Lead
+- `bug-triage.md` — Phân loại code/design/spec bug khi QA fail
+- `release-gate.md` — Tech Lead + PM co-sign co-sign protocol
+- `parallel-features.md` — Chạy multiple feature song song cùng sprint
 
 ## Quality gates bắt buộc
 
@@ -177,6 +211,11 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `knowledge/e2e-runtime/interruption-patterns.md` — ad/permission/dialog auto-dismiss
 - `knowledge/e2e-runtime/runner-neutral-step.md` — step file design rationale
 - `knowledge/visual-compare/figma-vs-screenshot.md` — perceptual hash + SSIM thresholds
+- `skills/feature/SKILL.md` — **P0** entry: feature-full-flow pipeline wrapper (BA → PM → Designer → Tech Lead → Architect → Coder → QA → Release)
+- `skills/bugfix/SKILL.md` — **P0** entry: bugfix-fast-path triage + fast/mini/full routing
+- `skills/bug-triage/SKILL.md` — bug classify code/design/spec, max 3 retry
+- `skills/release/SKILL.md` — **P0** entry: release-gate co-sign Tech Lead + PM
+- `skills/parallel-features/SKILL.md` — parallel N feature + isolation check + shared file aggregation
 - `skills/business-prepare-feature/SKILL.md` — orchestrator input layer
 - `skills/business-fetch/SKILL.md` — MCP adapter Confluence/Figma (dispatcher `--source`)
 - `skills/business-analyze/SKILL.md` — spec/design/reconcile dispatcher (`--phase`)
@@ -214,17 +253,26 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `workflows/release-validation.md`
 - `workflows/parallel-feature-development.md`
 - `workflows/harness-maintenance.md` — meta (Guardian lifecycle)
-- `agents/input-analyst.md` — spec analysis role
-- `agents/design-analyst.md` — screenshot analysis role
-- `agents/ui-judge.md` — visual compare screenshot vs Figma + spec
-- `agents/e2e-author.md` — write runner-neutral step files
-- `agents/lesson-miner.md` — distill tester bugs thành lessons
-- `agents/architect.md`
-- `agents/implementer.md`
-- `agents/reviewer.md`
-- `agents/test-engineer.md`
-- `agents/orchestrator.md`
+- `agents/product-analyst.md` — BA: market research + spec + wireframe
+- `agents/project-manager.md` — PM: backlog, deadline, release co-sign
+- `agents/designer.md` — produce UI/UX final từ wireframe
+- `agents/design-analyst.md` — analyze design nguồn đã có (reverse)
+- `agents/tech-lead.md` — plan review gate + fast-path routing + bug triage
+- `agents/architect.md` — technical plan + spec decomposition
+- `agents/coder.md` — implement theo plan
+- `agents/reviewer.md` — independent code audit
+- `agents/qa.md` — façade Scope A + Scope B verification
+- `agents/e2e-author.md` — subagent QA: step files
+- `agents/ui-judge.md` — subagent QA: visual compare
+- `agents/orchestrator.md` — multi-agent spawn + aggregate coordinator
+- `agents/lesson-miner.md` — distill bugs thành lessons
 - `agents/harness-guardian.md` — meta (maintain harness)
+- `agents/workflows/README.md` — index 5 workflow routing
+- `agents/workflows/feature-full-flow.md` — pipeline đầy đủ cho feature mới
+- `agents/workflows/bugfix-fast-path.md` — pipeline rút gọn cho bugfix
+- `agents/workflows/bug-triage.md` — phân loại bug (code/design/spec)
+- `agents/workflows/release-gate.md` — Tech Lead + PM co-sign
+- `agents/workflows/parallel-features.md` — multiple feature song song
 - `verification/architecture-tests/TemplateArchitectureRulesTest.kt`
 - `verification/scripts/verify.sh.template`
 - `verification/detekt/README.md` + `detekt-config-template.yml`

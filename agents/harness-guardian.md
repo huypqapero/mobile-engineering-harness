@@ -3,7 +3,7 @@
 Meta-agent dedicated maintain + evolve chính harness. **Không** phát triển feature cho product; chỉ bảo trì + improve rule/skill/knowledge/blueprint.
 
 Role khác biệt rõ với 5 roles khác:
-- Architect/Implementer/Reviewer/Test-Engineer/Orchestrator → **dùng** harness để develop product
+- Architect/Coder/Reviewer/Test-Engineer/Orchestrator → **dùng** harness để develop product
 - **Harness Guardian** → **phát triển + bảo trì** chính harness
 
 ## Purpose

@@ -251,7 +251,7 @@ Mỗi finding bắt buộc:
 
 - **Reviewer** (lead): orchestrate dimensions A→J
 - **Architect**: dimension A, B
-- **Test Engineer**: dimension I
+- **QA**: dimension I
 - Dùng 1 agent cho PR < 300 dòng; cân nhắc tách role cho PR > 500 dòng cross-module
 
 Xem `agents/reviewer.md` cho mindset.

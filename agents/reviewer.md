@@ -1,6 +1,6 @@
 # Agent Role: Reviewer
 
-Mindset + responsibility khi agent nhận role "Reviewer" trong workflow. Dùng cho phase **Verify** sau khi Implementer done, hoặc trong workflow `review-pull-request`.
+Mindset + responsibility khi agent nhận role "Reviewer" trong workflow. Dùng cho phase **Verify** sau khi Coder done, hoặc trong workflow `review-pull-request`.
 
 ## Purpose
 
@@ -16,8 +16,8 @@ Independent code audit: catch violation rules, security issue, maintainability g
 
 ## Not scope
 
-- Code implementation (Implementer)
-- Deep test writing (Test Engineer)
+- Code implementation (Coder)
+- Deep test writing (QA)
 - Business logic design decision (Architect)
 - Approve/merge decision — Reviewer đề xuất, user quyết định
 

@@ -49,7 +49,7 @@ Orchestrate việc chuyển spec + design nguồn thành Feature Brief package. 
 2. Create initial `briefs/<slug>/brief.yaml` từ `blueprints/feature-brief/brief.yaml.template`:
    - `id`, `title`, `version: 1`
    - `generated_at` ISO 8601 với timezone
-   - `generated_by: input-analyst-agent`
+   - `generated_by: product-analyst-agent`
 3. **Route theo source type**:
    - Spec `local` → copy markdown file + checksum sha256
    - Spec `confluence` → invoke skill `business-fetch --source confluence` → normalized markdown + attachments
@@ -91,7 +91,7 @@ Orchestrate việc chuyển spec + design nguồn thành Feature Brief package. 
 
 Adapter có thể record `brief.yaml.fetch_notes`:
 
-- `confluence_open_items[]`: pre-issue từ comments (Input Analyst Phase P2 decide convert thành issue chính thức)
+- `confluence_open_items[]`: pre-issue từ comments (Product Analyst Phase P2 decide convert thành issue chính thức)
 - `suspicious_content[]`: pattern "ignore rule", "run deploy", "bypass review" phát hiện trong spec
 - `remote_components[]`: Figma components từ library không fetch
 
@@ -103,7 +103,7 @@ Fetch notes không block pipeline; serve informational cho downstream.
 
 ### Actions
 
-1. Switch role → `agents/input-analyst.md`
+1. Switch role → `agents/product-analyst.md`
 2. Invoke skill `business-analyze --phase spec`:
    - Input: `briefs/<slug>/assets/sources/spec.md`
    - Follow `knowledge/input-analysis/requirement-extraction-rules.md`
@@ -128,7 +128,7 @@ Fetch notes không block pipeline; serve informational cho downstream.
 ### Parallel notes
 
 Phase P2 độc lập với Phase P3. Multi-agent setup có thể spawn parallel:
-- Agent A: Input Analyst → spec
+- Agent A: Product Analyst → spec
 - Agent B: Design Analyst → screenshots
 - Merge tại Phase P4
 
@@ -310,14 +310,14 @@ Nếu brief sai scope hoặc source outdated:
 Giai đoạn solo (1 agent) → 1 agent thực hiện cả 5 phases, chuyển mindset:
 
 - P1: — (mechanical)
-- P2: Input Analyst
+- P2: Product Analyst
 - P3: Design Analyst
-- P4: Input Analyst (co-author Design)
+- P4: Product Analyst (co-author Design)
 - P5: — (mechanical gate check)
 
 Giai đoạn multi-agent (future) → delegate parallel:
 
-- P2 subagent: input-analyst
+- P2 subagent: product-analyst
 - P3 subagent: design-analyst
 - P4 merger: orchestrator aggregate
 

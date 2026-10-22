@@ -111,9 +111,9 @@ Agent **không tự route**; report + wait user hoặc orchestrator decide.
 
 | Classification | Who fixes | Fix strategy |
 |---|---|---|
-| **build** (compile, dep conflict, Gradle) | Implementer agent | Fix code / dependency |
-| **code** (logic bug, null, race) | Implementer + Test Engineer | Fix cause, add test |
-| **test** (flaky, wrong assertion) | Test Engineer + Reviewer | Review assertion correctness FIRST |
+| **build** (compile, dep conflict, Gradle) | Coder agent | Fix code / dependency |
+| **code** (logic bug, null, race) | Coder + QA | Fix cause, add test |
+| **test** (flaky, wrong assertion) | QA + Reviewer | Review assertion correctness FIRST |
 | **device** (ADB offline, emulator timeout) | **User** (infra) | ADB restart, device reconnect |
 | **infra** (OOM, disk, network) | **User** (infra) | Scale VPS, clean disk, check net |
 | **env** (JDK/Kotlin version, SDK missing) | **User** (setup) | Update toolchain |

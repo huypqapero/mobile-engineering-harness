@@ -190,9 +190,9 @@ Trước khi start fix, **classify failure**. Classification wrong → wrong fix
 
 | Category | Pattern | Who fixes | Example |
 |---|---|---|---|
-| **build** | Compile error, dep conflict, Gradle config | Implementer | Missing import, type mismatch, Gradle sync fail |
-| **code** | Logic bug, NPE, race, wrong state | Implementer + Test Engineer | Null leak, concurrency, UI not update |
-| **test** | Flaky, wrong assertion, test setup bug | Test Engineer + Reviewer | `assertEquals("expected", actualDifferent)`, flaky timing |
+| **build** | Compile error, dep conflict, Gradle config | Coder | Missing import, type mismatch, Gradle sync fail |
+| **code** | Logic bug, NPE, race, wrong state | Coder + QA | Null leak, concurrency, UI not update |
+| **test** | Flaky, wrong assertion, test setup bug | QA + Reviewer | `assertEquals("expected", actualDifferent)`, flaky timing |
 | **device** | ADB offline, emulator timeout, device busy | **User (infra)** | `adb: device not found`, device lock conflict |
 | **infra** | OOM, disk full, network timeout CI | **User (infra)** | Gradle OOM, no space left, DNS fail |
 | **env** | JDK/Kotlin/SDK version mismatch | **User (setup)** | `Unsupported Kotlin version`, SDK path missing |
@@ -259,7 +259,7 @@ java.lang.NullPointerException: Attempt to invoke virtual method 'getUser' on nu
 
 CLASSIFY: code (NPE, business logic layer)
 FINGERPRINT: sha1("BookDetailViewModel.loadBook:NullPointerException:...")
-ROUTE: implementer (fix cause: null check or non-null contract) + test-engineer (regression test)
+ROUTE: implementer (fix cause: null check or non-null contract) + qa (regression test)
 ```
 
 ### Fix tại cause hay tại symptom?

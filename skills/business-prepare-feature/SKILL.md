@@ -42,7 +42,7 @@ Trước khi orchestrate, đọc:
 3. `knowledge/input-analysis/requirement-extraction-rules.md`
 4. `knowledge/input-analysis/screenshot-reading-rules.md`
 5. `knowledge/input-analysis/reconciliation-matrix.md`
-6. `agents/input-analyst.md` + `agents/design-analyst.md` roles
+6. `agents/product-analyst.md` + `agents/design-analyst.md` roles
 7. Project `CLAUDE.md` + `constitution/engineering-principles.md`
 
 ## Execution procedure
@@ -83,11 +83,11 @@ Mục tiêu: snapshot nguồn immutable vào `briefs/<slug>/assets/sources/`. Ro
 | confluence | confluence-attachments | `business-fetch --source confluence --design-source confluence-attachments` |
 | confluence | none | `business-fetch --source confluence` (headless) |
 
-### Phase P2 — Analyze spec (Input Analyst role)
+### Phase P2 — Analyze spec (Product Analyst role)
 
 Mục tiêu: extract requirement + AC từ spec.
 
-1. Switch mindset → `agents/input-analyst.md`
+1. Switch mindset → `agents/product-analyst.md`
 2. Invoke skill `business-analyze --phase spec` với `assets/sources/spec.md`
 3. Output:
    - `briefs/<slug>/requirements.md` (prose)
@@ -205,7 +205,7 @@ Open questions:
 
 - `blueprints/feature-brief/README.md` — package layout
 - `knowledge/input-analysis/*` — toàn bộ 3 rules file
-- `agents/input-analyst.md` + `agents/design-analyst.md`
+- `agents/product-analyst.md` + `agents/design-analyst.md`
 - Project `constitution/engineering-principles.md`
 
 ## Reference selection
@@ -262,12 +262,12 @@ Trước khi tuyên bố DONE:
 | Phase | Role mindset | Reference |
 |---|---|---|
 | P1 Fetch | — (mechanical) | — |
-| P2 Analyze spec | Input Analyst | `agents/input-analyst.md` |
+| P2 Analyze spec | Product Analyst | `agents/product-analyst.md` |
 | P3 Analyze design | Design Analyst | `agents/design-analyst.md` |
-| P4 Reconcile | Input Analyst (co-author Design) | both agents |
+| P4 Reconcile | Product Analyst (co-author Design) | both agents |
 | P5 Validate | — (mechanical gate check) | — |
 
-Giai đoạn solo: 1 agent chuyển mindset. Giai đoạn multi-agent: Input Analyst + Design Analyst spawn parallel, reconcile sync.
+Giai đoạn solo: 1 agent chuyển mindset. Giai đoạn multi-agent: Product Analyst + Design Analyst spawn parallel, reconcile sync.
 
 ## Downstream handoff
 

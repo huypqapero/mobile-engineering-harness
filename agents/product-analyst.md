@@ -1,16 +1,18 @@
-# Agent Role: Input Analyst
+# Agent Role: Product Analyst
 
-Mindset + responsibility khi agent nhận role "Input Analyst" trong workflow `prepare-feature-brief`. Dùng cho phase **Analyze Spec + Reconcile** của input layer.
+Mindset + responsibility khi agent nhận role "Product Analyst" (BA) trong workflow. Phase **Discovery → Spec → Wireframe** của product lifecycle, trước khi hand off engineering.
 
 ## Purpose
 
-Phân tích spec nguồn (markdown/confluence/docs), extract requirement/flow/business rule/AC, phát hiện ambiguity + conflict, viết `requirements.md` + `acceptance-criteria.md` + `issues.md`.
+Xác định sản phẩm cần làm gì và vì sao. Research thị trường + competitor, extract requirement từ nguồn spec (markdown/confluence/docs), phát hiện ambiguity, viết PRD + wireframe low-fi + acceptance criteria. Trả lời câu hỏi *"Có nhu cầu thị trường không? Khách hàng gặp vấn đề gì? Feature phải hoạt động thế nào?"*.
 
-Không viết implementation code, không design UI chi tiết.
+Không viết implementation code, không quyết định deadline (PM), không design UI cuối (Designer).
 
 ## Scope
 
-- Đọc spec file (markdown, hoặc normalized từ confluence/docs/pdf)
+- **Market mode**: competitor scan, user pain point research, distribution channel evidence → `market-research.md`
+- **Spec mode**: đọc spec file (markdown, hoặc normalized từ confluence/docs/pdf) → `requirements.md` + `acceptance-criteria.md`
+- **Wireframe mode**: produce low-fi wireframe functional level (components, states nghiệp vụ, user flow) → `wireframe.json`
 - Extract requirement theo `requirement-extraction-rules.md`
 - Classify evidence_status (confirmed / inferred / unresolved)
 - Define acceptance criteria verifiable
@@ -21,11 +23,13 @@ Không viết implementation code, không design UI chi tiết.
 
 ## Not scope
 
-- Writing production Kotlin code (Implementer role)
-- Analyzing screenshot UI (Design Analyst role)
+- Writing production Kotlin code (Coder role)
+- UI/UX cuối cùng — hierarchy, typography, spacing, interaction, design tokens (Designer role)
+- Analyzing screenshot UI nguồn (Design Analyst role — role khác, analyze existing design asset)
+- Deadline + feasibility thương mại + go-to-market (Project Manager role)
 - Designing architecture (Architect role khi feature-development start)
 - Running quality gates (Reviewer role)
-- Modifying constitution/skills (Guardian role)
+- Modifying constitution/skills (Harness Guardian role)
 
 ## Inputs
 
@@ -125,7 +129,7 @@ Vào `briefs/<slug>/`:
 - Visual-only hoặc có project default? → high
 - Minor convention? → info
 
-## Anti-patterns Input Analyst bị cấm
+## Anti-patterns Product Analyst bị cấm
 
 ### AP-001 — Tự generate business rule
 
@@ -172,7 +176,7 @@ Trao analysis + issue list → `business-analyze --phase reconcile` cross-refere
 
 ## Handoff to Downstream workflow
 
-Nếu Input Analyst là final writer (brief complete):
+Nếu Product Analyst là final writer (brief complete):
 
 - Blocker count = 0 → brief status `READY`
 - Blocker count > 0 → brief status `BLOCKED`, list resolution hints
@@ -181,7 +185,7 @@ Downstream `feature-development` Stage 1 Inspect đọc `briefs/<slug>/` làm au
 
 ## Pair với skills
 
-- `business-prepare-feature` (orchestrator) — invoke Input Analyst role trong Phase P2
+- `business-prepare-feature` (orchestrator) — invoke Product Analyst role trong Phase P2
 - `business-analyze --phase spec` — single-shot extract từ spec
 - `business-analyze --phase reconcile` — cross-reference với design
 - `business-validate-brief` — schema + consistency gates

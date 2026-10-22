@@ -98,7 +98,7 @@ Confluence comments thường chứa open questions chưa resolve. Fetch comment
 
 - `confluence_get_comments` + `confluence_get_inline_comments`
 - Parse comments, nếu match pattern "TODO", "?", "open", "pending" → flag thành pre-issue
-- Không tự tạo issue blocker; chỉ note vào `brief.yaml` để Input Analyst Phase P2 decide
+- Không tự tạo issue blocker; chỉ note vào `brief.yaml` để Product Analyst Phase P2 decide
 
 ## Soft rules
 

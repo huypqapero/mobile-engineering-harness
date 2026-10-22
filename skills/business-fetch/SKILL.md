@@ -107,7 +107,7 @@ fetch_notes:
       location: inline-comment-at-paragraph-3
 ```
 
-Phase P2 (Input Analyst) decide convert thành issue chính thức hay không.
+Phase P2 (Product Analyst) decide convert thành issue chính thức hay không.
 
 ### Step 8 — Record version + metadata
 

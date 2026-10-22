@@ -295,8 +295,8 @@ Nếu rollout phát hiện critical:
 ## Agent roles
 
 - **Architect**: Preflight check consistency
-- **Implementer**: Build execution
-- **Test Engineer**: Smoke + regression
+- **Coder**: Build execution
+- **QA**: Smoke + regression
 - **Reviewer**: Artifact inspection + final sign-off
 
 Workflow này thường cần ≥ 1 human reviewer trước ship — AI output không auto-approve release.

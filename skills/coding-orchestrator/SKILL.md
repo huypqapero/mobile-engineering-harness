@@ -19,7 +19,7 @@ priority: P0
 1. `knowledge/agent-orchestration/essentials.md` — modes + patterns
 2. `./overlay.schema.yaml §orchestration` — config fields
 3. Claude Code `Task` tool available
-4. `agents/architect.md`, `agents/implementer.md`, `agents/reviewer.md`, `agents/test-engineer.md`, `agents/orchestrator.md`
+4. `agents/architect.md`, `agents/coder.md`, `agents/reviewer.md`, `agents/qa.md`, `agents/orchestrator.md`
 
 ## Execution procedure
 
@@ -52,12 +52,12 @@ Phase A — Architect subagent:
   Spawn Task(subagent_type: "architect-mindset", prompt: "...") 
   → plans/<date>/plan.md
   
-Phase B — Implementer subagent:
+Phase B — Coder subagent:
   Spawn Task(subagent_type: "implementer-mindset", prompt: "Read plan.md + implement")
-  → code changes + handoff/implementer.md
+  → code changes + handoff/coder.md
   
-Phase C — Test Engineer subagent:
-  Spawn Task(subagent_type: "test-engineer-mindset", prompt: "...")
+Phase C — QA subagent:
+  Spawn Task(subagent_type: "qa-mindset", prompt: "...")
   → test files
   
 Phase D — Reviewer subagent:

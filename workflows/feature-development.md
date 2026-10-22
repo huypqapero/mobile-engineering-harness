@@ -228,8 +228,8 @@ Nếu feature cần revert:
 Giai đoạn solo (1 agent) → 1 agent thực hiện cả 5 stages, chuyển skill mindset khi vào từng stage:
 
 - Stage 1-2: "Architect"
-- Stage 3: "Implementer"
-- Stage 4: "Test Engineer"
+- Stage 3: "Coder"
+- Stage 4: "QA"
 - Stage 5: "Reviewer" (self-review)
 
 Giai đoạn team (sau khi harness ổn) → delegate Stage 4 cho `coding-review` agent độc lập.

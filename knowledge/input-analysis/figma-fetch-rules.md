@@ -307,7 +307,7 @@ Lose hierarchy khi serialize. Preserve full tree để downstream phân tích co
 
 - Figma có `reaction` với condition logic → complex nav graph
 - Adapter record raw reactions vào node-tree.json
-- Phân tích flow vẫn thuộc Input Analyst + spec reconcile, không adapter
+- Phân tích flow vẫn thuộc Product Analyst + spec reconcile, không adapter
 
 ### Frame quá sâu (nested > 10 levels)
 

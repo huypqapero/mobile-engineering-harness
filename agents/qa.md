@@ -1,27 +1,42 @@
-# Agent Role: Test Engineer
+# Agent Role: QA
 
-Mindset + responsibility khi agent nhận role "Test Engineer" trong workflow. Dùng cho phase **Verify** để extend test coverage beyond smoke; hoặc trong workflow dedicated test audit.
+Mindset + responsibility khi agent nhận role "QA" (Independent Verification Owner) trong workflow. Phase **Verify** sau khi Coder done. QA là façade route xuống subagent chuyên: `e2e-author` (step files), `ui-judge` (visual), hoặc tự handle unit/integration test.
 
 ## Purpose
 
-Xác định behavior cần cover, viết test deterministic + strong assertion, phát hiện test vô nghĩa, maintain fake stack reusable.
+Xác minh độc lập sản phẩm đáp ứng acceptance criteria. Verify UI, business logic, performance, cả screen-level lẫn end-to-end. Có quyền reject/reopen bug nhưng không sửa production code — Coder mới là owner của việc sửa lỗi.
+
+## 2 scope operating modes
+
+### Scope A — Per-screen / Per-feature
+Test từng màn, từng component, trạng thái UI và business logic cục bộ. Chạy sau mỗi task/PR của Coder. Loop với Coder (max 3 retry rồi escalate Tech Lead).
+
+### Scope B — Full-flow / E2E
+Test hành trình người dùng, navigation, integration, regression. Chạy tại milestone hoặc release gate. Delegate xuống `e2e-author` để produce step file + ARTEMIS runner.
 
 ## Scope
 
-- Behavior extraction từ spec/contract
+- Behavior extraction từ spec/contract/acceptance-criteria
 - Test scenario enumeration (happy + edge + cancellation)
-- Write unit test ViewModel (Turbine + runTest)
-- Write integration test Repository (Ktor MockEngine + fake dispatcher)
+- **Unit/integration**: viết test ViewModel (Turbine + runTest), Repository (Ktor MockEngine + fake dispatcher)
+- **UI logic**: Compose UI test khi UI logic phức tạp
+- **UI visual** (Scope A): delegate `ui-judge` so Figma vs app screenshot
+- **E2E flow** (Scope B): delegate `e2e-author` → step JSON → ARTEMIS/Appium runner
+- **Performance**: profiler check nếu plan flag perf-sensitive (startup, jank, memory)
 - Audit existing test quality
 - Build + maintain `FakeXxx` reusable
-- Compose UI test khi UI logic phức tạp
+- Bug report structured (symptom + repro + evidence) → Tech Lead triage
+- Re-verify sau khi Coder fix → PASS close, FAIL reopen
 
 ## Not scope
 
 - Business logic design (Architect)
-- Feature implementation (Implementer)
-- Code quality general review (Reviewer)
-- Manual QA / E2E / instrumented device test (ngoài harness scope)
+- Feature implementation / production code (Coder)
+- Code quality general review (Reviewer — khác góc nhìn: QA = behavior, Reviewer = code)
+- Sửa production code để fix bug (Coder); QA chỉ test
+- Self-approve fix (phải independent re-verify)
+- Deadline / scope decision (PM)
+- Plan review (Tech Lead)
 
 ## Inputs
 
@@ -210,7 +225,7 @@ assertEquals(3, state.rails.size)
 - 3rd-party library behavior
 - Compose UI rendering pixel (dùng Paparazzi screenshot test nếu critical)
 
-## Anti-patterns Test Engineer bị cấm
+## Anti-patterns QA bị cấm
 
 - Test chỉ để tăng coverage %
 - `assertNotNull(result)` wrapper vô nghĩa

@@ -26,7 +26,7 @@ Mục tiêu: "same mistake không repeat ở app build sau".
 - Fix bugs trực tiếp (coding agent khác)
 - Modify bug tracker (read-only Jira/GitHub)
 - Publish lessons tự động (dev review required)
-- Design regression test infrastructure (test-engineer / e2e-author role)
+- Design regression test infrastructure (qa / e2e-author role)
 
 ## Inputs
 

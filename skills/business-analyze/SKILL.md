@@ -49,7 +49,7 @@ Optional:
 ## Prerequisites
 
 Chung:
-- `agents/input-analyst.md` + `agents/design-analyst.md` — role boundaries + anti-patterns
+- `agents/product-analyst.md` + `agents/design-analyst.md` — role boundaries + anti-patterns
 - `blueprints/feature-brief/brief.yaml.template`
 
 Phase `spec`:
@@ -396,7 +396,7 @@ Dừng early nếu phase trả BLOCKED.
 - REQ-RULE-001..006 (phase spec)
 - DESIGN-RULE-001..012 (phase design)
 - Full `reconciliation-matrix.md` (phase reconcile)
-- `agents/input-analyst.md` AP-001..008 + `agents/design-analyst.md` AP-001..010
+- `agents/product-analyst.md` AP-001..008 + `agents/design-analyst.md` AP-001..010
 
 ## Output contract
 
@@ -462,7 +462,7 @@ Phase `reconcile`:
 
 ## Anti-patterns bị cấm
 
-Phase `spec` (`agents/input-analyst.md`):
+Phase `spec` (`agents/product-analyst.md`):
 - AP-001 tự generate business rule
 - AP-002 confirmed từ screenshot alone
 - AP-003 AC phụ thuộc inferred

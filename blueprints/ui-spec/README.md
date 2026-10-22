@@ -15,7 +15,7 @@ Per-node UI contract: Reach + Door + Elements + Tokens + Copy + Assets. Mỗi sc
 | | design.md (feature-brief) | ui-spec/<node>.md |
 |---|---|---|
 | Scope | Toàn screen contract | 1 node (screen / popup / sheet / dialog / state) |
-| Audience | Architect + Implementer | Driver + ui-judge |
+| Audience | Architect + Coder | Driver + ui-judge |
 | Format | Table components + states | Checklist với exact copy + tokens |
 | Count | 1 markdown per screen | 1 markdown per node (screen có 3 variants → 3 ui-specs) |
 | Consume | Stage 2 Plan | Stage 4+ runtime E2E |

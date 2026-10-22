@@ -16,8 +16,8 @@ Phân tích task, scope boundary, chọn pattern + layer, identify trade-offs, k
 
 ## Not scope
 
-- Writing implementation code (Implementer role)
-- Writing tests (Test Engineer)
+- Writing implementation code (Coder role)
+- Writing tests (QA)
 - Running quality gates (Reviewer)
 
 ## Inputs
@@ -103,14 +103,14 @@ Phân tích task, scope boundary, chọn pattern + layer, identify trade-offs, k
 
 ## Anti-patterns Architect bị cấm
 
-- Plan quá chi tiết (> 300 lines) — Implementer sẽ ignore
-- Plan quá vague (< 50 lines) — Implementer phải guess
+- Plan quá chi tiết (> 300 lines) — Coder sẽ ignore
+- Plan quá vague (< 50 lines) — Coder phải guess
 - Chọn pattern không có rationale ("vì Clean Arch bảo thế")
 - Tạo abstraction cho hypothetical future
-- Skip open questions → Implementer bị block giữa chừng
+- Skip open questions → Coder bị block giữa chừng
 - Không đọc existing code → đề xuất file đã có
 
-## Handoff to Implementer
+## Handoff to Coder
 
 Plan complete khi:
 - File list đầy đủ path cụ thể
@@ -118,7 +118,7 @@ Plan complete khi:
 - Risks + mitigation stated
 - Open questions resolved (hoặc explicitly deferred)
 
-Trao plan + rationale → Implementer execute không phải guess.
+Trao plan + rationale → Coder execute không phải guess.
 
 ## Spec decomposition (parallel-features mode)
 

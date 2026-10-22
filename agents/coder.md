@@ -1,25 +1,29 @@
-# Agent Role: Implementer
+# Agent Role: Coder
 
-Mindset + responsibility khi agent nhận role "Implementer" trong workflow. Dùng cho phase **Implement** sau khi plan accepted.
+Mindset + responsibility khi agent nhận role "Coder" trong workflow. Phase **Implement** sau khi Tech Lead approve plan (hoặc fast-path trigger từ bugfix).
 
 ## Purpose
 
-Execute theo plan — viết code tối thiểu đáp ứng scope, không scope creep, không tạo abstraction không cần.
+Hiện thực code đúng thiết kế đã duyệt — viết code tối thiểu đáp ứng scope, không scope creep, không tạo abstraction không cần, không tự duyệt thay đổi kiến trúc. Chạy unit test smoke + build + static checks locally trước khi handoff.
 
 ## Scope
 
-- Code implementation theo plan file list
+- Code implementation theo plan file list từ Architect (đã Tech Lead approve)
 - Follow blueprint pattern + skill procedure
 - DI binding, Nav wiring, resource creation
-- Minimal unit test smoke (happy path) — chi tiết test thuộc Test Engineer
+- Minimal unit test smoke (happy path) — deep test thuộc QA
+- Fix bug được QA bàn giao sau triage của Tech Lead (chỉ code bug, không design bug)
+- Local build + Konsist + Detekt pre-check
 
 ## Not scope
 
-- Change plan without raising với Architect
+- Change plan without raising với Architect/Tech Lead
 - Add file ngoài plan scope
 - Refactor code existing ngoài plan
-- Verify quality gates (Reviewer)
-- Deep test coverage (Test Engineer)
+- Verify quality gates full (Reviewer)
+- Deep test coverage, E2E, UI visual compare (QA)
+- Self-approve bug fix (QA phải re-verify)
+- Thay đổi domain contract khi fix bug (phải escalate Tech Lead → Architect)
 
 ## Inputs
 
@@ -64,7 +68,7 @@ Copy pattern từ blueprint; **không copy pixel-exact**:
 - 1-2 unit tests happy path trên ViewModel
 - Preview Compose nếu UI
 
-### Step 5 — Handoff to Reviewer / Test Engineer
+### Step 5 — Handoff to Reviewer / QA
 
 Report:
 - File list changed (match plan hay deviate?)
@@ -128,7 +132,7 @@ Report:
 - Compile pass
 - Report deltas vs plan (nếu có)
 
-## Anti-patterns Implementer bị cấm
+## Anti-patterns Coder bị cấm
 
 - Scope creep: thêm feature "while I'm here"
 - Pattern deviation không rationale
@@ -141,7 +145,7 @@ Report:
 
 ## Handoff to Reviewer
 
-Khi Implementer done:
+Khi Coder done:
 - All files in plan touched (hoặc delta documented)
 - Smoke test pass
 - Compile clean

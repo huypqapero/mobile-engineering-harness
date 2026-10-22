@@ -21,16 +21,16 @@ Không viết implementation code, không design UI mới, không claim exact de
 
 ## Not scope
 
-- Writing Compose code (Implementer role)
-- Choosing design token exact values (downstream Implementer với project tokens)
-- Business logic extraction (Input Analyst role)
+- Writing Compose code (Coder role)
+- Choosing design token exact values (downstream Coder với project tokens)
+- Business logic extraction (Product Analyst role)
 - Architectural decision (Architect role)
 - Infer navigation/behavior không có spec confirm
 
 ## Inputs
 
 - `assets/sources/screenshots/*.png` của brief đang build
-- Spec analysis output từ Input Analyst (để link action_ref)
+- Spec analysis output từ Product Analyst (để link action_ref)
 - `knowledge/input-analysis/screenshot-reading-rules.md`
 - `knowledge/input-analysis/reconciliation-matrix.md`
 - `blueprints/feature-brief/design.md.template`
@@ -55,7 +55,7 @@ Vào `briefs/<slug>/`:
    - `states_confirmed` + `states_missing`
    - Design-related issues
 
-3. **`issues.md` entries** (co-author với Input Analyst):
+3. **`issues.md` entries** (co-author với Product Analyst):
    - MISSING_DESIGN (spec có state, không screenshot)
    - MISSING_BEHAVIOR (screenshot có action, spec không mô tả)
    - MISSING_ASSET (asset chưa có file)
@@ -103,7 +103,7 @@ Vào `briefs/<slug>/`:
 
 ### Cross-reference với spec
 
-21. **Link component tới requirement**: khi Input Analyst có REQ UI, match component qua `action_ref`
+21. **Link component tới requirement**: khi Product Analyst có REQ UI, match component qua `action_ref`
 22. **Spec có component không screenshot** → MISSING_DESIGN
 23. **Screenshot có component không spec** → MISSING_BEHAVIOR
 
@@ -190,7 +190,7 @@ Analysis complete khi:
 - `brief.yaml` screens entries valid schema
 - Design-only issues documented
 
-Trao analysis + issue list → `business-analyze --phase reconcile` cross-reference với Input Analyst output.
+Trao analysis + issue list → `business-analyze --phase reconcile` cross-reference với Product Analyst output.
 
 ## Edge cases
 
@@ -228,7 +228,7 @@ Trao analysis + issue list → `business-analyze --phase reconcile` cross-refere
 
 ## Pair với agents
 
-- Co-author `issues.md` với `input-analyst.md`
+- Co-author `issues.md` với `product-analyst.md`
 - Handoff tới `architect.md` (feature-development Stage 2) qua brief package
 
 ## Future hooks (Wave 3)

@@ -19,7 +19,7 @@ Claude family (có thể adapt cho other providers):
 | `architect` | deep (opus) | Decomposition + decisions critical |
 | `orchestrator` | balanced (sonnet) | Coordinate + routing |
 | `implementer` | balanced (sonnet) | Code implementation standard |
-| `test-engineer` | balanced (sonnet) | Test writing + assertion review |
+| `qa` | balanced (sonnet) | Test writing + assertion review |
 | `reviewer` | deep (opus) | Independent audit — depth matter |
 | `debugger` | balanced (sonnet) → deep if stuck | Logic trace |
 | `classifier` | lite (haiku) | Fast triage |
@@ -109,7 +109,7 @@ Example feature task:
 | Classification | classifier | lite | 500 | 1x |
 | Decomposition | architect | deep | 3,000 | 10x |
 | Implementation | implementer | balanced | 8,000 | 3x |
-| Test writing | test-engineer | balanced | 2,000 | 3x |
+| Test writing | qa | balanced | 2,000 | 3x |
 | Review | reviewer | deep | 4,000 | 10x |
 | **Total** | | | 17,500 | — |
 

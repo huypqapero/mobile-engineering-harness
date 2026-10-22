@@ -29,7 +29,7 @@ single
 
 - Phase inspect → mindset `architect`
 - Phase implement → mindset `implementer`
-- Phase test → mindset `test-engineer`
+- Phase test → mindset `qa`
 - Phase verify → mindset `reviewer`
 
 **Pros**: nhanh, cost thấp, context thống nhất.
@@ -77,7 +77,7 @@ Mỗi subagent write handoff tại `{{ORCHESTRATION_HANDOFF_DIR}}/<role>.md`:
 ## Open questions
 - ...
 
-## Handoff to Implementer
+## Handoff to Coder
 Read `plans/<date>/plan.md` + follow `coding-feature` skill.
 ```
 
@@ -281,7 +281,7 @@ Task(
 | architect | Read, Grep, Write (plan only) |
 | implementer | Read, Edit, Write, Grep, Bash |
 | reviewer | Read, Grep, Bash (test commands) — **no Edit** |
-| test-engineer | Read, Edit (test files only), Bash |
+| qa | Read, Edit (test files only), Bash |
 | orchestrator | All tools + Task spawn |
 
 Enforce qua Claude Code `subagent_type` + prompt instruction. Harness document patterns; actual enforcement platform-dependent.

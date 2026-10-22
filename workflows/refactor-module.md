@@ -249,7 +249,7 @@ Follow-up:
 ## Agent roles
 
 - **Architect** (Stage 1-2): define scope + strategy
-- **Implementer** (Stage 3): execute steps
+- **Coder** (Stage 3): execute steps
 - **Reviewer** (Stage 4-5): verify no behavior change
 
 Xem `agents/*.md`.

@@ -231,8 +231,8 @@ User (hoặc orchestrator) decide: continue manually, change scope, abort task.
 ## Agent roles
 
 - **Debugger** (Stage 1-3): prove cause
-- **Implementer** (Stage 4): minimal fix
-- **Test Engineer** (Stage 4-5): regression coverage
+- **Coder** (Stage 4): minimal fix
+- **QA** (Stage 4-5): regression coverage
 - **Reviewer** (Stage 5): verify cause-level fix, không mask
 
 Xem `agents/*.md` cho mindset mỗi role.

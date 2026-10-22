@@ -8,7 +8,7 @@ id: book-detail
 title: Book Detail Screen
 version: 1
 generated_at: "2026-10-16T10:30:00+07:00"
-generated_by: input-analyst-agent
+generated_by: product-analyst-agent
 
 goal: >
   User mở màn hình chi tiết sách, xem metadata (title, author, cover),
