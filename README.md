@@ -294,7 +294,8 @@ Product C overlay (22%)  ──┘
 | **Skills** | 11 skills | feature, compose, mvi, coroutines, network, database, refactor, debug, performance, code-review, testing |
 | **Blueprints** | 5 patterns | reference-feature, network-service, compose-screen, repository, usecase |
 | **Workflows** | 5 workflows | feature-development, fix-bug, review-pull-request, refactor-module, release-validation |
-| **Agent roles** | 4 roles | architect, implementer, reviewer, test-engineer |
+| **Agent roles** | 14 agents (3 layer) | product (product-analyst, project-manager, designer, design-analyst), engineering (tech-lead, architect, coder, reviewer, qa + e2e-author/ui-judge subagent), meta (orchestrator, lesson-miner, harness-guardian) |
+| **Agent workflows** | 5 routing docs | feature-full-flow, bugfix-fast-path, bug-triage, release-gate, parallel-features |
 | **Verification** | 3 tools | Konsist (template), Detekt (config + custom rule scaffold), Android Lint (scaffold) |
 | **Evaluations** | 5 scenarios + rubrics + regression | E01-E05 + shared rubric + trend tracking |
 
@@ -388,7 +389,7 @@ AI resolution:
 3. Load constitution/architecture-rules + concurrency-rules
 4. Load blueprint reference-feature
 5. Follow workflow feature-development
-6. Agent role: architect (plan) → implementer → test-engineer → reviewer
+6. Agent role: architect (plan) → implementer → qa → reviewer
 7. Verify: konsistTest + detekt + unit tests
 8. Report theo DoD template
 ```
@@ -569,11 +570,11 @@ Nếu cùng rule ID xuất hiện ở overlay + upstream → **overlay thắng**
 ```
 WORKFLOW (orchestration)         AGENT ROLE (mindset)
 ────────────────────────         ────────────────────
-feature-development              architect → implementer → test-engineer → reviewer
+feature-development              architect → implementer → qa → reviewer
 fix-bug                          debugger (role tích hợp trong agents/)
 review-pull-request              reviewer
 refactor-module                  architect → implementer → reviewer
-release-validation               implementer + test-engineer + reviewer
+release-validation               implementer + qa + reviewer
 ```
 
 1 agent có thể chuyển mindset qua các role trong 1 workflow. Multi-agent setup: dedicated subagent per role.

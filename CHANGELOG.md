@@ -4,6 +4,62 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [0.21.0] — 2026-10-19
+
+### Added — Software-factory agent model (14 agent, 5 workflow routing)
+
+Tái cấu trúc agent registry từ **11 engineering-focused agent** sang **14 agent chia 3 layer** (product lifecycle / engineering / meta) để pipeline đi từ ý tưởng (BA + market research) đến release co-sign (Tech Lead + PM) có artifact ownership rõ, không trùng vai, có fast-path cho bugfix.
+
+#### Rename — 3 agent file (git mv preserved history)
+
+- `agents/input-analyst.md` → `agents/product-analyst.md` — BA. Mở scope: thêm **Market mode** (competitor + user pain research) và **Wireframe mode** (low-fi functional) ngoài **Spec mode** cũ.
+- `agents/implementer.md` → `agents/coder.md` — role name match 7-role chuẩn, nhấn mạnh "không tự duyệt thay đổi kiến trúc, không sửa domain contract khi fix bug".
+- `agents/test-engineer.md` → `agents/qa.md` — thành **façade** với 2 scope mode: Scope A (per-screen) và Scope B (full-flow E2E), route xuống `e2e-author` + `ui-judge` subagent.
+
+#### Added — 3 agent mới
+
+- **`agents/tech-lead.md`** — Technical Delivery Owner. Bridge BA/PM ↔ Architect/Coder/QA. Nhận PRD + deadline → Tech Brief → delegate Architect → review plan (6 dimensions) → verdict APPROVE / REQUEST_CHANGES / ESCALATE_TO_PM → delegate Coder. **Fast-path skip rule** (user confirmed): thỏa cả 4 điều kiện (≤ 1 file presenter / không shared file / label bugfix-tweak-single-screen / no new dep) → Architect → Coder thẳng, skip plan review. Cấm fast-path cho security, ADR-011 high-risk, cross-feature contract, migration. Max 2 revise rồi auto-escalate PM. Bug triage phân loại code/design/spec. Co-sign Release Gate với PM.
+- **`agents/project-manager.md`** — PM: backlog, feasibility scoring (business value × urgency × confidence × tech), milestone + deadline, scope negotiation khi Tech Lead escalate, go-to-market, progress tracking qua handoff state. Co-sign Release Gate. Không chọn kỹ thuật, không viết spec.
+- **`agents/designer.md`** — Produce UI/UX cuối cùng từ wireframe + PRD. Design tokens, 5 states/screen remote, interaction, accessibility (WCAG AA, 48dp touch target), dark mode, responsive. Output `design.md` + `design-spec.json` + asset. ChangeRequest ngược về Product Analyst khi phát hiện PRD gap. Khác `design-analyst` (role reverse analyze design nguồn).
+
+#### Added — Workflow routing folder
+
+Folder mới `agents/workflows/` chứa 5 workflow điều hướng + 1 index:
+
+- **`agents/workflows/README.md`** — 14-agent routing map + artifact ownership table + ChangeRequest flow + handoff doc format bắt buộc.
+- **`agents/workflows/feature-full-flow.md`** — 8-stage pipeline cho feature mới (BA → PM → Designer → Tech Lead → Architect → Tech Lead review gate → Coder → Reviewer + QA → Release). Gate rõ sau mỗi stage, timeline guideline, skip-stage rules.
+- **`agents/workflows/bugfix-fast-path.md`** — 3-stage rút gọn khi 4 fast-path conditions MATCH, 4-stage mini-plan khi PARTIAL, fallback full-flow khi NO. So sánh thời gian: fast-path 1-4h vs full-flow days-weeks.
+- **`agents/workflows/bug-triage.md`** — Tech Lead phân loại 3 nhánh: **code bug** (Coder fix, không đổi contract) / **design bug** (Architect revise plan) / **spec bug** (Product Analyst update PRD + cascade). Max 3 retry cùng failure signature rồi auto-escalate PM. Lesson feedback vào `lesson-miner`.
+- **`agents/workflows/release-gate.md`** — Co-sign protocol Tech Lead (14-item tech checklist) + PM (12-item business checklist) với decision matrix (READY / READY_WITH_WARNINGS / NOT_READY). Rollback trigger + staged rollout plan + post-release monitoring.
+- **`agents/workflows/parallel-features.md`** — N feature parallel với isolation check (SAFE vs UNSAFE rules), spec decomposition qua Architect, shared file aggregation sequential, token budget guide.
+
+#### Changed — References cập nhật
+
+Batch rename qua word-boundary perl replace trong 25 file active (giữ nguyên `CHANGELOG.md` + `plans/` làm historical record):
+
+- Patterns: `input-analyst` → `product-analyst`, `implementer.md` → `coder.md`, `test-engineer` → `qa`, `Input Analyst` → `Product Analyst`, `Implementer` → `Coder`, `Test Engineer` → `QA`.
+- Files touched: `AGENTS.md`, `README.md`, `overlay.schema.yaml`, `blueprints/task-contract/template.yaml`, `blueprints/ui-spec/README.md`, `workflows/*.md` (7), `knowledge/**/*.md` (5), `skills/**/SKILL.md` (6), `verification/e2e/fixtures/book-detail/expected/brief.golden.yaml`.
+
+- **`AGENTS.md`** — section "Agent roles" tái cấu trúc theo 3 layer (product / engineering / meta); file index phần `agents/` bổ sung `tech-lead`, `project-manager`, `designer` + 6 file trong `agents/workflows/`.
+- **`README.md`** — table "Agent roles" cập nhật từ "4 roles" sang "14 agents (3 layer)".
+
+#### Rationale
+
+Plan ChatGPT (`Downloads/ChatGPT-Thiết kế agent chuyên trách-...md`) + plan brainstorm hợp nhất. User chốt 4 decision:
+
+1. **Giữ nguyên thư mục `agents/`** + thêm `tech-lead.md` (không chuyển sang `software-factory/` sub-dir)
+2. **Orchestrator = LLM agent** (không phải script workflow engine)
+3. **Tech Lead review có fast-path skip** (4 điều kiện AND)
+4. **Reviewer giữ riêng, không gộp vào Tech Lead** (khác thời điểm gate: Tech Lead = plan review pre-impl, Reviewer = code review post-impl)
+
+Scope: 11 → 14 agent (+ 3), tạo folder workflow routing (6 file mới), batch update references (25 file), git mv (3 file), word-boundary safe (không false match với English "implementer" trong prose).
+
+#### Known gaps
+
+- Workflow files gốc `workflows/*.md` có overlap với `agents/workflows/*.md` — chưa quyết định migrate hay dual-track. `agents/workflows/README.md` note "legacy, overlap với folder này sẽ migrate dần".
+- Chưa tạo schema cứng cho handoff doc (`plans/handoff/<feature>/*.md`) + ChangeRequest (`briefs/<slug>/change-requests/CR-<id>.md`). Hiện là markdown template inline trong workflow file.
+- Fast-path telemetry chưa có (chưa đo tỷ lệ fast-path approve vs full-path, chưa đo rate of fast-path mis-triage).
+
 ## [0.20.0] — 2026-10-19
 
 ### Added — Harness-init skill + D-full overlay runtime integration
