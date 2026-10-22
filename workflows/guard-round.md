@@ -412,9 +412,9 @@ report_path: briefs/<slug>/actual/round-<N>/report.json
 
 ## Reference
 
-- `knowledge/e2e-runtime/guard-round-pattern.md` — design rationale
-- `knowledge/e2e-runtime/device-driver-contract.md` — driver interface
-- `knowledge/e2e-runtime/interruption-patterns.md` — ad/permission handling
+- `knowledge/testing/e2e-runtime/guard-round-pattern.md` — design rationale
+- `knowledge/testing/e2e-runtime/device-driver-contract.md` — driver interface
+- `knowledge/testing/e2e-runtime/interruption-patterns.md` — ad/permission handling
 - `blueprints/e2e-step-contract/README.md` — step file schema
 - `agents/e2e-author.md` — step file authoring
 - `agents/ui-judge.md` — final UI verdict

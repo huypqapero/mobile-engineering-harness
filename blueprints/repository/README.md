@@ -249,5 +249,5 @@ Repository blueprint này **thành phần** trong feature blueprint. Dùng stand
 
 - `.harness/skills/android-network/SKILL.md`
 - `.harness/skills/android-database/SKILL.md`
-- `.harness/knowledge/data/repository-pattern.md`
+- `.harness/knowledge/coding/data/repository-pattern.md`
 - `.harness/blueprints/reference-feature/README.md`

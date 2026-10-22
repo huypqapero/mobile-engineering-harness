@@ -183,7 +183,7 @@ Khi gate fail trong Stage 5 (Verify), agent có thể auto-fix với **limit**:
 
 ```
 Loop:
-  1. Compute failure fingerprint (xem knowledge/auto-fix/essentials.md)
+  1. Compute failure fingerprint (xem knowledge/meta/auto-fix/essentials.md)
   2. Classify failure (xem skills/coding-diagnose §Failure classifier)
   3. Check attempts tracked in plans/<date>/fix-attempts.yaml
      - If fingerprint lặp without progress → ESCALATE (stop loop)

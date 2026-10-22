@@ -40,7 +40,7 @@ Dựa trên `orchestration.mode`:
 - `single` → không orchestrate, delegate `coding-feature` skill
 - `team` → sequential Task spawn per role
 - `parallel-features` → multi-feature parallel spawn
-- `auto` → decision tree từ `knowledge/agent-orchestration/essentials.md §Mode decision tree`
+- `auto` → decision tree từ `knowledge/meta/agent-orchestration/essentials.md §Mode decision tree`
 
 ### Step 2 — Spec decomposition (parallel-features)
 

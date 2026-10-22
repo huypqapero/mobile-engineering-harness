@@ -37,9 +37,9 @@ Optional:
 
 ## Prerequisites
 
-1. `knowledge/architecture/essentials.md` — Clean Arch invariant
-2. `knowledge/mvi/essentials.md` — state/intent pattern
-3. `knowledge/coroutines/essentials.md` — concurrency primitives
+1. `knowledge/coding/clean-arch/essentials.md` — Clean Arch invariant
+2. `knowledge/coding/mvi/essentials.md` — state/intent pattern
+3. `knowledge/coding/coroutines/essentials.md` — concurrency primitives
 4. Related `knowledge/*/essentials.md` theo domain task
 5. `constitution/engineering-principles.md` — team principles (KISS/DRY/YAGNI)
 

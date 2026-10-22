@@ -657,8 +657,8 @@ Harness support đa stack qua `stack.*` fields trong `overlay.yaml`:
 | `stack.serialization` | `kotlinx-serialization` / `moshi` / `gson` | JSON serialization |
 
 Decision guides chi tiết:
-- Network: `.harness-overlay/upstream/knowledge/data/network.md §Library selection`
-- Database: `.harness-overlay/upstream/knowledge/data/persistence.md §Relational DB`
+- Network: `.harness-overlay/upstream/knowledge/coding/data/network.md §Library selection`
+- Database: `.harness-overlay/upstream/knowledge/coding/data/persistence.md §Relational DB`
 
 Agent sử dụng stack value để chọn snippet trong knowledge/skills (ví dụ `stack.network: retrofit` → Retrofit code, không Ktor).
 
@@ -672,7 +672,7 @@ Pick 1 trong 3 profiles qua `architecture.profile`:
 | `kmp` | Kotlin Multiplatform (shared logic, native UI) | **MUST enforce** |
 | `android-only` | Jetpack Compose Android | **SKIP** (relaxed) |
 
-Chi tiết + migration guide: `.harness-overlay/upstream/knowledge/architecture/architecture-profiles.md`.
+Chi tiết + migration guide: `.harness-overlay/upstream/knowledge/coding/clean-arch/architecture-profiles.md`.
 
 ### Rule overrides (v0.8.0+)
 
@@ -722,7 +722,7 @@ spec → architect decompose → isolation check → spawn N parallel Task subag
 
 Claude Code `Task` tool native support. Subagent per role, tool subset limit (ví dụ reviewer chỉ Read+Grep, không Edit → prevent bias).
 
-Chi tiết: `knowledge/agent-orchestration/essentials.md`.
+Chi tiết: `knowledge/meta/agent-orchestration/essentials.md`.
 
 ---
 

@@ -49,15 +49,15 @@ Mode `perf`:
 ## Prerequisites
 
 Chung:
-- `knowledge/coroutines/essentials.md` cho cancellation/scope
-- `knowledge/compose/essentials.md` cho recomposition/stability
+- `knowledge/coding/coroutines/essentials.md` cho cancellation/scope
+- `knowledge/coding/compose/essentials.md` cho recomposition/stability
 
 Mode `bug`:
 - `workflows/fix-bug.md` — 5-stage orchestration
 
 Mode `perf`:
-- `knowledge/performance/essentials.md`
-- `knowledge/compose/essentials.md §Recomposition prevention`
+- `knowledge/cross-cutting/performance/essentials.md`
+- `knowledge/coding/compose/essentials.md §Recomposition prevention`
 - Android Studio Profiler setup
 
 ---
@@ -197,7 +197,7 @@ Trước khi start fix, **classify failure**. Classification wrong → wrong fix
 | **infra** | OOM, disk full, network timeout CI | **User (infra)** | Gradle OOM, no space left, DNS fail |
 | **env** | JDK/Kotlin/SDK version mismatch | **User (setup)** | `Unsupported Kotlin version`, SDK path missing |
 
-**Fingerprint** cho detect "same error loop" (xem `knowledge/auto-fix/essentials.md`):
+**Fingerprint** cho detect "same error loop" (xem `knowledge/meta/auto-fix/essentials.md`):
 
 ```python
 fingerprint = sha1(f"{task_name}:{exception_class}:{stack_top_3_frames_normalized}")
@@ -589,7 +589,7 @@ Mode `perf`:
 - [Android App Performance](https://developer.android.com/topic/performance)
 - [Macrobenchmark](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-overview)
 - [Compose stability](https://developer.android.com/jetpack/compose/performance/stability)
-- `knowledge/performance/essentials.md`
+- `knowledge/cross-cutting/performance/essentials.md`
 
 ---
 

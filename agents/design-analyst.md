@@ -31,10 +31,10 @@ Không viết implementation code, không design UI mới, không claim exact de
 
 - `assets/sources/screenshots/*.png` của brief đang build
 - Spec analysis output từ Product Analyst (để link action_ref)
-- `knowledge/input-analysis/screenshot-reading-rules.md`
-- `knowledge/input-analysis/reconciliation-matrix.md`
+- `knowledge/product/input-analysis/screenshot-reading-rules.md`
+- `knowledge/product/input-analysis/reconciliation-matrix.md`
 - `blueprints/feature-brief/design.md.template`
-- Project `knowledge/compose/essentials.md` (nếu có — cho component vocabulary)
+- Project `knowledge/coding/compose/essentials.md` (nếu có — cho component vocabulary)
 - Project `docs/design-guidelines.md` (cho project convention)
 
 ## Output

@@ -42,8 +42,8 @@ Test hành trình người dùng, navigation, integration, regression. Chạy t�
 
 - Contract (`<Feature>Contract.kt`) hoặc spec file
 - `.harness/skills/testing-android/SKILL.md`
-- `.harness/knowledge/coroutines/essentials.md §Testing with runTest`
-- `.harness/knowledge/mvi/essentials.md §Testing MVI`
+- `.harness/knowledge/coding/coroutines/essentials.md §Testing with runTest`
+- `.harness/knowledge/coding/mvi/essentials.md §Testing MVI`
 - Existing fakes trong `src/commonTest/`
 
 ## Workflow

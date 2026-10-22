@@ -255,7 +255,7 @@ issues:
 assumptions:
   - id: ASSUME-001
     description: Offline state dùng project default OfflineComponent fullscreen.
-    rationale: Project convention từ knowledge/compose/essentials.md.
+    rationale: Project convention từ knowledge/coding/compose/essentials.md.
     issue_resolved: ISSUE-002
 
 downstream:

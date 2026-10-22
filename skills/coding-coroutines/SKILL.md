@@ -24,9 +24,9 @@ priority: P0
 
 ## Prerequisites
 
-1. `knowledge/coroutines/essentials.md` — full patterns + anti-patterns
+1. `knowledge/coding/coroutines/essentials.md` — full patterns + anti-patterns
 2. `constitution/concurrency-rules.md` — CORO-001..010
-3. `knowledge/data/network.md §ApiResult contract` — network call main-safe, cancellation rethrow ở adapter/converter
+3. `knowledge/coding/data/network.md §ApiResult contract` — network call main-safe, cancellation rethrow ở adapter/converter
 
 ## Execution procedure
 

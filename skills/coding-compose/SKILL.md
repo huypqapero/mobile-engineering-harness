@@ -21,7 +21,7 @@ priority: P0
 
 ## Prerequisites
 
-1. `knowledge/compose/essentials.md`
+1. `knowledge/coding/compose/essentials.md`
 2. `docs/design-guidelines.md`
 3. `docs/ui-catalog/` cho component pattern
 4. `presenter/theme/*` cho token available

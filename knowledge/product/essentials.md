@@ -23,7 +23,7 @@ Trước khi viết PRD, verify ý tưởng có value thực tế. Output `marke
 
 ## 2. Spec extraction mode
 
-Full procedure trong `knowledge/input-analysis/requirement-extraction-rules.md` (REQ-RULE-001..006).
+Full procedure trong `knowledge/product/input-analysis/requirement-extraction-rules.md` (REQ-RULE-001..006).
 
 ### Checklist nhanh
 1. Snapshot spec vào `briefs/<slug>/assets/sources/spec.md` (preserve nguồn)
@@ -140,7 +140,7 @@ Khi downstream (Designer / Tech Lead / Coder) phát hiện PRD gap:
 
 ## 6. Dependency
 
-- `knowledge/input-analysis/*` — 5 rules file (extraction, confluence, figma, screenshot, reconciliation)
+- `knowledge/product/input-analysis/*` — 5 rules file (extraction, confluence, figma, screenshot, reconciliation)
 - `agents/product-analyst.md` — role spec
 - `agents/workflows/feature-full-flow.md` — Stage 1 Discovery
 - `skills/business-analyze` — procedure dispatcher phase spec/design/reconcile

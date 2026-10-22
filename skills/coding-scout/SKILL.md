@@ -32,7 +32,7 @@ Optional:
 ## Prerequisites
 
 - Project đã clone, index khả dụng
-- Nếu dùng semantic search: `knowledge/architecture/*` cho layer boundary context
+- Nếu dùng semantic search: `knowledge/coding/clean-arch/*` cho layer boundary context
 
 ## Execution procedure
 
@@ -71,7 +71,7 @@ Mỗi file match → gán layer theo path convention:
 | `{{MODULE_APP}}/**/di/**` | app (DI wiring) |
 | `**/test/**` hoặc `**/*Test.kt` | test |
 
-Flag violation nếu detect: domain import Android/iOS/Firebase (xem `knowledge/architecture/*`).
+Flag violation nếu detect: domain import Android/iOS/Firebase (xem `knowledge/coding/clean-arch/*`).
 
 ### Step 4 — Trace relationships
 
@@ -106,7 +106,7 @@ Default format (`--out md`):
 - ...
 
 **Related knowledge:**
-- `knowledge/architecture/essentials.md §Clean Arch` (nếu scan touches architecture)
+- `knowledge/coding/clean-arch/essentials.md §Clean Arch` (nếu scan touches architecture)
 
 **Blast radius if changed:** <N callers, M modules>
 
@@ -123,7 +123,7 @@ Never read full file in scout — chỉ snippet. Caller/orchestrator sẽ Read f
 
 ## Required policies
 
-- `knowledge/architecture/*` — layer boundaries (dùng để classify)
+- `knowledge/coding/clean-arch/*` — layer boundaries (dùng để classify)
 - `constitution/architecture-rules.md` ARCH-RULE-* — detect violation trong result
 - Read-only operation: KHÔNG Edit/Write trong scout
 

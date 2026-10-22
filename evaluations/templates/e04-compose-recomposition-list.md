@@ -9,7 +9,7 @@ Yêu cầu agent build Compose screen render list sách lớn (~500 items) với
 
 ## Prompt mẫu
 
-> Build `BookListScreen` cho {{PRODUCT_NAME}}: hiển thị LazyColumn 500 cuốn sách, mỗi item có cover + title + bookmark button. Follow `.harness/skills/android-compose/SKILL.md` và `.harness/knowledge/compose/essentials.md`.
+> Build `BookListScreen` cho {{PRODUCT_NAME}}: hiển thị LazyColumn 500 cuốn sách, mỗi item có cover + title + bookmark button. Follow `.harness/skills/android-compose/SKILL.md` và `.harness/knowledge/coding/compose/essentials.md`.
 
 ## Expected implementation
 

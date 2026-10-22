@@ -140,8 +140,8 @@ Xem `brief.yaml.template` — mỗi field có inline comment.
 ## Reference
 
 - `verification/brief-schema/brief.schema.json` — JSON schema validate brief.yaml
-- `knowledge/input-analysis/requirement-extraction-rules.md` — rules trích xuất requirement
-- `knowledge/input-analysis/screenshot-reading-rules.md` — rules đọc screenshot
-- `knowledge/input-analysis/reconciliation-matrix.md` — conflict handling matrix
+- `knowledge/product/input-analysis/requirement-extraction-rules.md` — rules trích xuất requirement
+- `knowledge/product/input-analysis/screenshot-reading-rules.md` — rules đọc screenshot
+- `knowledge/product/input-analysis/reconciliation-matrix.md` — conflict handling matrix
 - `skills/input-prepare-feature/SKILL.md` — orchestrator skill
 - `workflows/prepare-feature-brief.md` — 5-phase pipeline

@@ -194,9 +194,9 @@ Thiếu 1 → không ký. Không có concept "release với known bug acceptable
 
 ## Pair với knowledge
 
-- `knowledge/project-management/essentials.md` — feasibility rubric (4-dim × 1-3 scale), deadline buffer rule, scope decision matrix (cut/delay/parallel), release window checklist, bug-triage decision tree từ PM góc nhìn
-- `knowledge/agent-orchestration/essentials.md` — handoff state tracking patterns
-- `knowledge/harness-governance/essentials.md` — permission levels + ADR enforcement
+- `knowledge/pm/essentials.md` — feasibility rubric (4-dim × 1-3 scale), deadline buffer rule, scope decision matrix (cut/delay/parallel), release window checklist, bug-triage decision tree từ PM góc nhìn
+- `knowledge/meta/agent-orchestration/essentials.md` — handoff state tracking patterns
+- `knowledge/meta/harness-governance/essentials.md` — permission levels + ADR enforcement
 
 ## Pair với skills
 

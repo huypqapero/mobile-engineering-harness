@@ -226,6 +226,6 @@ Dự án đã có plan.md markdown:
 
 ## Reference
 
-- `knowledge/build-strategy/essentials.md` — multi-level build strategy
-- `knowledge/auto-fix/essentials.md` — fix attempt pattern
-- `knowledge/agent-orchestration/model-tier.md` — model routing
+- `knowledge/cross-cutting/build-strategy/essentials.md` — multi-level build strategy
+- `knowledge/meta/auto-fix/essentials.md` — fix attempt pattern
+- `knowledge/meta/agent-orchestration/model-tier.md` — model routing

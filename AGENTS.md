@@ -51,7 +51,7 @@ Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cac
 2. **Overlay** `.harness-overlay/constitution/` — product extensions
 3. **Upstream** `AGENTS.md` (file này) — generic entry + task routing
 4. **Upstream** `skills/<skill-tương-ứng>/SKILL.md` — procedure cụ thể
-5. **Upstream** `knowledge/` — load khi task yêu cầu
+5. **Upstream** `knowledge/` — load khi task yêu cầu (phân cấp 2 tầng: `knowledge/<category>/<domain>/`, index tại `knowledge/README.md`)
 6. **Blueprint**: ưu tiên `overlay/blueprints/live-reference-feature.md` (nếu có); fallback `upstream/blueprints/reference-feature/README.md`
 
 ## Task routing
@@ -183,34 +183,34 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `constitution/concurrency-rules.md` — CORO-001..010
 - `constitution/kotlin-conventions.md` — KOT-001..012
 - `constitution/definition-of-done.md`
-- `knowledge/agent-orchestration/essentials.md` — orchestration modes + Claude Code Task tool patterns
-- `knowledge/agent-orchestration/model-tier.md` — model tier routing (lite/balanced/deep)
-- `knowledge/harness-governance/essentials.md` — permission levels L0-L3 + protected baseline
-- `knowledge/architecture/architecture-profiles.md` — profile cmp/kmp/android-only + migration
-- `knowledge/build-strategy/essentials.md` — 4-level build strategy (fast → regression)
-- `knowledge/auto-fix/essentials.md` — auto-fix loop + fingerprint + attempt limit
-- `knowledge/architecture/clean-mvi.md`
-- `knowledge/compose/essentials.md`
-- `knowledge/mvi/essentials.md`
-- `knowledge/coroutines/essentials.md`
-- `knowledge/data/repository-pattern.md`
-- `knowledge/data/network.md`
-- `knowledge/data/persistence.md`
-- `knowledge/data/caching.md`
-- `knowledge/patterns/common-patterns.md`
-- `knowledge/security/essentials.md`
-- `knowledge/performance/essentials.md`
-- `knowledge/input-analysis/requirement-extraction-rules.md` — REQ-RULE-001..006
-- `knowledge/input-analysis/screenshot-reading-rules.md` — DESIGN-RULE-001..012
-- `knowledge/input-analysis/reconciliation-matrix.md` — matrix + severity rules
-- `knowledge/input-analysis/confluence-fetch-rules.md` — CONF-RULE-001..012 cho MCP adapter
-- `knowledge/input-analysis/figma-fetch-rules.md` — FIG-RULE-001..008 + design rule overrides
-- `knowledge/e2e-runtime/device-driver-contract.md` — abstract driver interface (10 methods) + 5 implementation paths comparison
-- `knowledge/e2e-runtime/custom-apk-driver.md` — architecture + HTTP protocol + UiAutomation cheat sheet + 3 acquisition options (200+ cases/round scale)
-- `knowledge/e2e-runtime/guard-round-pattern.md` — full vs verify round orchestration
-- `knowledge/e2e-runtime/interruption-patterns.md` — ad/permission/dialog auto-dismiss
-- `knowledge/e2e-runtime/runner-neutral-step.md` — step file design rationale
-- `knowledge/visual-compare/figma-vs-screenshot.md` — perceptual hash + SSIM thresholds
+- `knowledge/meta/agent-orchestration/essentials.md` — orchestration modes + Claude Code Task tool patterns
+- `knowledge/meta/agent-orchestration/model-tier.md` — model tier routing (lite/balanced/deep)
+- `knowledge/meta/harness-governance/essentials.md` — permission levels L0-L3 + protected baseline
+- `knowledge/coding/clean-arch/architecture-profiles.md` — profile cmp/kmp/android-only + migration
+- `knowledge/cross-cutting/build-strategy/essentials.md` — 4-level build strategy (fast → regression)
+- `knowledge/meta/auto-fix/essentials.md` — auto-fix loop + fingerprint + attempt limit
+- `knowledge/coding/clean-arch/clean-mvi.md`
+- `knowledge/coding/compose/essentials.md`
+- `knowledge/coding/mvi/essentials.md`
+- `knowledge/coding/coroutines/essentials.md`
+- `knowledge/coding/data/repository-pattern.md`
+- `knowledge/coding/data/network.md`
+- `knowledge/coding/data/persistence.md`
+- `knowledge/coding/data/caching.md`
+- `knowledge/coding/patterns/common-patterns.md`
+- `knowledge/cross-cutting/security/essentials.md`
+- `knowledge/cross-cutting/performance/essentials.md`
+- `knowledge/product/input-analysis/requirement-extraction-rules.md` — REQ-RULE-001..006
+- `knowledge/product/input-analysis/screenshot-reading-rules.md` — DESIGN-RULE-001..012
+- `knowledge/product/input-analysis/reconciliation-matrix.md` — matrix + severity rules
+- `knowledge/product/input-analysis/confluence-fetch-rules.md` — CONF-RULE-001..012 cho MCP adapter
+- `knowledge/product/input-analysis/figma-fetch-rules.md` — FIG-RULE-001..008 + design rule overrides
+- `knowledge/testing/e2e-runtime/device-driver-contract.md` — abstract driver interface (10 methods) + 5 implementation paths comparison
+- `knowledge/testing/e2e-runtime/custom-apk-driver.md` — architecture + HTTP protocol + UiAutomation cheat sheet + 3 acquisition options (200+ cases/round scale)
+- `knowledge/testing/e2e-runtime/guard-round-pattern.md` — full vs verify round orchestration
+- `knowledge/testing/e2e-runtime/interruption-patterns.md` — ad/permission/dialog auto-dismiss
+- `knowledge/testing/e2e-runtime/runner-neutral-step.md` — step file design rationale
+- `knowledge/design/visual-compare/figma-vs-screenshot.md` — perceptual hash + SSIM thresholds
 - `skills/feature/SKILL.md` — **P0** entry: feature-full-flow pipeline wrapper (BA → PM → Designer → Tech Lead → Architect → Coder → QA → Release)
 - `skills/bugfix/SKILL.md` — **P0** entry: bugfix-fast-path triage + fast/mini/full routing
 - `skills/bug-triage/SKILL.md` — bug classify code/design/spec, max 3 retry

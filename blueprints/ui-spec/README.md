@@ -276,7 +276,7 @@ Same as book-detail-content
 - `nodes-manifest.json.template` — _nodes.json schema
 - `agents/ui-spec-writer.md` (future Wave 2) — authoring role
 - `agents/ui-judge.md` — consumer role
-- `knowledge/visual-compare/figma-vs-screenshot.md` — compare technique
+- `knowledge/design/visual-compare/figma-vs-screenshot.md` — compare technique
 
 ## Future (Wave 2+)
 

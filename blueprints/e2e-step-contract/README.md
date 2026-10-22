@@ -188,8 +188,8 @@ Không press Home cuối case → next case start từ nửa chừng → brittle
 - `forbidden-ops.md` — FORBID-001..004 detailed rules
 - `examples/*.json` — reference files
 - `agents/e2e-author.md` — authoring role
-- `knowledge/e2e-runtime/runner-neutral-step.md` — design rationale
-- `knowledge/e2e-runtime/device-driver-contract.md` — driver interface
+- `knowledge/testing/e2e-runtime/runner-neutral-step.md` — design rationale
+- `knowledge/testing/e2e-runtime/device-driver-contract.md` — driver interface
 
 ## Future (Wave 2+)
 

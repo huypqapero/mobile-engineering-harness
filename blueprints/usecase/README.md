@@ -232,6 +232,6 @@ Operation là 1-1 với Repository method, không transform?
 
 ## Reference
 
-- `.harness/knowledge/architecture/clean-mvi.md §Dùng UseCase`
+- `.harness/knowledge/coding/clean-arch/clean-mvi.md §Dùng UseCase`
 - `.harness/skills/android-feature/SKILL.md`
 - Rule ARCH-003, ARCH-011 trong `constitution/architecture-rules.md`

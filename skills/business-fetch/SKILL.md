@@ -34,12 +34,12 @@ Chung:
 - `blueprints/feature-brief/README.md` — package layout
 
 Mode `confluence`:
-- `knowledge/input-analysis/confluence-fetch-rules.md` — CONF-RULE-001..012
+- `knowledge/product/input-analysis/confluence-fetch-rules.md` — CONF-RULE-001..012
 - MCP `mcp-atlassian` connected (`confluence_search`, `confluence_get_page`, `confluence_get_page_restrictions`, `confluence_get_page_children`, `confluence_get_attachments`, `confluence_download_attachment`/`confluence_download_content_attachments`, `confluence_get_page_images`; optional `confluence_get_comments`, `confluence_get_inline_comments`, `confluence_get_page_history`)
 
 Mode `figma`:
-- `knowledge/input-analysis/figma-fetch-rules.md` — FIG-RULE-001..008 + overrides
-- `knowledge/input-analysis/screenshot-reading-rules.md` — base rules
+- `knowledge/product/input-analysis/figma-fetch-rules.md` — FIG-RULE-001..008 + overrides
+- `knowledge/product/input-analysis/screenshot-reading-rules.md` — base rules
 - MCP primary `framelink-figma` (`get_figma_data`, `download_figma_images`); fallback live `TalkToFigma` (`join_channel`, `get_document_info`, `get_node_info`, `scan_nodes_by_types`, `export_node_as_image`, `get_local_components`, `get_styles`)
 
 Nếu MCP không available → BLOCKED, raise cho user setup.

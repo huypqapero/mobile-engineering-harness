@@ -53,7 +53,7 @@ Dependency graph bất biến: `composeApp → presenter → domain ← data`.
   - Không bọc network call bằng `withContext(ioDispatcher)` (suspend call đã main-safe, xem CORO-002)
 - **Verification**: Konsist `ARCH-004 repository impl does not extend base repository` (check theo tên parent `*BaseRepository`; base class tên khác bắt ở review) + `ARCH-004 remote api suspend functions return ApiResult` (suspend fun không private trong `remote/*Api.kt`, **phải khai báo return type tường minh**)
 - **Exception**: endpoint cần response thô (`HttpResponse`, stream channel) → đặt ở class không nằm trong file `*Api.kt` (ví dụ `*Downloader`) hoặc bọc `safeCall { }`
-- **Detail**: `knowledge/data/network.md §ApiResult contract`, `§Migration từ BaseRepository`
+- **Detail**: `knowledge/coding/data/network.md §ApiResult contract`, `§Migration từ BaseRepository`
 - **Violation**:
   ```kotlin
   // ❌

@@ -132,5 +132,5 @@ Nếu feature expand (thêm Repository, UseCase, remote fetch) → upgrade sang 
 ## Reference
 
 - `.harness/skills/android-compose/SKILL.md`
-- `.harness/knowledge/compose/essentials.md`
+- `.harness/knowledge/coding/compose/essentials.md`
 - `.harness/blueprints/reference-feature/README.md`

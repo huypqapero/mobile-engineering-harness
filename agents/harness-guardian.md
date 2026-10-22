@@ -244,13 +244,13 @@ Guardian query registry trước change → know scope impact. Nếu không có 
 
 - Skill: `skills/harness-maintenance/SKILL.md` — procedure chi tiết
 - Workflow: `workflows/harness-maintenance.md` — change lifecycle
-- Knowledge: `knowledge/harness-governance/essentials.md` — permission levels + protected baseline
+- Knowledge: `knowledge/meta/harness-governance/essentials.md` — permission levels + protected baseline
 - Trigger: scheduled routine OR user `invoke harness-guardian` explicit
 
 ## Example invocation
 
 ```
-Prompt: "Harness Guardian, audit mode: review knowledge/coroutines/ với Kotlin 2.1 changes.
+Prompt: "Harness Guardian, audit mode: review knowledge/coding/coroutines/ với Kotlin 2.1 changes.
 Produce audit report, không auto-change."
 
 Prompt: "Harness Guardian, maintain mode: fix broken link trong skills/coding-feature/SKILL.md"

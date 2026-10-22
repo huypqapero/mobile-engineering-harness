@@ -42,9 +42,9 @@ Orchestrate việc implement feature end-to-end. Trạng thái máy, không chec
    - Models hiện có → reuse?
    - Nav routes hiện có?
 4. Load relevant knowledge:
-   - MVI pattern: `.harness/knowledge/mvi/essentials.md`
-   - Compose patterns: `.harness/knowledge/compose/essentials.md`
-   - Nếu async-heavy: `.harness/knowledge/coroutines/essentials.md`
+   - MVI pattern: `.harness/knowledge/coding/mvi/essentials.md`
+   - Compose patterns: `.harness/knowledge/coding/compose/essentials.md`
+   - Nếu async-heavy: `.harness/knowledge/coding/coroutines/essentials.md`
 5. Identify open questions trong spec
 
 ### Completion criteria

@@ -223,4 +223,4 @@ Case 0 assertion → warning: không verify behavior, chỉ "chạy không crash
 
 - `blueprints/e2e-step-contract/step-file.schema.json` — schema enforcement
 - `agents/e2e-author.md` — author rules
-- `knowledge/e2e-runtime/runner-neutral-step.md` — design rationale
+- `knowledge/testing/e2e-runtime/runner-neutral-step.md` — design rationale

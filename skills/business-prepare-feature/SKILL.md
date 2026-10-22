@@ -39,9 +39,9 @@ Trước khi orchestrate, đọc:
 
 1. `blueprints/feature-brief/README.md` — package layout + rules
 2. `blueprints/feature-brief/brief.yaml.template` — manifest schema
-3. `knowledge/input-analysis/requirement-extraction-rules.md`
-4. `knowledge/input-analysis/screenshot-reading-rules.md`
-5. `knowledge/input-analysis/reconciliation-matrix.md`
+3. `knowledge/product/input-analysis/requirement-extraction-rules.md`
+4. `knowledge/product/input-analysis/screenshot-reading-rules.md`
+5. `knowledge/product/input-analysis/reconciliation-matrix.md`
 6. `agents/product-analyst.md` + `agents/design-analyst.md` roles
 7. Project `CLAUDE.md` + `constitution/engineering-principles.md`
 
@@ -204,7 +204,7 @@ Open questions:
 ## Required policies
 
 - `blueprints/feature-brief/README.md` — package layout
-- `knowledge/input-analysis/*` — toàn bộ 3 rules file
+- `knowledge/product/input-analysis/*` — toàn bộ 3 rules file
 - `agents/product-analyst.md` + `agents/design-analyst.md`
 - Project `constitution/engineering-principles.md`
 
@@ -212,11 +212,11 @@ Open questions:
 
 Load thêm khi:
 
-- Spec có API contract → `knowledge/data/network.md` (nếu có)
-- Spec có concurrent/async behavior → `knowledge/coroutines/essentials.md`
-- Design UI complex → `knowledge/compose/essentials.md`
-- Spec source = Confluence → `knowledge/input-analysis/confluence-fetch-rules.md`
-- Design source = Figma → `knowledge/input-analysis/figma-fetch-rules.md`
+- Spec có API contract → `knowledge/coding/data/network.md` (nếu có)
+- Spec có concurrent/async behavior → `knowledge/coding/coroutines/essentials.md`
+- Design UI complex → `knowledge/coding/compose/essentials.md`
+- Spec source = Confluence → `knowledge/product/input-analysis/confluence-fetch-rules.md`
+- Design source = Figma → `knowledge/product/input-analysis/figma-fetch-rules.md`
 
 ## Output contract
 

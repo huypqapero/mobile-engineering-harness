@@ -139,7 +139,7 @@ orchestration:
       debugger: balanced
       classifier: lite
     # Task-level override trong plans/<task-id>.yaml §model_tier
-    # Chi tiết: knowledge/agent-orchestration/model-tier.md
+    # Chi tiết: knowledge/meta/agent-orchestration/model-tier.md
 
 detekt:
   enabled: true

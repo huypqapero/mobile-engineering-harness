@@ -316,5 +316,5 @@ Speedup: 2x
 ## Reference
 
 - `skills/coding-orchestrator/SKILL.md` — procedure chi tiết
-- `knowledge/agent-orchestration/essentials.md` — modes + patterns
+- `knowledge/meta/agent-orchestration/essentials.md` — modes + patterns
 - `agents/orchestrator.md`, `agents/architect.md`, `agents/coder.md`, `agents/reviewer.md`

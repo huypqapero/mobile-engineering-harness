@@ -20,8 +20,8 @@ priority: P0
 
 ## Prerequisites
 
-1. `knowledge/coroutines/essentials.md §Testing with runTest`
-2. `knowledge/mvi/essentials.md §Testing MVI`
+1. `knowledge/coding/coroutines/essentials.md §Testing with runTest`
+2. `knowledge/coding/mvi/essentials.md §Testing MVI`
 3. Project `docs/architecture.md`
 
 ## Test strategy
