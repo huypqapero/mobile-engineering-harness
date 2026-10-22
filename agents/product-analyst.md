@@ -183,6 +183,15 @@ Nếu Product Analyst là final writer (brief complete):
 
 Downstream `feature-development` Stage 1 Inspect đọc `briefs/<slug>/` làm authoritative input.
 
+## Pair với knowledge
+
+- `knowledge/product/essentials.md` — market research checklist, wireframe taxonomy, 5-state nghiệp vụ, AC formula
+- `knowledge/input-analysis/requirement-extraction-rules.md` — REQ-RULE-001..006
+- `knowledge/input-analysis/reconciliation-matrix.md` — conflict resolution matrix
+- `knowledge/input-analysis/confluence-fetch-rules.md` — khi spec source = Confluence
+- `knowledge/input-analysis/figma-fetch-rules.md` — khi spec có Figma reference
+- `knowledge/input-analysis/screenshot-reading-rules.md` — khi spec có screenshot embedded
+
 ## Pair với skills
 
 - `business-prepare-feature` (orchestrator) — invoke Product Analyst role trong Phase P2

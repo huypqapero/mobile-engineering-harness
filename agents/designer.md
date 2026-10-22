@@ -191,6 +191,12 @@ Khi phát hiện PRD gap (ví dụ permission denied state không có):
 3. Product Analyst update PRD → Designer finalize design
 4. PM đánh giá impact deadline nếu CR expand scope
 
+## Pair với knowledge
+
+- `knowledge/design-system/essentials.md` — token architecture (primitive/semantic/component), 5 screen states, WCAG AA checklist, dark mode flip rule, responsive breakpoint, asset format matrix, component reuse decision tree
+- `knowledge/compose/essentials.md` — recomposition + stability (khi design component mới)
+- `knowledge/visual-compare/figma-vs-screenshot.md` — handoff spec cho `ui-judge` grading
+
 ## Pair với skills
 
 - `ui-ux-pro-max` — design system intelligence, token design

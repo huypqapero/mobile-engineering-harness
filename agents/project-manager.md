@@ -192,6 +192,12 @@ Thiếu 1 → không ký. Không có concept "release với known bug acceptable
 ### Escalate stakeholder (ngoài agent system)
 - Khi scope decision > ngưỡng, log + notify user
 
+## Pair với knowledge
+
+- `knowledge/project-management/essentials.md` — feasibility rubric (4-dim × 1-3 scale), deadline buffer rule, scope decision matrix (cut/delay/parallel), release window checklist, bug-triage decision tree từ PM góc nhìn
+- `knowledge/agent-orchestration/essentials.md` — handoff state tracking patterns
+- `knowledge/harness-governance/essentials.md` — permission levels + ADR enforcement
+
 ## Pair với skills
 
 - `business-prepare-feature` — track input layer tiến độ
