@@ -36,12 +36,12 @@ Optional:
 ## Prerequisites
 
 Đọc trước khi start (bắt buộc đầy đủ):
-1. `knowledge/coding-sdk/sdk-mindset.md [KB → team/arch-coding-sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006, foundation mindset
-2. `knowledge/coding-sdk/pattern-catalog.md [KB → team/arch-coding-sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical mapping
-3. `knowledge/coding-sdk/layered-architecture.md [KB → team/arch-coding-sdk, kb_search "coding sdk layered architecture"]` — 5-layer kernel-plugin
-4. `knowledge/coding-sdk/brainstorm-process.md [KB → team/arch-coding-sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0
-5. `knowledge/coding-sdk/testing-kit-rules.md [KB → team/arch-coding-sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
-6. `knowledge/coding-sdk/essentials.md [KB → team/arch-coding-sdk, kb_search "coding sdk essentials"]` — rule checklist
+1. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006, foundation mindset
+2. `knowledge/coding-sdk/pattern-catalog.md [KB → develop/coding-sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical mapping
+3. `knowledge/coding-sdk/layered-architecture.md [KB → develop/coding-sdk, kb_search "coding sdk layered architecture"]` — 5-layer kernel-plugin
+4. `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0
+5. `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/coding-sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
+6. `knowledge/coding-sdk/essentials.md [KB → develop/coding-sdk, kb_search "coding sdk essentials"]` — rule checklist
 7. `agents/library-architect.md`
 8. `agents/workflows/library-flow.md`
 
@@ -212,7 +212,7 @@ Tech-lead lib (hoặc Library Architect kiêm):
 
 ### Step 10 — Report
 
-Theo mẫu `constitution/definition-of-done.md [KB → team/arch-constitution, kb_search "definition of done"] §Report` + bổ sung:
+Theo mẫu `constitution/definition-of-done.md [KB → develop/constitution, kb_search "definition of done"] §Report` + bổ sung:
 ```
 Phase 0 Brainstorm: COMPLETE (brainstorm.md + use-case-matrix.md + straw-man-personas.md)
 Consumer count: N real + M straw-man = N+M total (≥ 5)

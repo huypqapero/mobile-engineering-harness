@@ -44,7 +44,7 @@ Optional:
 - Existing brief cho incremental update
 - Project `docs/design-guidelines.md` cho NFR default
 - Spec analysis output để link `action_ref` khi chạy design standalone
-- Project `constitution/` + `knowledge/coding/compose/essentials.md [KB → team/arch-coding-compose, kb_search "compose essentials"]` + `knowledge/coding/data/*.md` cho reconcile default lookup
+- Project `constitution/` + `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]` + `knowledge/coding/data/*.md` cho reconcile default lookup
 
 ## Prerequisites
 
@@ -53,17 +53,17 @@ Chung:
 - `blueprints/feature-brief/brief.yaml.template`
 
 Phase `spec`:
-- `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis requirement extraction rules"]` — REQ-RULE-001..006
+- `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → product/input-analysis, kb_search "input analysis requirement extraction rules"]` — REQ-RULE-001..006
 - `blueprints/feature-brief/requirements.md.template`
 - `blueprints/feature-brief/acceptance-criteria.md.template`
 
 Phase `design`:
-- `knowledge/product/input-analysis/screenshot-reading-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis screenshot reading rules"]` — DESIGN-RULE-001..012
-- `knowledge/product/input-analysis/figma-fetch-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis figma fetch rules"]` — override rules khi có variables
+- `knowledge/product/input-analysis/screenshot-reading-rules.md [KB → product/input-analysis, kb_search "input analysis screenshot reading rules"]` — DESIGN-RULE-001..012
+- `knowledge/product/input-analysis/figma-fetch-rules.md [KB → product/input-analysis, kb_search "input analysis figma fetch rules"]` — override rules khi có variables
 - `blueprints/feature-brief/design.md.template`
 
 Phase `reconcile`:
-- `knowledge/product/input-analysis/reconciliation-matrix.md [KB → team/arch-product-input-analysis, kb_search "input analysis reconciliation matrix"]` — matrix + priority rules
+- `knowledge/product/input-analysis/reconciliation-matrix.md [KB → product/input-analysis, kb_search "input analysis reconciliation matrix"]` — matrix + priority rules
 - `blueprints/feature-brief/issues.md.template`
 
 ---
@@ -336,9 +336,9 @@ Severity rules:
 ### Phase R4 — Project default lookup
 
 Mỗi issue có default resolve:
-- Loading/error/empty component → `knowledge/coding/compose/essentials.md [KB → team/arch-coding-compose, kb_search "compose essentials"]`
-- Offline strategy → constitution rule hoặc `knowledge/coding/data/caching.md [KB → team/arch-coding-data, kb_search "data caching"]` + `knowledge/coding/data/persistence.md [KB → team/arch-coding-data, kb_search "data persistence"]`
-- Error mapping → `knowledge/coding/data/network.md [KB → team/arch-coding-data, kb_search "data network"]`
+- Loading/error/empty component → `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]`
+- Offline strategy → constitution rule hoặc `knowledge/coding/data/caching.md [KB → develop/coding-data, kb_search "data caching"]` + `knowledge/coding/data/persistence.md [KB → develop/coding-data, kb_search "data persistence"]`
+- Error mapping → `knowledge/coding/data/network.md [KB → develop/coding-data, kb_search "data network"]`
 - Animation → project motion token
 
 Document vào `assumptions[]`:
@@ -347,7 +347,7 @@ Document vào `assumptions[]`:
 assumptions:
   - id: ASSUME-001
     description: Loading dùng LinearProgressIndicator fullscreen.
-    rationale: knowledge/coding/compose/essentials.md [KB → team/arch-coding-compose, kb_search "compose essentials"] pattern.
+    rationale: knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"] pattern.
     issue_resolved: ISSUE-002
 ```
 

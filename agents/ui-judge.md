@@ -139,7 +139,7 @@ Spacing lệch vài dp → nên sửa, không chặn.
 
 ## Reference policies
 
-- `knowledge/design/visual-compare/figma-vs-screenshot.md [KB → team/arch-design-compare, kb_search "visual compare figma vs screenshot"]` — perceptual hash + SSIM threshold
+- `knowledge/design/visual-compare/figma-vs-screenshot.md [KB → product/design-compare, kb_search "visual compare figma vs screenshot"]` — perceptual hash + SSIM threshold
 - `blueprints/ui-spec/README.md` — spec format
 - `agents/design-analyst.md` — companion role (static design extract từ screenshot)
 

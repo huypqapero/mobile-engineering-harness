@@ -266,7 +266,7 @@ Install location: `~/.mobile-engineering-harness/`
 Mỗi product có `.harness-overlay/` chứa:
 - `overlay.yaml` — vars (package, module names, theme, SDK dùng)
 - `upstream` → symlink hoặc submodule tới upstream repo
-- `constitution/product-extensions.md [KB → team/arch-constitution, kb_search "product extensions"]` — rules đặc thù product
+- `constitution/product-extensions.md [KB → develop/constitution, kb_search "product extensions"]` — rules đặc thù product
 - `blueprints/live-reference-feature.md` — pointer tới live feature làm reference
 - Rendered files: Konsist test, verify.sh, harness.yaml (từ templates)
 - `.manifest.yaml` — track rendered files (clean install/uninstall)
@@ -342,7 +342,7 @@ mobile-engineering-harness/
 
 #### DON'T
 
-- **Fork upstream rule trong overlay** — luôn add qua `constitution/product-extensions.md [KB → team/arch-constitution, kb_search "product extensions"]` extend, không override
+- **Fork upstream rule trong overlay** — luôn add qua `constitution/product-extensions.md [KB → develop/constitution, kb_search "product extensions"]` extend, không override
 - **Commit `.manifest.yaml`** nếu nó varies per machine (xem gitignore)
 - **Hardcode absolute path** trong constitution/skills — dùng `{{PACKAGE_ROOT}}` placeholder
 - **Add rule không có verification method** — rule không enforce được = decorative
@@ -560,7 +560,7 @@ Khi AI agent nhận task trong project có overlay:
 ### Rule precedence (cao → thấp)
 
 1. **Project CLAUDE.md** — product/repo chủ ý override
-2. **Overlay constitution** (`.harness-overlay/constitution/product-extensions.md [KB → team/arch-constitution, kb_search "product extensions"]`) — product-specific delta
+2. **Overlay constitution** (`.harness-overlay/constitution/product-extensions.md [KB → develop/constitution, kb_search "product extensions"]`) — product-specific delta
 3. **Upstream constitution** — generic baseline
 
 Nếu cùng rule ID xuất hiện ở overlay + upstream → **overlay thắng**.
@@ -592,7 +592,7 @@ release-validation               implementer + qa + reviewer
 
 ### Overlay maintenance
 
-- Product chỉ **add delta** qua `constitution/product-extensions.md [KB → team/arch-constitution, kb_search "product extensions"]`, không fork upstream rule
+- Product chỉ **add delta** qua `constitution/product-extensions.md [KB → develop/constitution, kb_search "product extensions"]`, không fork upstream rule
 - **Promote overlay → upstream** khi 2+ product độc lập có cùng rule
 - **Baseline measurement** định kỳ — chạy eval E01-E05 để verify không regression
 - **Konsist/Detekt baseline** shrink mỗi sprint — fix 1-2 old issue
@@ -657,8 +657,8 @@ Harness support đa stack qua `stack.*` fields trong `overlay.yaml`:
 | `stack.serialization` | `kotlinx-serialization` / `moshi` / `gson` | JSON serialization |
 
 Decision guides chi tiết:
-- Network: `.harness-overlay/upstream/knowledge/coding/data/network.md [KB → team/arch-coding-data, kb_search "data network"] §Library selection`
-- Database: `.harness-overlay/upstream/knowledge/coding/data/persistence.md [KB → team/arch-coding-data, kb_search "data persistence"] §Relational DB`
+- Network: `.harness-overlay/upstream/knowledge/coding/data/network.md [KB → develop/coding-data, kb_search "data network"] §Library selection`
+- Database: `.harness-overlay/upstream/knowledge/coding/data/persistence.md [KB → develop/coding-data, kb_search "data persistence"] §Relational DB`
 
 Agent sử dụng stack value để chọn snippet trong knowledge/skills (ví dụ `stack.network: retrofit` → Retrofit code, không Ktor).
 
@@ -672,7 +672,7 @@ Pick 1 trong 3 profiles qua `architecture.profile`:
 | `kmp` | Kotlin Multiplatform (shared logic, native UI) | **MUST enforce** |
 | `android-only` | Jetpack Compose Android | **SKIP** (relaxed) |
 
-Chi tiết + migration guide: `.harness-overlay/upstream/knowledge/coding/clean-arch/architecture-profiles.md [KB → team/arch-coding-clean-arch, kb_search "clean arch architecture profiles"]`.
+Chi tiết + migration guide: `.harness-overlay/upstream/knowledge/coding/clean-arch/architecture-profiles.md [KB → develop/coding-clean-arch, kb_search "clean arch architecture profiles"]`.
 
 ### Rule overrides (v0.8.0+)
 
@@ -722,7 +722,7 @@ spec → architect decompose → isolation check → spawn N parallel Task subag
 
 Claude Code `Task` tool native support. Subagent per role, tool subset limit (ví dụ reviewer chỉ Read+Grep, không Edit → prevent bias).
 
-Chi tiết: `knowledge/meta/agent-orchestration/essentials.md [KB → team/arch-meta-orchestration, kb_search "agent orchestration essentials"]`.
+Chi tiết: `knowledge/meta/agent-orchestration/essentials.md [KB → develop/meta-orchestration, kb_search "agent orchestration essentials"]`.
 
 ---
 

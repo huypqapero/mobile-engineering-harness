@@ -179,8 +179,8 @@ Case không screenshot = không evidence cho ui-judge. Luôn screenshot critical
 
 - `blueprints/e2e-step-contract/step-file.json.template` — full schema
 - `blueprints/e2e-step-contract/forbidden-ops.md` — FORBID-001..004 detailed
-- `knowledge/testing/e2e-runtime/device-driver-contract.md [KB → team/arch-testing-e2e-runtime, kb_search "e2e runtime device driver contract"]` — driver interface
-- `knowledge/testing/e2e-runtime/runner-neutral-step.md [KB → team/arch-testing-e2e-runtime, kb_search "e2e runtime runner neutral step"]` — rationale
+- `knowledge/testing/e2e-runtime/device-driver-contract.md [KB → testing/e2e-runtime, kb_search "e2e runtime device driver contract"]` — driver interface
+- `knowledge/testing/e2e-runtime/runner-neutral-step.md [KB → testing/e2e-runtime, kb_search "e2e runtime runner neutral step"]` — rationale
 
 ## Future (Wave 2+)
 

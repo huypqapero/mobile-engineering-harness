@@ -41,15 +41,15 @@ Optional:
 
 Đọc trước khi start (bắt buộc đầy đủ, không skim):
 
-1. `knowledge/coding-feature-store/mindset.md [KB → team/arch-coding-feature-store, kb_search "coding feature store mindset"]` — ADR FS-001..007, foundation
-2. `knowledge/coding-feature-store/capability-contract.md [KB → team/arch-coding-feature-store, kb_search "coding feature store capability contract"]` — 6-trục YAML + decision tree
-3. `knowledge/coding-feature-store/module-topology.md [KB → team/arch-coding-feature-store, kb_search "coding feature store module topology"]` — 2-module template
-4. `knowledge/coding-feature-store/data-port-runtime-config.md [KB → team/arch-coding-feature-store, kb_search "coding feature store data port runtime config"]` — Runtime Config pattern + compileOnly + classpath guard
-5. `knowledge/coding-feature-store/theme-adapter.md [KB → team/arch-coding-feature-store, kb_search "coding feature store theme adapter"]` — Theme Contract (nếu U ≥ U1)
-6. `knowledge/coding-feature-store/testing-kit.md [KB → team/arch-coding-feature-store, kb_search "coding feature store testing kit"]` — testFixtures mandatory
-7. `knowledge/coding-feature-store/essentials.md [KB → team/arch-coding-feature-store, kb_search "coding feature store essentials"]` — checklist rule cứng
-8. `knowledge/coding-sdk/sdk-mindset.md [KB → team/arch-coding-sdk, kb_search "coding sdk sdk mindset"]` — rule BCV/deprecation chung
-9. `knowledge/coding-sdk/brainstorm-process.md [KB → team/arch-coding-sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0 (dùng chung)
+1. `knowledge/coding-feature-store/mindset.md [KB → develop/coding-feature-store, kb_search "coding feature store mindset"]` — ADR FS-001..007, foundation
+2. `knowledge/coding-feature-store/capability-contract.md [KB → develop/coding-feature-store, kb_search "coding feature store capability contract"]` — 6-trục YAML + decision tree
+3. `knowledge/coding-feature-store/module-topology.md [KB → develop/coding-feature-store, kb_search "coding feature store module topology"]` — 2-module template
+4. `knowledge/coding-feature-store/data-port-runtime-config.md [KB → develop/coding-feature-store, kb_search "coding feature store data port runtime config"]` — Runtime Config pattern + compileOnly + classpath guard
+5. `knowledge/coding-feature-store/theme-adapter.md [KB → develop/coding-feature-store, kb_search "coding feature store theme adapter"]` — Theme Contract (nếu U ≥ U1)
+6. `knowledge/coding-feature-store/testing-kit.md [KB → develop/coding-feature-store, kb_search "coding feature store testing kit"]` — testFixtures mandatory
+7. `knowledge/coding-feature-store/essentials.md [KB → develop/coding-feature-store, kb_search "coding feature store essentials"]` — checklist rule cứng
+8. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"]` — rule BCV/deprecation chung
+9. `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0 (dùng chung)
 10. `agents/feature-store-architect.md` — role mindset
 
 Skip prerequisite → bias feature-first drift, mất 4 guarantee FS.
@@ -67,7 +67,7 @@ Trả lời bất kỳ "không" → **STOP**, báo user chọn skill phù hợp.
 
 ### Step 1 — Phase 0 Brainstorm (Feature Store Architect)
 
-Spawn `feature-store-architect` agent chạy 10-step top-down theo `knowledge/coding-sdk/brainstorm-process.md [KB → team/arch-coding-sdk, kb_search "coding sdk brainstorm process"] §BRAIN-002` + extend FS:
+Spawn `feature-store-architect` agent chạy 10-step top-down theo `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"] §BRAIN-002` + extend FS:
 
 1. Mission statement (1 câu không "và")
 2. Non-goals (≥ 5 item có lý do)
@@ -203,7 +203,7 @@ Impl:
 
 ### Step 10 — Release 0.1.0-alpha
 
-Validation checklist `knowledge/coding-feature-store/essentials.md [KB → team/arch-coding-feature-store, kb_search "coding feature store essentials"] §Validation checklist`:
+Validation checklist `knowledge/coding-feature-store/essentials.md [KB → develop/coding-feature-store, kb_search "coding feature store essentials"] §Validation checklist`:
 - [ ] FS-CONTRACT.md đầy đủ
 - [ ] 2-module topology
 - [ ] BCV API dump
@@ -236,7 +236,7 @@ Working directory: <absolute path>
 Inputs: <đầy đủ từ user>
 Load knowledge:
 - knowledge/coding-feature-store/*
-- knowledge/coding-sdk/sdk-mindset.md [KB → team/arch-coding-sdk, kb_search "coding sdk sdk mindset"] + brainstorm-process.md + essentials.md
+- knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"] + brainstorm-process.md + essentials.md
 Rules: ~/.claude/rules/development-rules.md + review-audit-self-decision.md
 Report path: plans/reports/
 Plan dir: plans/<date>-<slug>/

@@ -20,8 +20,8 @@ Procedure chi tiết: dùng kèm `workflows/refactor-module.md`. Skill file này
 ## Prerequisites
 
 1. `workflows/refactor-module.md` — 5-stage orchestration
-2. `constitution/architecture-rules.md [KB → team/arch-constitution, kb_search "architecture rules"]`
-3. `constitution/kotlin-conventions.md [KB → team/arch-constitution, kb_search "kotlin conventions"]`
+2. `constitution/architecture-rules.md [KB → develop/constitution, kb_search "architecture rules"]`
+3. `constitution/kotlin-conventions.md [KB → develop/constitution, kb_search "kotlin conventions"]`
 
 ## Refactor patterns
 

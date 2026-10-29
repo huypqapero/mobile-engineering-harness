@@ -377,7 +377,7 @@ Deprecated lessons stay trong repo (audit), không active check.
 - `agents/lesson-miner.md` — agent role chi tiết
 - `agents/harness-guardian.md` — ADR promotion workflow
 - `agents/plan-reviewer.md` (nếu có) hoặc `agents/reviewer.md` — consume lessons
-- `constitution/engineering-principles.md [KB → team/arch-constitution, kb_search "engineering principles"]` — rule naming convention
+- `constitution/engineering-principles.md [KB → develop/constitution, kb_search "engineering principles"]` — rule naming convention
 - Bug tracker API docs: Jira REST, GitHub Issues API, Linear GraphQL
 
 ## Note về generic vs product-specific

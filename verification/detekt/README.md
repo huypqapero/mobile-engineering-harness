@@ -165,6 +165,6 @@ Hoặc dùng `@Suppress("FunctionNaming")` per composable (verbose).
 ## References
 
 - Detekt: https://detekt.dev
-- `.harness/constitution/kotlin-conventions.md [KB → team/arch-constitution, kb_search "kotlin conventions"]`
-- `.harness/constitution/concurrency-rules.md [KB → team/arch-constitution, kb_search "concurrency rules"]`
+- `.harness/constitution/kotlin-conventions.md [KB → develop/constitution, kb_search "kotlin conventions"]`
+- `.harness/constitution/concurrency-rules.md [KB → develop/constitution, kb_search "concurrency rules"]`
 - Konsist: `../architecture-tests/TemplateArchitectureRulesTest.kt`

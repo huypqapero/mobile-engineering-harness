@@ -39,11 +39,11 @@ Trước khi orchestrate, đọc:
 
 1. `blueprints/feature-brief/README.md` — package layout + rules
 2. `blueprints/feature-brief/brief.yaml.template` — manifest schema
-3. `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis requirement extraction rules"]`
-4. `knowledge/product/input-analysis/screenshot-reading-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis screenshot reading rules"]`
-5. `knowledge/product/input-analysis/reconciliation-matrix.md [KB → team/arch-product-input-analysis, kb_search "input analysis reconciliation matrix"]`
+3. `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → product/input-analysis, kb_search "input analysis requirement extraction rules"]`
+4. `knowledge/product/input-analysis/screenshot-reading-rules.md [KB → product/input-analysis, kb_search "input analysis screenshot reading rules"]`
+5. `knowledge/product/input-analysis/reconciliation-matrix.md [KB → product/input-analysis, kb_search "input analysis reconciliation matrix"]`
 6. `agents/product-analyst.md` + `agents/design-analyst.md` roles
-7. Project `CLAUDE.md` + `constitution/engineering-principles.md [KB → team/arch-constitution, kb_search "engineering principles"]`
+7. Project `CLAUDE.md` + `constitution/engineering-principles.md [KB → develop/constitution, kb_search "engineering principles"]`
 
 ## Execution procedure
 
@@ -206,17 +206,17 @@ Open questions:
 - `blueprints/feature-brief/README.md` — package layout
 - `knowledge/product/input-analysis/*` — toàn bộ 3 rules file
 - `agents/product-analyst.md` + `agents/design-analyst.md`
-- Project `constitution/engineering-principles.md [KB → team/arch-constitution, kb_search "engineering principles"]`
+- Project `constitution/engineering-principles.md [KB → develop/constitution, kb_search "engineering principles"]`
 
 ## Reference selection
 
 Load thêm khi:
 
-- Spec có API contract → `knowledge/coding/data/network.md [KB → team/arch-coding-data, kb_search "data network"]` (nếu có)
-- Spec có concurrent/async behavior → `knowledge/coding/coroutines/essentials.md [KB → team/arch-coding-coroutines, kb_search "coroutines essentials"]`
-- Design UI complex → `knowledge/coding/compose/essentials.md [KB → team/arch-coding-compose, kb_search "compose essentials"]`
-- Spec source = Confluence → `knowledge/product/input-analysis/confluence-fetch-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis confluence fetch rules"]`
-- Design source = Figma → `knowledge/product/input-analysis/figma-fetch-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis figma fetch rules"]`
+- Spec có API contract → `knowledge/coding/data/network.md [KB → develop/coding-data, kb_search "data network"]` (nếu có)
+- Spec có concurrent/async behavior → `knowledge/coding/coroutines/essentials.md [KB → develop/coding-coroutines, kb_search "coroutines essentials"]`
+- Design UI complex → `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]`
+- Spec source = Confluence → `knowledge/product/input-analysis/confluence-fetch-rules.md [KB → product/input-analysis, kb_search "input analysis confluence fetch rules"]`
+- Design source = Figma → `knowledge/product/input-analysis/figma-fetch-rules.md [KB → product/input-analysis, kb_search "input analysis figma fetch rules"]`
 
 ## Output contract
 

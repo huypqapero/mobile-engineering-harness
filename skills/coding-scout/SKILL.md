@@ -106,7 +106,7 @@ Default format (`--out md`):
 - ...
 
 **Related knowledge:**
-- `knowledge/coding/clean-arch/clean-mvi.md [KB → team/arch-coding-clean-arch, kb_search "clean arch clean mvi"]` + `knowledge/coding/clean-arch/architecture-profiles.md [KB → team/arch-coding-clean-arch, kb_search "clean arch architecture profiles"]` (nếu scan touches architecture)
+- `knowledge/coding/clean-arch/clean-mvi.md [KB → develop/coding-clean-arch, kb_search "clean arch clean mvi"]` + `knowledge/coding/clean-arch/architecture-profiles.md [KB → develop/coding-clean-arch, kb_search "clean arch architecture profiles"]` (nếu scan touches architecture)
 
 **Blast radius if changed:** <N callers, M modules>
 
@@ -124,7 +124,7 @@ Never read full file in scout — chỉ snippet. Caller/orchestrator sẽ Read f
 ## Required policies
 
 - `knowledge/coding/clean-arch/*` — layer boundaries (dùng để classify)
-- `constitution/architecture-rules.md [KB → team/arch-constitution, kb_search "architecture rules"]` ARCH-RULE-* — detect violation trong result
+- `constitution/architecture-rules.md [KB → develop/constitution, kb_search "architecture rules"]` ARCH-RULE-* — detect violation trong result
 - Read-only operation: KHÔNG Edit/Write trong scout
 
 ## Output contract

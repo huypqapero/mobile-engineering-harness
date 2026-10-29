@@ -49,15 +49,15 @@ Mode `perf`:
 ## Prerequisites
 
 Chung:
-- `knowledge/coding/coroutines/essentials.md [KB → team/arch-coding-coroutines, kb_search "coroutines essentials"]` cho cancellation/scope
-- `knowledge/coding/compose/essentials.md [KB → team/arch-coding-compose, kb_search "compose essentials"]` cho recomposition/stability
+- `knowledge/coding/coroutines/essentials.md [KB → develop/coding-coroutines, kb_search "coroutines essentials"]` cho cancellation/scope
+- `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]` cho recomposition/stability
 
 Mode `bug`:
 - `workflows/fix-bug.md` — 5-stage orchestration
 
 Mode `perf`:
-- `knowledge/cross-cutting/performance/essentials.md [KB → team/arch-xcut-performance, kb_search "performance essentials"]`
-- `knowledge/coding/compose/essentials.md [KB → team/arch-coding-compose, kb_search "compose essentials"] §Recomposition prevention`
+- `knowledge/cross-cutting/performance/essentials.md [KB → develop/xcut-performance, kb_search "performance essentials"]`
+- `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"] §Recomposition prevention`
 - Android Studio Profiler setup
 
 ---
@@ -197,7 +197,7 @@ Trước khi start fix, **classify failure**. Classification wrong → wrong fix
 | **infra** | OOM, disk full, network timeout CI | **User (infra)** | Gradle OOM, no space left, DNS fail |
 | **env** | JDK/Kotlin/SDK version mismatch | **User (setup)** | `Unsupported Kotlin version`, SDK path missing |
 
-**Fingerprint** cho detect "same error loop" (xem `knowledge/meta/auto-fix/essentials.md [KB → team/arch-meta-auto-fix, kb_search "auto fix essentials"]`):
+**Fingerprint** cho detect "same error loop" (xem `knowledge/meta/auto-fix/essentials.md [KB → develop/meta-auto-fix, kb_search "auto fix essentials"]`):
 
 ```python
 fingerprint = sha1(f"{task_name}:{exception_class}:{stack_top_3_frames_normalized}")
@@ -589,7 +589,7 @@ Mode `perf`:
 - [Android App Performance](https://developer.android.com/topic/performance)
 - [Macrobenchmark](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-overview)
 - [Compose stability](https://developer.android.com/jetpack/compose/performance/stability)
-- `knowledge/cross-cutting/performance/essentials.md [KB → team/arch-xcut-performance, kb_search "performance essentials"]`
+- `knowledge/cross-cutting/performance/essentials.md [KB → develop/xcut-performance, kb_search "performance essentials"]`
 
 ---
 

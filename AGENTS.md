@@ -51,7 +51,7 @@ Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cac
 2. **Overlay** `.harness-overlay/constitution/` — product extensions
 3. **Upstream** `AGENTS.md` (file này) — generic entry + task routing
 4. **Upstream** `skills/<skill-tương-ứng>/SKILL.md` — procedure cụ thể
-5. **Upstream** `knowledge/` — load khi task yêu cầu (phân cấp 2 tầng: `knowledge/<category>/<domain>/`, index tại `knowledge/README.md [KB → team/arch, kb_search "README"]`)
+5. **Upstream** `knowledge/` — load khi task yêu cầu (phân cấp 2 tầng: `knowledge/<category>/<domain>/`, index tại `knowledge/README.md [KB → develop/index, kb_search "README"]`)
 6. **Blueprint**: ưu tiên `overlay/blueprints/live-reference-feature.md` (nếu có); fallback `upstream/blueprints/reference-feature/README.md`
 
 ## Task routing
@@ -173,7 +173,7 @@ Trước khi báo cáo DONE, chạy đủ:
 3. `./gradlew detekt`
 4. Build smoke: `./gradlew :{{MODULE_APP}}:assembleDebug`
 
-Fail bất kỳ gate nào → không được tuyên bố DONE. Xem `constitution/definition-of-done.md [KB → team/arch-constitution, kb_search "definition of done"]`.
+Fail bất kỳ gate nào → không được tuyên bố DONE. Xem `constitution/definition-of-done.md [KB → develop/constitution, kb_search "definition of done"]`.
 
 ## Overlay vs upstream — precedence
 
@@ -186,40 +186,40 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 ## File index
 
 - `harness.yaml.template` + `overlay.schema.yaml` — config
-- `constitution/engineering-principles.md [KB → team/arch-constitution, kb_search "engineering principles"]`
-- `constitution/architecture-rules.md [KB → team/arch-constitution, kb_search "architecture rules"]` — ARCH-001..014 + MOD-001..003
-- `constitution/concurrency-rules.md [KB → team/arch-constitution, kb_search "concurrency rules"]` — CORO-001..010
-- `constitution/kotlin-conventions.md [KB → team/arch-constitution, kb_search "kotlin conventions"]` — KOT-001..012
-- `constitution/definition-of-done.md [KB → team/arch-constitution, kb_search "definition of done"]`
-- `knowledge/meta/agent-orchestration/essentials.md [KB → team/arch-meta-orchestration, kb_search "agent orchestration essentials"]` — orchestration modes + Claude Code Task tool patterns
-- `knowledge/meta/agent-orchestration/model-tier.md [KB → team/arch-meta-orchestration, kb_search "agent orchestration model tier"]` — model tier routing (lite/balanced/deep)
-- `knowledge/meta/harness-governance/essentials.md [KB → team/arch-meta-governance, kb_search "harness governance essentials"]` — permission levels L0-L3 + protected baseline
-- `knowledge/coding/clean-arch/architecture-profiles.md [KB → team/arch-coding-clean-arch, kb_search "clean arch architecture profiles"]` — profile cmp/kmp/android-only + migration
-- `knowledge/cross-cutting/build-strategy/essentials.md [KB → team/arch-xcut-build-strategy, kb_search "build strategy essentials"]` — 4-level build strategy (fast → regression)
-- `knowledge/meta/auto-fix/essentials.md [KB → team/arch-meta-auto-fix, kb_search "auto fix essentials"]` — auto-fix loop + fingerprint + attempt limit
-- `knowledge/coding/clean-arch/clean-mvi.md [KB → team/arch-coding-clean-arch, kb_search "clean arch clean mvi"]`
-- `knowledge/coding/compose/essentials.md [KB → team/arch-coding-compose, kb_search "compose essentials"]`
-- `knowledge/coding/mvi/essentials.md [KB → team/arch-coding-mvi, kb_search "mvi essentials"]`
-- `knowledge/coding/coroutines/essentials.md [KB → team/arch-coding-coroutines, kb_search "coroutines essentials"]`
-- `knowledge/coding/data/repository-pattern.md [KB → team/arch-coding-data, kb_search "data repository pattern"]`
-- `knowledge/coding/data/network.md [KB → team/arch-coding-data, kb_search "data network"]`
-- `knowledge/coding/data/persistence.md [KB → team/arch-coding-data, kb_search "data persistence"]`
-- `knowledge/coding/data/caching.md [KB → team/arch-coding-data, kb_search "data caching"]`
-- `knowledge/coding/patterns/common-patterns.md [KB → team/arch-coding-patterns, kb_search "patterns common patterns"]`
-- `knowledge/cross-cutting/security/essentials.md [KB → team/arch-xcut-security, kb_search "security essentials"]`
-- `knowledge/cross-cutting/performance/essentials.md [KB → team/arch-xcut-performance, kb_search "performance essentials"]`
-- `knowledge/coding-sdk/essentials.md [KB → team/arch-coding-sdk, kb_search "coding sdk essentials"]` — LIB-SCOPE/API/CONFIG/PORT/DEP/PLATFORM/RES/ERROR/TEST/DOC/PUBLISH/GOV rule set cho library repo riêng
-- `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis requirement extraction rules"]` — REQ-RULE-001..006
-- `knowledge/product/input-analysis/screenshot-reading-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis screenshot reading rules"]` — DESIGN-RULE-001..012
-- `knowledge/product/input-analysis/reconciliation-matrix.md [KB → team/arch-product-input-analysis, kb_search "input analysis reconciliation matrix"]` — matrix + severity rules
-- `knowledge/product/input-analysis/confluence-fetch-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis confluence fetch rules"]` — CONF-RULE-001..012 cho MCP adapter
-- `knowledge/product/input-analysis/figma-fetch-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis figma fetch rules"]` — FIG-RULE-001..008 + design rule overrides
-- `knowledge/testing/e2e-runtime/device-driver-contract.md [KB → team/arch-testing-e2e-runtime, kb_search "e2e runtime device driver contract"]` — abstract driver interface (10 methods) + 5 implementation paths comparison
-- `knowledge/testing/e2e-runtime/custom-apk-driver.md [KB → team/arch-testing-e2e-runtime, kb_search "e2e runtime custom apk driver"]` — architecture + HTTP protocol + UiAutomation cheat sheet + 3 acquisition options (200+ cases/round scale)
-- `knowledge/testing/e2e-runtime/guard-round-pattern.md [KB → team/arch-testing-e2e-runtime, kb_search "e2e runtime guard round pattern"]` — full vs verify round orchestration
-- `knowledge/testing/e2e-runtime/interruption-patterns.md [KB → team/arch-testing-e2e-runtime, kb_search "e2e runtime interruption patterns"]` — ad/permission/dialog auto-dismiss
-- `knowledge/testing/e2e-runtime/runner-neutral-step.md [KB → team/arch-testing-e2e-runtime, kb_search "e2e runtime runner neutral step"]` — step file design rationale
-- `knowledge/design/visual-compare/figma-vs-screenshot.md [KB → team/arch-design-compare, kb_search "visual compare figma vs screenshot"]` — perceptual hash + SSIM thresholds
+- `constitution/engineering-principles.md [KB → develop/constitution, kb_search "engineering principles"]`
+- `constitution/architecture-rules.md [KB → develop/constitution, kb_search "architecture rules"]` — ARCH-001..014 + MOD-001..003
+- `constitution/concurrency-rules.md [KB → develop/constitution, kb_search "concurrency rules"]` — CORO-001..010
+- `constitution/kotlin-conventions.md [KB → develop/constitution, kb_search "kotlin conventions"]` — KOT-001..012
+- `constitution/definition-of-done.md [KB → develop/constitution, kb_search "definition of done"]`
+- `knowledge/meta/agent-orchestration/essentials.md [KB → develop/meta-orchestration, kb_search "agent orchestration essentials"]` — orchestration modes + Claude Code Task tool patterns
+- `knowledge/meta/agent-orchestration/model-tier.md [KB → develop/meta-orchestration, kb_search "agent orchestration model tier"]` — model tier routing (lite/balanced/deep)
+- `knowledge/meta/harness-governance/essentials.md [KB → develop/meta-governance, kb_search "harness governance essentials"]` — permission levels L0-L3 + protected baseline
+- `knowledge/coding/clean-arch/architecture-profiles.md [KB → develop/coding-clean-arch, kb_search "clean arch architecture profiles"]` — profile cmp/kmp/android-only + migration
+- `knowledge/cross-cutting/build-strategy/essentials.md [KB → develop/xcut-build-strategy, kb_search "build strategy essentials"]` — 4-level build strategy (fast → regression)
+- `knowledge/meta/auto-fix/essentials.md [KB → develop/meta-auto-fix, kb_search "auto fix essentials"]` — auto-fix loop + fingerprint + attempt limit
+- `knowledge/coding/clean-arch/clean-mvi.md [KB → develop/coding-clean-arch, kb_search "clean arch clean mvi"]`
+- `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]`
+- `knowledge/coding/mvi/essentials.md [KB → develop/coding-mvi, kb_search "mvi essentials"]`
+- `knowledge/coding/coroutines/essentials.md [KB → develop/coding-coroutines, kb_search "coroutines essentials"]`
+- `knowledge/coding/data/repository-pattern.md [KB → develop/coding-data, kb_search "data repository pattern"]`
+- `knowledge/coding/data/network.md [KB → develop/coding-data, kb_search "data network"]`
+- `knowledge/coding/data/persistence.md [KB → develop/coding-data, kb_search "data persistence"]`
+- `knowledge/coding/data/caching.md [KB → develop/coding-data, kb_search "data caching"]`
+- `knowledge/coding/patterns/common-patterns.md [KB → develop/coding-patterns, kb_search "patterns common patterns"]`
+- `knowledge/cross-cutting/security/essentials.md [KB → develop/xcut-security, kb_search "security essentials"]`
+- `knowledge/cross-cutting/performance/essentials.md [KB → develop/xcut-performance, kb_search "performance essentials"]`
+- `knowledge/coding-sdk/essentials.md [KB → develop/coding-sdk, kb_search "coding sdk essentials"]` — LIB-SCOPE/API/CONFIG/PORT/DEP/PLATFORM/RES/ERROR/TEST/DOC/PUBLISH/GOV rule set cho library repo riêng
+- `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → product/input-analysis, kb_search "input analysis requirement extraction rules"]` — REQ-RULE-001..006
+- `knowledge/product/input-analysis/screenshot-reading-rules.md [KB → product/input-analysis, kb_search "input analysis screenshot reading rules"]` — DESIGN-RULE-001..012
+- `knowledge/product/input-analysis/reconciliation-matrix.md [KB → product/input-analysis, kb_search "input analysis reconciliation matrix"]` — matrix + severity rules
+- `knowledge/product/input-analysis/confluence-fetch-rules.md [KB → product/input-analysis, kb_search "input analysis confluence fetch rules"]` — CONF-RULE-001..012 cho MCP adapter
+- `knowledge/product/input-analysis/figma-fetch-rules.md [KB → product/input-analysis, kb_search "input analysis figma fetch rules"]` — FIG-RULE-001..008 + design rule overrides
+- `knowledge/testing/e2e-runtime/device-driver-contract.md [KB → testing/e2e-runtime, kb_search "e2e runtime device driver contract"]` — abstract driver interface (10 methods) + 5 implementation paths comparison
+- `knowledge/testing/e2e-runtime/custom-apk-driver.md [KB → testing/e2e-runtime, kb_search "e2e runtime custom apk driver"]` — architecture + HTTP protocol + UiAutomation cheat sheet + 3 acquisition options (200+ cases/round scale)
+- `knowledge/testing/e2e-runtime/guard-round-pattern.md [KB → testing/e2e-runtime, kb_search "e2e runtime guard round pattern"]` — full vs verify round orchestration
+- `knowledge/testing/e2e-runtime/interruption-patterns.md [KB → testing/e2e-runtime, kb_search "e2e runtime interruption patterns"]` — ad/permission/dialog auto-dismiss
+- `knowledge/testing/e2e-runtime/runner-neutral-step.md [KB → testing/e2e-runtime, kb_search "e2e runtime runner neutral step"]` — step file design rationale
+- `knowledge/design/visual-compare/figma-vs-screenshot.md [KB → product/design-compare, kb_search "visual compare figma vs screenshot"]` — perceptual hash + SSIM thresholds
 - `skills/feature/SKILL.md` — **P0** entry: feature-full-flow pipeline wrapper (BA → PM → Designer → Tech Lead → Architect → Coder → QA → Release)
 - `skills/bugfix/SKILL.md` — **P0** entry: bugfix-fast-path triage + fast/mini/full routing
 - `skills/bug-triage/SKILL.md` — bug classify code/design/spec, max 3 retry
@@ -301,14 +301,14 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `verification/e2e/fixtures/book-detail/` — pilot fixture với intentional conflict
 - `verification/e2e/scripts/stage-5-ui-visual.sh` — optional UI visual compare stage
 - `verification/e2e/validators/validate_ui_visual.py` — perceptual hash + SSIM validator
-- `briefs/README.md [KB → team/business-index, kb_search "README"]` — output directory input layer
+- `briefs/README.md [KB → product/business-index, kb_search "README"]` — output directory input layer
 - `evaluations/templates/e01..e05.md`
 - `evaluations/rubrics/README.md` — scoring rubric chung
 - `evaluations/regression/README.md` — trend tracking qua versions
 
 ## Report format
 
-Mọi task kết thúc bằng report theo mẫu `constitution/definition-of-done.md [KB → team/arch-constitution, kb_search "definition of done"] §Report`:
+Mọi task kết thúc bằng report theo mẫu `constitution/definition-of-done.md [KB → develop/constitution, kb_search "definition of done"] §Report`:
 
 ```
 Status: VERIFIED | VERIFIED_WITH_LIMITATIONS | BLOCKED | FAILED

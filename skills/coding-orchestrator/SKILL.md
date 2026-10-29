@@ -16,7 +16,7 @@ priority: P0
 
 ## Prerequisites
 
-1. `knowledge/meta/agent-orchestration/essentials.md [KB → team/arch-meta-orchestration, kb_search "agent orchestration essentials"]` — modes + patterns
+1. `knowledge/meta/agent-orchestration/essentials.md [KB → develop/meta-orchestration, kb_search "agent orchestration essentials"]` — modes + patterns
 2. `./overlay.schema.yaml §orchestration` — config fields
 3. Claude Code `Task` tool available
 4. `agents/architect.md`, `agents/coder.md`, `agents/reviewer.md`, `agents/qa.md`, `agents/orchestrator.md`
@@ -253,7 +253,7 @@ Total: 27 min (vs ~55 min single-threaded)
 ## Required policies
 
 - `agents/orchestrator.md` mindset
-- `knowledge/meta/agent-orchestration/essentials.md [KB → team/arch-meta-orchestration, kb_search "agent orchestration essentials"]` patterns
+- `knowledge/meta/agent-orchestration/essentials.md [KB → develop/meta-orchestration, kb_search "agent orchestration essentials"]` patterns
 - Isolation strategy enforced (`feature-package` default)
 - Shared-file coordinator pattern — no parallel direct edit
 

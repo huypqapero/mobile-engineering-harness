@@ -11,7 +11,7 @@ Reproduce → isolate root cause → fix cause (không mask symptom) → regress
 
 - Bug report / crash log / Firebase Crashlytics URL
 - Related spec file nếu feature đã document
-- Reference: `constitution/architecture-rules.md [KB → team/arch-constitution, kb_search "architecture rules"]`, skill liên quan
+- Reference: `constitution/architecture-rules.md [KB → develop/constitution, kb_search "architecture rules"]`, skill liên quan
 
 ## Stages
 
@@ -183,7 +183,7 @@ Khi gate fail trong Stage 5 (Verify), agent có thể auto-fix với **limit**:
 
 ```
 Loop:
-  1. Compute failure fingerprint (xem knowledge/meta/auto-fix/essentials.md [KB → team/arch-meta-auto-fix, kb_search "auto fix essentials"])
+  1. Compute failure fingerprint (xem knowledge/meta/auto-fix/essentials.md [KB → develop/meta-auto-fix, kb_search "auto fix essentials"])
   2. Classify failure (xem skills/coding-diagnose §Failure classifier)
   3. Check attempts tracked in plans/<date>/fix-attempts.yaml
      - If fingerprint lặp without progress → ESCALATE (stop loop)

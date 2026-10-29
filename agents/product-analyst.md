@@ -35,11 +35,11 @@ Không viết implementation code, không quyết định deadline (PM), không 
 
 - `assets/sources/spec.md` của brief đang build
 - Design analysis output từ Design Analyst (nếu đã có)
-- `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis requirement extraction rules"]`
-- `knowledge/product/input-analysis/reconciliation-matrix.md [KB → team/arch-product-input-analysis, kb_search "input analysis reconciliation matrix"]`
+- `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → product/input-analysis, kb_search "input analysis requirement extraction rules"]`
+- `knowledge/product/input-analysis/reconciliation-matrix.md [KB → product/input-analysis, kb_search "input analysis reconciliation matrix"]`
 - `blueprints/feature-brief/README.md` + templates
 - Project `docs/design-guidelines.md` (cho NFR default)
-- `constitution/engineering-principles.md [KB → team/arch-constitution, kb_search "engineering principles"]` (cho project convention)
+- `constitution/engineering-principles.md [KB → develop/constitution, kb_search "engineering principles"]` (cho project convention)
 
 ## Output
 
@@ -185,12 +185,12 @@ Downstream `feature-development` Stage 1 Inspect đọc `briefs/<slug>/` làm au
 
 ## Pair với knowledge
 
-- `knowledge/product/essentials.md [KB → team/arch-product, kb_search "product essentials"]` — market research checklist, wireframe taxonomy, 5-state nghiệp vụ, AC formula
-- `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis requirement extraction rules"]` — REQ-RULE-001..006
-- `knowledge/product/input-analysis/reconciliation-matrix.md [KB → team/arch-product-input-analysis, kb_search "input analysis reconciliation matrix"]` — conflict resolution matrix
-- `knowledge/product/input-analysis/confluence-fetch-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis confluence fetch rules"]` — khi spec source = Confluence
-- `knowledge/product/input-analysis/figma-fetch-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis figma fetch rules"]` — khi spec có Figma reference
-- `knowledge/product/input-analysis/screenshot-reading-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis screenshot reading rules"]` — khi spec có screenshot embedded
+- `knowledge/product/essentials.md [KB → product/ba, kb_search "product essentials"]` — market research checklist, wireframe taxonomy, 5-state nghiệp vụ, AC formula
+- `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → product/input-analysis, kb_search "input analysis requirement extraction rules"]` — REQ-RULE-001..006
+- `knowledge/product/input-analysis/reconciliation-matrix.md [KB → product/input-analysis, kb_search "input analysis reconciliation matrix"]` — conflict resolution matrix
+- `knowledge/product/input-analysis/confluence-fetch-rules.md [KB → product/input-analysis, kb_search "input analysis confluence fetch rules"]` — khi spec source = Confluence
+- `knowledge/product/input-analysis/figma-fetch-rules.md [KB → product/input-analysis, kb_search "input analysis figma fetch rules"]` — khi spec có Figma reference
+- `knowledge/product/input-analysis/screenshot-reading-rules.md [KB → product/input-analysis, kb_search "input analysis screenshot reading rules"]` — khi spec có screenshot embedded
 
 ## Pair với skills
 

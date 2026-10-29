@@ -200,7 +200,7 @@ Wontfix = business decision, không phải bug cần lesson. Skip distill.
 ## Reference policies
 
 - Bug tracker API docs (Jira REST, GitHub Issues API)
-- `constitution/engineering-principles.md [KB → team/arch-constitution, kb_search "engineering principles"]` — rule naming convention (ARCH-NNN, CORO-NNN)
+- `constitution/engineering-principles.md [KB → develop/constitution, kb_search "engineering principles"]` — rule naming convention (ARCH-NNN, CORO-NNN)
 - `workflows/mine-lessons.md` — orchestration workflow
 
 ## Future (Wave 2+)
