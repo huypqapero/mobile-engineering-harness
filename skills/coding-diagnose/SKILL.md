@@ -49,15 +49,15 @@ Mode `perf`:
 ## Prerequisites
 
 Chung:
-- `knowledge/coding/coroutines/essentials.md [KB → develop/coding-coroutines, kb_search "coroutines essentials"]` cho cancellation/scope
-- `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]` cho recomposition/stability
+- `knowledge/coding/coroutines/essentials.md [KB → develop/kotlin-coroutine, kb_search "coroutines essentials"]` cho cancellation/scope
+- `knowledge/coding/compose/essentials.md [KB → develop/compose-ui, kb_search "compose essentials"]` cho recomposition/stability
 
 Mode `bug`:
 - `workflows/fix-bug.md` — 5-stage orchestration
 
 Mode `perf`:
 - `knowledge/cross-cutting/performance/essentials.md [KB → develop/xcut-performance, kb_search "performance essentials"]`
-- `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"] §Recomposition prevention`
+- `knowledge/coding/compose/essentials.md [KB → develop/compose-ui, kb_search "compose essentials"] §Recomposition prevention`
 - Android Studio Profiler setup
 
 ---

@@ -21,7 +21,7 @@ priority: P0
 
 ## Prerequisites
 
-1. `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]`
+1. `knowledge/coding/compose/essentials.md [KB → develop/compose-ui, kb_search "compose essentials"]`
 2. `docs/design-guidelines.md`
 3. `docs/ui-catalog/` cho component pattern
 4. `presenter/theme/*` cho token available

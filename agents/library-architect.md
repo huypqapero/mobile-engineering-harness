@@ -6,7 +6,7 @@ Role này **cross-cutting**, không consume harness overlay vì lib không nằm
 
 ## SDK Mindset (nền tảng)
 
-Mọi quyết định của role này phải trace về `knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"]`:
+Mọi quyết định của role này phải trace về `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]`:
 
 - **SDK ≠ feature-first module**: audience là **≥ 5 consumer** (real + straw-man). Dưới 5 → BLOCKED pipeline, downgrade sang shared module.
 - **3 guarantee**: Stability (API freeze sau 1.0), Configurability (Builder/DSL + default sensible), Extensibility (SPI declarative, không fork lib). Thiếu 1 = anti-SDK.
@@ -60,12 +60,12 @@ Extract mode:
 - Lý do tách (≥ 2 consumer, boundary ổn định)
 
 Luôn đọc (SDK knowledge set — bắt buộc đọc toàn bộ, không skim):
-- `knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006 (foundation)
-- `knowledge/coding-sdk/pattern-catalog.md [KB → develop/coding-sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical mapping
-- `knowledge/coding-sdk/layered-architecture.md [KB → develop/coding-sdk, kb_search "coding sdk layered architecture"]` — 5-layer kernel-plugin
-- `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0
-- `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/coding-sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
-- `knowledge/coding-sdk/essentials.md [KB → develop/coding-sdk, kb_search "coding sdk essentials"]` — rule checklist
+- `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006 (foundation)
+- `knowledge/coding-sdk/pattern-catalog.md [KB → develop/sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical mapping
+- `knowledge/coding-sdk/layered-architecture.md [KB → develop/sdk, kb_search "coding sdk layered architecture"]` — 5-layer kernel-plugin
+- `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0
+- `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
+- `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"]` — rule checklist
 - `knowledge/coding/clean-arch/*` (để tôn trọng chain nếu lib expose domain-ish concept)
 - `~/.claude/rules/development-rules.md` + `~/.claude/rules/review-audit-self-decision.md`
 
@@ -151,7 +151,7 @@ Save tại repo lib root `docs/library-contract.md` (hoặc tạm `plans/<date>-
 - L4 Integration: <component list>
 
 Dependency direction: L_N chỉ gọi L_(N-1) qua public API. Konsist rule enforce.
-Reference: `knowledge/coding-sdk/layered-architecture.md [KB → develop/coding-sdk, kb_search "coding sdk layered architecture"]`
+Reference: `knowledge/coding-sdk/layered-architecture.md [KB → develop/sdk, kb_search "coding sdk layered architecture"]`
 
 ## Pattern Catalog mapping (bắt buộc)
 
@@ -503,12 +503,12 @@ Khi lib ship version mới:
 ## Pair với knowledge
 
 ### SDK core knowledge (đọc toàn bộ, không skim)
-- `knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006, 3 guarantee, anti-pattern
-- `knowledge/coding-sdk/pattern-catalog.md [KB → develop/coding-sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical ↔ component ↔ ref SDK
-- `knowledge/coding-sdk/layered-architecture.md [KB → develop/coding-sdk, kb_search "coding sdk layered architecture"]` — 5-layer kernel-plugin, SPI, Konsist
-- `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 top-down 10-step
-- `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/coding-sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
-- `knowledge/coding-sdk/essentials.md [KB → develop/coding-sdk, kb_search "coding sdk essentials"]` — checklist rule cứng
+- `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006, 3 guarantee, anti-pattern
+- `knowledge/coding-sdk/pattern-catalog.md [KB → develop/sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical ↔ component ↔ ref SDK
+- `knowledge/coding-sdk/layered-architecture.md [KB → develop/sdk, kb_search "coding sdk layered architecture"]` — 5-layer kernel-plugin, SPI, Konsist
+- `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 top-down 10-step
+- `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
+- `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"]` — checklist rule cứng
 
 ### Cross-cutting
 - `knowledge/coding/clean-arch/*` — khi lib expose domain-shape concept

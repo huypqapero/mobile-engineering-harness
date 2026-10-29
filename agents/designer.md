@@ -194,7 +194,7 @@ Khi phát hiện PRD gap (ví dụ permission denied state không có):
 ## Pair với knowledge
 
 - `knowledge/design/design-system/essentials.md [KB → product/design-system, kb_search "design system essentials"]` — token architecture (primitive/semantic/component), 5 screen states, WCAG AA checklist, dark mode flip rule, responsive breakpoint, asset format matrix, component reuse decision tree
-- `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]` — recomposition + stability (khi design component mới)
+- `knowledge/coding/compose/essentials.md [KB → develop/compose-ui, kb_search "compose essentials"]` — recomposition + stability (khi design component mới)
 - `knowledge/design/visual-compare/figma-vs-screenshot.md [KB → product/design-compare, kb_search "visual compare figma vs screenshot"]` — handoff spec cho `ui-judge` grading
 
 ## Pair với skills

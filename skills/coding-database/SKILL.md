@@ -26,7 +26,7 @@ Chọn DB lib dựa trên `stack.database` trong `overlay.yaml`:
 | `datastore` | DataStore Preferences/Proto | Key-value, không relational |
 | `none` | — | In-memory / filesystem only |
 
-Chi tiết lib comparison + decision guide: `knowledge/coding/data/persistence.md [KB → develop/coding-data, kb_search "data persistence"] §Relational DB`.
+Chi tiết lib comparison + decision guide: `knowledge/coding/data/persistence.md [KB → develop/networking, kb_search "data persistence"] §Relational DB`.
 
 Procedure phần lớn generic. Lib-specific snippet đánh dấu rõ.
 
@@ -39,9 +39,9 @@ Procedure phần lớn generic. Lib-specific snippet đánh dấu rõ.
 
 ## Prerequisites
 
-1. `knowledge/coding/data/persistence.md [KB → develop/coding-data, kb_search "data persistence"]`
-2. `knowledge/coding/data/caching.md [KB → develop/coding-data, kb_search "data caching"]`
-3. `knowledge/coding/coroutines/essentials.md [KB → develop/coding-coroutines, kb_search "coroutines essentials"] §Flow operators`
+1. `knowledge/coding/data/persistence.md [KB → develop/networking, kb_search "data persistence"]`
+2. `knowledge/coding/data/caching.md [KB → develop/networking, kb_search "data caching"]`
+3. `knowledge/coding/coroutines/essentials.md [KB → develop/kotlin-coroutine, kb_search "coroutines essentials"] §Flow operators`
 4. **SQLDelight**: https://cashapp.github.io/sqldelight
 5. **Room**: https://developer.android.com/training/data-storage/room (+ KMP support 2.7+)
 
@@ -49,7 +49,7 @@ Procedure phần lớn generic. Lib-specific snippet đánh dấu rõ.
 
 ### Step 1 — Design schema
 
-Example dưới là **SQLDelight** `.sq` file. Room `@Entity` + `@Dao` xem `knowledge/coding/data/persistence.md [KB → develop/coding-data, kb_search "data persistence"] §Room patterns`.
+Example dưới là **SQLDelight** `.sq` file. Room `@Entity` + `@Dao` xem `knowledge/coding/data/persistence.md [KB → develop/networking, kb_search "data persistence"] §Room patterns`.
 
 #### Variant A — SQLDelight
 
@@ -129,7 +129,7 @@ interface BookDao {
 - `suspend fun` 1-shot, `Flow<T>` reactive
 - `@Insert(onConflict = REPLACE)` cho upsert pattern
 
-Chi tiết Room setup + migration + KMP driver: `knowledge/coding/data/persistence.md [KB → develop/coding-data, kb_search "data persistence"] §Room patterns`.
+Chi tiết Room setup + migration + KMP driver: `knowledge/coding/data/persistence.md [KB → develop/networking, kb_search "data persistence"] §Room patterns`.
 
 ### Step 2 — Mapper DB entity ↔ domain
 

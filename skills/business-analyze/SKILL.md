@@ -44,7 +44,7 @@ Optional:
 - Existing brief cho incremental update
 - Project `docs/design-guidelines.md` cho NFR default
 - Spec analysis output để link `action_ref` khi chạy design standalone
-- Project `constitution/` + `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]` + `knowledge/coding/data/*.md` cho reconcile default lookup
+- Project `constitution/` + `knowledge/coding/compose/essentials.md [KB → develop/compose-ui, kb_search "compose essentials"]` + `knowledge/coding/data/*.md` cho reconcile default lookup
 
 ## Prerequisites
 
@@ -336,9 +336,9 @@ Severity rules:
 ### Phase R4 — Project default lookup
 
 Mỗi issue có default resolve:
-- Loading/error/empty component → `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]`
-- Offline strategy → constitution rule hoặc `knowledge/coding/data/caching.md [KB → develop/coding-data, kb_search "data caching"]` + `knowledge/coding/data/persistence.md [KB → develop/coding-data, kb_search "data persistence"]`
-- Error mapping → `knowledge/coding/data/network.md [KB → develop/coding-data, kb_search "data network"]`
+- Loading/error/empty component → `knowledge/coding/compose/essentials.md [KB → develop/compose-ui, kb_search "compose essentials"]`
+- Offline strategy → constitution rule hoặc `knowledge/coding/data/caching.md [KB → develop/networking, kb_search "data caching"]` + `knowledge/coding/data/persistence.md [KB → develop/networking, kb_search "data persistence"]`
+- Error mapping → `knowledge/coding/data/network.md [KB → develop/networking, kb_search "data network"]`
 - Animation → project motion token
 
 Document vào `assumptions[]`:
@@ -347,7 +347,7 @@ Document vào `assumptions[]`:
 assumptions:
   - id: ASSUME-001
     description: Loading dùng LinearProgressIndicator fullscreen.
-    rationale: knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"] pattern.
+    rationale: knowledge/coding/compose/essentials.md [KB → develop/compose-ui, kb_search "compose essentials"] pattern.
     issue_resolved: ISSUE-002
 ```
 

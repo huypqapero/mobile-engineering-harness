@@ -6,7 +6,7 @@ Role này **cross-cutting**, không consume harness overlay vì FS lib không n�
 
 ## Feature Store Mindset (nền tảng)
 
-Mọi quyết định trace về `knowledge/coding-feature-store/mindset.md [KB → develop/coding-feature-store, kb_search "coding feature store mindset"]`:
+Mọi quyết định trace về `knowledge/coding-feature-store/mindset.md [KB → develop/feature-store, kb_search "coding feature store mindset"]`:
 
 - **FS ≠ SDK ≠ feature thường**: FS có UI + business flow + ≥ 5 consumer. Không UI/flow → downgrade SDK. 1 consumer → downgrade feature thường. (FS-001)
 - **4 guarantee**: Stability + Configurability + **Overridability** + Testability. Thiếu 1 = anti-FS. (FS-002)
@@ -64,18 +64,18 @@ Extract mode (`/feature-store-extract`):
 - Lý do tách (≥ 2 consumer, UI/flow ổn định, overridability feasible)
 
 Luôn đọc (FS knowledge set — bắt buộc đầy đủ, không skim):
-- `knowledge/coding-feature-store/mindset.md [KB → develop/coding-feature-store, kb_search "coding feature store mindset"]` — ADR FS-001..007 (foundation)
-- `knowledge/coding-feature-store/capability-contract.md [KB → develop/coding-feature-store, kb_search "coding feature store capability contract"]` — 6-trục YAML
-- `knowledge/coding-feature-store/module-topology.md [KB → develop/coding-feature-store, kb_search "coding feature store module topology"]` — 2-module template
-- `knowledge/coding-feature-store/data-port-runtime-config.md [KB → develop/coding-feature-store, kb_search "coding feature store data port runtime config"]` — Runtime Config pattern
-- `knowledge/coding-feature-store/theme-adapter.md [KB → develop/coding-feature-store, kb_search "coding feature store theme adapter"]` — Theme Contract (nếu U ≥ U1)
-- `knowledge/coding-feature-store/testing-kit.md [KB → develop/coding-feature-store, kb_search "coding feature store testing kit"]` — testFixtures mandatory
-- `knowledge/coding-feature-store/essentials.md [KB → develop/coding-feature-store, kb_search "coding feature store essentials"]` — checklist rule cứng
+- `knowledge/coding-feature-store/mindset.md [KB → develop/feature-store, kb_search "coding feature store mindset"]` — ADR FS-001..007 (foundation)
+- `knowledge/coding-feature-store/capability-contract.md [KB → develop/feature-store, kb_search "coding feature store capability contract"]` — 6-trục YAML
+- `knowledge/coding-feature-store/module-topology.md [KB → develop/feature-store, kb_search "coding feature store module topology"]` — 2-module template
+- `knowledge/coding-feature-store/data-port-runtime-config.md [KB → develop/feature-store, kb_search "coding feature store data port runtime config"]` — Runtime Config pattern
+- `knowledge/coding-feature-store/theme-adapter.md [KB → develop/feature-store, kb_search "coding feature store theme adapter"]` — Theme Contract (nếu U ≥ U1)
+- `knowledge/coding-feature-store/testing-kit.md [KB → develop/feature-store, kb_search "coding feature store testing kit"]` — testFixtures mandatory
+- `knowledge/coding-feature-store/essentials.md [KB → develop/feature-store, kb_search "coding feature store essentials"]` — checklist rule cứng
 
 Shared với SDK (đọc rule chung):
-- `knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"]` — rule BCV, deprecation, explicit API chung
-- `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0 (dùng chung)
-- `knowledge/coding-sdk/essentials.md [KB → develop/coding-sdk, kb_search "coding sdk essentials"]` — rule base
+- `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` — rule BCV, deprecation, explicit API chung
+- `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0 (dùng chung)
+- `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"]` — rule base
 
 Nếu FS expose domain concept:
 - `knowledge/coding/clean-arch/*`
@@ -93,7 +93,7 @@ Rules:
 Trước khi mở `FS-CONTRACT.md`, phải produce 3 file tại `plans/<date>-<slug>/`:
 
 #### 0.1 `brainstorm.md`
-10-step top-down (dùng chung `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"] §BRAIN-002` + extend cho FS):
+10-step top-down (dùng chung `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"] §BRAIN-002` + extend cho FS):
 
 1. **Mission statement** (1 câu không "và")
 2. **Non-goals** (≥ 5 item có lý do)
@@ -220,13 +220,13 @@ Mỗi stage load knowledge tương ứng, không load tất cả mặc định (
 | Stage | Load |
 |---|---|
 | Stage 0 Scope lock | `mindset.md §FS-001`, `capability-contract.md §FS-CAP-002` |
-| Stage 1 Brainstorm | `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"]` + `mindset.md §FS-001..002` |
+| Stage 1 Brainstorm | `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` + `mindset.md §FS-001..002` |
 | Stage 2 Capability tuple | `capability-contract.md` toàn bộ |
 | Stage 3 Contract draft | `capability-contract.md §FS-CAP-003..004` + `essentials.md §FS-DOC-001` |
 | Stage 4 Public API | `data-port-runtime-config.md` + (nếu U) `theme-adapter.md` |
 | Stage 5 Module layout | `module-topology.md` + `essentials.md §FS-TOPO/UI/ADAPTER` |
 | Stage 6 Handoff | `testing-kit.md` + `essentials.md §Validation checklist` |
-| Stage 7 API diff | `essentials.md §FS-API, FS-GOV` + `knowledge/coding-sdk/essentials.md [KB → develop/coding-sdk, kb_search "coding sdk essentials"] §BCV` |
+| Stage 7 API diff | `essentials.md §FS-API, FS-GOV` + `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"] §BCV` |
 
 ## Anti-pattern (role level)
 

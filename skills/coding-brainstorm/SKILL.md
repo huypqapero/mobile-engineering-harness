@@ -37,9 +37,9 @@ Optional:
 
 ## Prerequisites
 
-1. `knowledge/coding/clean-arch/clean-mvi.md [KB → develop/coding-clean-arch, kb_search "clean arch clean mvi"]` — Clean Arch invariant + MVI integration
-2. `knowledge/coding/mvi/essentials.md [KB → develop/coding-mvi, kb_search "mvi essentials"]` — state/intent pattern
-3. `knowledge/coding/coroutines/essentials.md [KB → develop/coding-coroutines, kb_search "coroutines essentials"]` — concurrency primitives
+1. `knowledge/coding/clean-arch/clean-mvi.md [KB → develop/clean-arch, kb_search "clean arch clean mvi"]` — Clean Arch invariant + MVI integration
+2. `knowledge/coding/mvi/essentials.md [KB → develop/structure-code, kb_search "mvi essentials"]` — state/intent pattern
+3. `knowledge/coding/coroutines/essentials.md [KB → develop/kotlin-coroutine, kb_search "coroutines essentials"]` — concurrency primitives
 4. Related `knowledge/*/essentials.md` theo domain task
 5. `constitution/engineering-principles.md [KB → develop/constitution, kb_search "engineering principles"]` — team principles (KISS/DRY/YAGNI)
 

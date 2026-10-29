@@ -36,12 +36,12 @@ Optional:
 ## Prerequisites
 
 Đọc trước khi start (bắt buộc đầy đủ):
-1. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006, foundation mindset
-2. `knowledge/coding-sdk/pattern-catalog.md [KB → develop/coding-sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical mapping
-3. `knowledge/coding-sdk/layered-architecture.md [KB → develop/coding-sdk, kb_search "coding sdk layered architecture"]` — 5-layer kernel-plugin
-4. `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0
-5. `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/coding-sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
-6. `knowledge/coding-sdk/essentials.md [KB → develop/coding-sdk, kb_search "coding sdk essentials"]` — rule checklist
+1. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006, foundation mindset
+2. `knowledge/coding-sdk/pattern-catalog.md [KB → develop/sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical mapping
+3. `knowledge/coding-sdk/layered-architecture.md [KB → develop/sdk, kb_search "coding sdk layered architecture"]` — 5-layer kernel-plugin
+4. `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0
+5. `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
+6. `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"]` — rule checklist
 7. `agents/library-architect.md`
 8. `agents/workflows/library-flow.md`
 

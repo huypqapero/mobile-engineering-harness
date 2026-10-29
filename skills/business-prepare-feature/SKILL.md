@@ -212,9 +212,9 @@ Open questions:
 
 Load thêm khi:
 
-- Spec có API contract → `knowledge/coding/data/network.md [KB → develop/coding-data, kb_search "data network"]` (nếu có)
-- Spec có concurrent/async behavior → `knowledge/coding/coroutines/essentials.md [KB → develop/coding-coroutines, kb_search "coroutines essentials"]`
-- Design UI complex → `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]`
+- Spec có API contract → `knowledge/coding/data/network.md [KB → develop/networking, kb_search "data network"]` (nếu có)
+- Spec có concurrent/async behavior → `knowledge/coding/coroutines/essentials.md [KB → develop/kotlin-coroutine, kb_search "coroutines essentials"]`
+- Design UI complex → `knowledge/coding/compose/essentials.md [KB → develop/compose-ui, kb_search "compose essentials"]`
 - Spec source = Confluence → `knowledge/product/input-analysis/confluence-fetch-rules.md [KB → product/input-analysis, kb_search "input analysis confluence fetch rules"]`
 - Design source = Figma → `knowledge/product/input-analysis/figma-fetch-rules.md [KB → product/input-analysis, kb_search "input analysis figma fetch rules"]`
 

@@ -657,8 +657,8 @@ Harness support đa stack qua `stack.*` fields trong `overlay.yaml`:
 | `stack.serialization` | `kotlinx-serialization` / `moshi` / `gson` | JSON serialization |
 
 Decision guides chi tiết:
-- Network: `.harness-overlay/upstream/knowledge/coding/data/network.md [KB → develop/coding-data, kb_search "data network"] §Library selection`
-- Database: `.harness-overlay/upstream/knowledge/coding/data/persistence.md [KB → develop/coding-data, kb_search "data persistence"] §Relational DB`
+- Network: `.harness-overlay/upstream/knowledge/coding/data/network.md [KB → develop/networking, kb_search "data network"] §Library selection`
+- Database: `.harness-overlay/upstream/knowledge/coding/data/persistence.md [KB → develop/networking, kb_search "data persistence"] §Relational DB`
 
 Agent sử dụng stack value để chọn snippet trong knowledge/skills (ví dụ `stack.network: retrofit` → Retrofit code, không Ktor).
 
@@ -672,7 +672,7 @@ Pick 1 trong 3 profiles qua `architecture.profile`:
 | `kmp` | Kotlin Multiplatform (shared logic, native UI) | **MUST enforce** |
 | `android-only` | Jetpack Compose Android | **SKIP** (relaxed) |
 
-Chi tiết + migration guide: `.harness-overlay/upstream/knowledge/coding/clean-arch/architecture-profiles.md [KB → develop/coding-clean-arch, kb_search "clean arch architecture profiles"]`.
+Chi tiết + migration guide: `.harness-overlay/upstream/knowledge/coding/clean-arch/architecture-profiles.md [KB → develop/clean-arch, kb_search "clean arch architecture profiles"]`.
 
 ### Rule overrides (v0.8.0+)
 

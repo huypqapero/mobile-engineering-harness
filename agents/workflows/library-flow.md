@@ -25,7 +25,7 @@ Extract:
 1. **≥ 5 consumer** (real + straw-man persona). Dưới 5 → BLOCKED, downgrade sang shared module. (Lift-and-shift extract có thể giãn xuống 2 real với justification.)
 2. Responsibility 1 câu không có "và"
 3. (Extract) Boundary code ổn định ≥ 6 tháng
-4. **SDK mindset acknowledged**: Library Architect confirm đã đọc `knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"]` + commit tới 3 guarantee (Stability, Configurability, Extensibility)
+4. **SDK mindset acknowledged**: Library Architect confirm đã đọc `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` + commit tới 3 guarantee (Stability, Configurability, Extensibility)
 
 Fail bất kỳ → status BLOCKED, note lý do, không spawn pipeline.
 
@@ -440,9 +440,9 @@ Agent phải raise user, không tự quyết, khi:
 
 ## Pair với knowledge (bắt buộc đọc)
 
-- `knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006
-- `knowledge/coding-sdk/pattern-catalog.md [KB → develop/coding-sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical
-- `knowledge/coding-sdk/layered-architecture.md [KB → develop/coding-sdk, kb_search "coding sdk layered architecture"]` — 5-layer model
-- `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 10-step
-- `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/coding-sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
-- `knowledge/coding-sdk/essentials.md [KB → develop/coding-sdk, kb_search "coding sdk essentials"]` — rule checklist
+- `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006
+- `knowledge/coding-sdk/pattern-catalog.md [KB → develop/sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical
+- `knowledge/coding-sdk/layered-architecture.md [KB → develop/sdk, kb_search "coding sdk layered architecture"]` — 5-layer model
+- `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 10-step
+- `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
+- `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"]` — rule checklist

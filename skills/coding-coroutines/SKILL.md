@@ -24,9 +24,9 @@ priority: P0
 
 ## Prerequisites
 
-1. `knowledge/coding/coroutines/essentials.md [KB → develop/coding-coroutines, kb_search "coroutines essentials"]` — full patterns + anti-patterns
+1. `knowledge/coding/coroutines/essentials.md [KB → develop/kotlin-coroutine, kb_search "coroutines essentials"]` — full patterns + anti-patterns
 2. `constitution/concurrency-rules.md [KB → develop/constitution, kb_search "concurrency rules"]` — CORO-001..010
-3. `knowledge/coding/data/network.md [KB → develop/coding-data, kb_search "data network"] §ApiResult contract` — network call main-safe, cancellation rethrow ở adapter/converter
+3. `knowledge/coding/data/network.md [KB → develop/networking, kb_search "data network"] §ApiResult contract` — network call main-safe, cancellation rethrow ở adapter/converter
 
 ## Execution procedure
 

@@ -51,7 +51,7 @@ Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cac
 2. **Overlay** `.harness-overlay/constitution/` — product extensions
 3. **Upstream** `AGENTS.md` (file này) — generic entry + task routing
 4. **Upstream** `skills/<skill-tương-ứng>/SKILL.md` — procedure cụ thể
-5. **Upstream** `knowledge/` — load khi task yêu cầu (phân cấp 2 tầng: `knowledge/<category>/<domain>/`, index tại `knowledge/README.md [KB → develop/index, kb_search "README"]`)
+5. **Upstream** `knowledge/` — load khi task yêu cầu (phân cấp 2 tầng: `knowledge/<category>/<domain>/`, index tại `knowledge/README.md [KB → develop, kb_search "README"]`)
 6. **Blueprint**: ưu tiên `overlay/blueprints/live-reference-feature.md` (nếu có); fallback `upstream/blueprints/reference-feature/README.md`
 
 ## Task routing
@@ -194,21 +194,21 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `knowledge/meta/agent-orchestration/essentials.md [KB → develop/meta-orchestration, kb_search "agent orchestration essentials"]` — orchestration modes + Claude Code Task tool patterns
 - `knowledge/meta/agent-orchestration/model-tier.md [KB → develop/meta-orchestration, kb_search "agent orchestration model tier"]` — model tier routing (lite/balanced/deep)
 - `knowledge/meta/harness-governance/essentials.md [KB → develop/meta-governance, kb_search "harness governance essentials"]` — permission levels L0-L3 + protected baseline
-- `knowledge/coding/clean-arch/architecture-profiles.md [KB → develop/coding-clean-arch, kb_search "clean arch architecture profiles"]` — profile cmp/kmp/android-only + migration
+- `knowledge/coding/clean-arch/architecture-profiles.md [KB → develop/clean-arch, kb_search "clean arch architecture profiles"]` — profile cmp/kmp/android-only + migration
 - `knowledge/cross-cutting/build-strategy/essentials.md [KB → develop/xcut-build-strategy, kb_search "build strategy essentials"]` — 4-level build strategy (fast → regression)
 - `knowledge/meta/auto-fix/essentials.md [KB → develop/meta-auto-fix, kb_search "auto fix essentials"]` — auto-fix loop + fingerprint + attempt limit
-- `knowledge/coding/clean-arch/clean-mvi.md [KB → develop/coding-clean-arch, kb_search "clean arch clean mvi"]`
-- `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]`
-- `knowledge/coding/mvi/essentials.md [KB → develop/coding-mvi, kb_search "mvi essentials"]`
-- `knowledge/coding/coroutines/essentials.md [KB → develop/coding-coroutines, kb_search "coroutines essentials"]`
-- `knowledge/coding/data/repository-pattern.md [KB → develop/coding-data, kb_search "data repository pattern"]`
-- `knowledge/coding/data/network.md [KB → develop/coding-data, kb_search "data network"]`
-- `knowledge/coding/data/persistence.md [KB → develop/coding-data, kb_search "data persistence"]`
-- `knowledge/coding/data/caching.md [KB → develop/coding-data, kb_search "data caching"]`
-- `knowledge/coding/patterns/common-patterns.md [KB → develop/coding-patterns, kb_search "patterns common patterns"]`
+- `knowledge/coding/clean-arch/clean-mvi.md [KB → develop/clean-arch, kb_search "clean arch clean mvi"]`
+- `knowledge/coding/compose/essentials.md [KB → develop/compose-ui, kb_search "compose essentials"]`
+- `knowledge/coding/mvi/essentials.md [KB → develop/structure-code, kb_search "mvi essentials"]`
+- `knowledge/coding/coroutines/essentials.md [KB → develop/kotlin-coroutine, kb_search "coroutines essentials"]`
+- `knowledge/coding/data/repository-pattern.md [KB → develop/networking, kb_search "data repository pattern"]`
+- `knowledge/coding/data/network.md [KB → develop/networking, kb_search "data network"]`
+- `knowledge/coding/data/persistence.md [KB → develop/networking, kb_search "data persistence"]`
+- `knowledge/coding/data/caching.md [KB → develop/networking, kb_search "data caching"]`
+- `knowledge/coding/patterns/common-patterns.md [KB → develop/design-pattern, kb_search "patterns common patterns"]`
 - `knowledge/cross-cutting/security/essentials.md [KB → develop/xcut-security, kb_search "security essentials"]`
 - `knowledge/cross-cutting/performance/essentials.md [KB → develop/xcut-performance, kb_search "performance essentials"]`
-- `knowledge/coding-sdk/essentials.md [KB → develop/coding-sdk, kb_search "coding sdk essentials"]` — LIB-SCOPE/API/CONFIG/PORT/DEP/PLATFORM/RES/ERROR/TEST/DOC/PUBLISH/GOV rule set cho library repo riêng
+- `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"]` — LIB-SCOPE/API/CONFIG/PORT/DEP/PLATFORM/RES/ERROR/TEST/DOC/PUBLISH/GOV rule set cho library repo riêng
 - `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → product/input-analysis, kb_search "input analysis requirement extraction rules"]` — REQ-RULE-001..006
 - `knowledge/product/input-analysis/screenshot-reading-rules.md [KB → product/input-analysis, kb_search "input analysis screenshot reading rules"]` — DESIGN-RULE-001..012
 - `knowledge/product/input-analysis/reconciliation-matrix.md [KB → product/input-analysis, kb_search "input analysis reconciliation matrix"]` — matrix + severity rules

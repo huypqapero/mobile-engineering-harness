@@ -37,15 +37,15 @@ Optional:
 
 Đọc trước khi start (FS knowledge set — bắt buộc đầy đủ, không skim):
 
-1. `knowledge/coding-feature-store/mindset.md [KB → develop/coding-feature-store, kb_search "coding feature store mindset"]` — ADR FS-001..007
-2. `knowledge/coding-feature-store/capability-contract.md [KB → develop/coding-feature-store, kb_search "coding feature store capability contract"]` — 6-trục + decision tree
-3. `knowledge/coding-feature-store/module-topology.md [KB → develop/coding-feature-store, kb_search "coding feature store module topology"]` — 2-module template (classify code hiện tại fit layer nào)
-4. `knowledge/coding-feature-store/data-port-runtime-config.md [KB → develop/coding-feature-store, kb_search "coding feature store data port runtime config"]` — Runtime Config pattern (identify adapter candidate)
-5. `knowledge/coding-feature-store/theme-adapter.md [KB → develop/coding-feature-store, kb_search "coding feature store theme adapter"]` — Theme Contract (identify UI theme coupling cần chuyển)
-6. `knowledge/coding-feature-store/testing-kit.md [KB → develop/coding-feature-store, kb_search "coding feature store testing kit"]` — testFixtures
-7. `knowledge/coding-feature-store/essentials.md [KB → develop/coding-feature-store, kb_search "coding feature store essentials"]`
-8. `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 nếu clean-slate
-9. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"]` — rule BCV chung
+1. `knowledge/coding-feature-store/mindset.md [KB → develop/feature-store, kb_search "coding feature store mindset"]` — ADR FS-001..007
+2. `knowledge/coding-feature-store/capability-contract.md [KB → develop/feature-store, kb_search "coding feature store capability contract"]` — 6-trục + decision tree
+3. `knowledge/coding-feature-store/module-topology.md [KB → develop/feature-store, kb_search "coding feature store module topology"]` — 2-module template (classify code hiện tại fit layer nào)
+4. `knowledge/coding-feature-store/data-port-runtime-config.md [KB → develop/feature-store, kb_search "coding feature store data port runtime config"]` — Runtime Config pattern (identify adapter candidate)
+5. `knowledge/coding-feature-store/theme-adapter.md [KB → develop/feature-store, kb_search "coding feature store theme adapter"]` — Theme Contract (identify UI theme coupling cần chuyển)
+6. `knowledge/coding-feature-store/testing-kit.md [KB → develop/feature-store, kb_search "coding feature store testing kit"]` — testFixtures
+7. `knowledge/coding-feature-store/essentials.md [KB → develop/feature-store, kb_search "coding feature store essentials"]`
+8. `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 nếu clean-slate
+9. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` — rule BCV chung
 10. `agents/feature-store-architect.md` — role lead
 11. `agents/workflows/feature-store-flow.md` — pipeline 12 stage
 12. `skills/coding-scout/SKILL.md` — dùng cho map coupling
@@ -302,7 +302,7 @@ Inputs:
   - Strategy preference: <lift-and-shift|clean-slate|auto-recommend>
 Load knowledge:
   - knowledge/coding-feature-store/* (7 file)
-  - knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"] + brainstorm-process.md + essentials.md
+  - knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"] + brainstorm-process.md + essentials.md
 Rules: ~/.claude/rules/development-rules.md + review-audit-self-decision.md
 Report path: plans/reports/
 Plan dir: plans/<date>-<slug>/

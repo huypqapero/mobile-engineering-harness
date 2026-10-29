@@ -106,7 +106,7 @@ Default format (`--out md`):
 - ...
 
 **Related knowledge:**
-- `knowledge/coding/clean-arch/clean-mvi.md [KB → develop/coding-clean-arch, kb_search "clean arch clean mvi"]` + `knowledge/coding/clean-arch/architecture-profiles.md [KB → develop/coding-clean-arch, kb_search "clean arch architecture profiles"]` (nếu scan touches architecture)
+- `knowledge/coding/clean-arch/clean-mvi.md [KB → develop/clean-arch, kb_search "clean arch clean mvi"]` + `knowledge/coding/clean-arch/architecture-profiles.md [KB → develop/clean-arch, kb_search "clean arch architecture profiles"]` (nếu scan touches architecture)
 
 **Blast radius if changed:** <N callers, M modules>
 

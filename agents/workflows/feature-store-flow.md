@@ -28,7 +28,7 @@ Extract:
 3. **≥ 5 consumer** (real + straw-man persona). Dưới 5 → BLOCKED, downgrade feature thường trong app. Extract lift-and-shift có thể giãn xuống ≥ 2 real với justification scope hẹp.
 4. Responsibility 1 câu không có "và"
 5. (Extract) Boundary feature ổn định ≥ 6 tháng (UI/flow không bay)
-6. **FS mindset acknowledged**: Feature Store Architect confirm đã đọc `knowledge/coding-feature-store/mindset.md [KB → develop/coding-feature-store, kb_search "coding feature store mindset"]` + commit tới 4 guarantee (Stability, Configurability, **Overridability**, Testability)
+6. **FS mindset acknowledged**: Feature Store Architect confirm đã đọc `knowledge/coding-feature-store/mindset.md [KB → develop/feature-store, kb_search "coding feature store mindset"]` + commit tới 4 guarantee (Stability, Configurability, **Overridability**, Testability)
 
 Fail bất kỳ → status BLOCKED, note lý do, không spawn pipeline.
 
@@ -135,7 +135,7 @@ remove old internal feature module (sau 1 release safe)
 
 **Owner**: `feature-store-architect`
 
-**Activity**: Chạy 10-step top-down theo `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"] §BRAIN-002` + extend FS:
+**Activity**: Chạy 10-step top-down theo `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"] §BRAIN-002` + extend FS:
 
 1. Mission statement (1 câu không "và")
 2. Non-goals (≥ 5)
@@ -609,15 +609,15 @@ Fast-path không áp dụng vì FS luôn multi-module + public API cross-consume
 
 ## Reference knowledge
 
-- `knowledge/coding-feature-store/mindset.md [KB → develop/coding-feature-store, kb_search "coding feature store mindset"]` — ADR FS-001..007
-- `knowledge/coding-feature-store/capability-contract.md [KB → develop/coding-feature-store, kb_search "coding feature store capability contract"]` — 6-trục YAML
-- `knowledge/coding-feature-store/module-topology.md [KB → develop/coding-feature-store, kb_search "coding feature store module topology"]` — 2-module template + Konsist 6 rule
-- `knowledge/coding-feature-store/data-port-runtime-config.md [KB → develop/coding-feature-store, kb_search "coding feature store data port runtime config"]` — Runtime Config pattern
-- `knowledge/coding-feature-store/theme-adapter.md [KB → develop/coding-feature-store, kb_search "coding feature store theme adapter"]` — Theme Contract
-- `knowledge/coding-feature-store/testing-kit.md [KB → develop/coding-feature-store, kb_search "coding feature store testing kit"]` — testFixtures
-- `knowledge/coding-feature-store/essentials.md [KB → develop/coding-feature-store, kb_search "coding feature store essentials"]` — checklist rule cứng
-- `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0 (dùng chung)
-- `knowledge/coding-sdk/essentials.md [KB → develop/coding-sdk, kb_search "coding sdk essentials"]` — rule shared với SDK (BCV, deprecation, explicit API)
+- `knowledge/coding-feature-store/mindset.md [KB → develop/feature-store, kb_search "coding feature store mindset"]` — ADR FS-001..007
+- `knowledge/coding-feature-store/capability-contract.md [KB → develop/feature-store, kb_search "coding feature store capability contract"]` — 6-trục YAML
+- `knowledge/coding-feature-store/module-topology.md [KB → develop/feature-store, kb_search "coding feature store module topology"]` — 2-module template + Konsist 6 rule
+- `knowledge/coding-feature-store/data-port-runtime-config.md [KB → develop/feature-store, kb_search "coding feature store data port runtime config"]` — Runtime Config pattern
+- `knowledge/coding-feature-store/theme-adapter.md [KB → develop/feature-store, kb_search "coding feature store theme adapter"]` — Theme Contract
+- `knowledge/coding-feature-store/testing-kit.md [KB → develop/feature-store, kb_search "coding feature store testing kit"]` — testFixtures
+- `knowledge/coding-feature-store/essentials.md [KB → develop/feature-store, kb_search "coding feature store essentials"]` — checklist rule cứng
+- `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0 (dùng chung)
+- `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"]` — rule shared với SDK (BCV, deprecation, explicit API)
 
 ## Reference agent/skill
 

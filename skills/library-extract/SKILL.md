@@ -32,12 +32,12 @@ Optional:
 ## Prerequisites
 
 Đọc trước khi start (SDK knowledge set — bắt buộc đọc toàn bộ, không skim):
-1. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/coding-sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006
-2. `knowledge/coding-sdk/pattern-catalog.md [KB → develop/coding-sdk, kb_search "coding sdk pattern catalog"]`
-3. `knowledge/coding-sdk/layered-architecture.md [KB → develop/coding-sdk, kb_search "coding sdk layered architecture"]` — classify code hiện tại thuộc layer nào
-4. `knowledge/coding-sdk/brainstorm-process.md [KB → develop/coding-sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 nếu clean-slate
-5. `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/coding-sdk, kb_search "coding sdk testing kit rules"]` — TestingKit extract/write
-6. `knowledge/coding-sdk/essentials.md [KB → develop/coding-sdk, kb_search "coding sdk essentials"]`
+1. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006
+2. `knowledge/coding-sdk/pattern-catalog.md [KB → develop/sdk, kb_search "coding sdk pattern catalog"]`
+3. `knowledge/coding-sdk/layered-architecture.md [KB → develop/sdk, kb_search "coding sdk layered architecture"]` — classify code hiện tại thuộc layer nào
+4. `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 nếu clean-slate
+5. `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/sdk, kb_search "coding sdk testing kit rules"]` — TestingKit extract/write
+6. `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"]`
 7. `agents/library-architect.md`
 8. `agents/workflows/library-flow.md`
 9. `skills/coding-scout/SKILL.md` (dùng cho map coupling)
@@ -212,7 +212,7 @@ Publish: VERIFIED
 - LIB-PUBLISH-001..005
 - LIB-GOV-001..004
 
-Full: `knowledge/coding-sdk/essentials.md [KB → develop/coding-sdk, kb_search "coding sdk essentials"]`.
+Full: `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"]`.
 
 ## Validation
 

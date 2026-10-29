@@ -34,7 +34,7 @@ Không viết implementation code, không design UI mới, không claim exact de
 - `knowledge/product/input-analysis/screenshot-reading-rules.md [KB → product/input-analysis, kb_search "input analysis screenshot reading rules"]`
 - `knowledge/product/input-analysis/reconciliation-matrix.md [KB → product/input-analysis, kb_search "input analysis reconciliation matrix"]`
 - `blueprints/feature-brief/design.md.template`
-- Project `knowledge/coding/compose/essentials.md [KB → develop/coding-compose, kb_search "compose essentials"]` (nếu có — cho component vocabulary)
+- Project `knowledge/coding/compose/essentials.md [KB → develop/compose-ui, kb_search "compose essentials"]` (nếu có — cho component vocabulary)
 - Project `docs/design-guidelines.md` (cho project convention)
 
 ## Output

@@ -88,7 +88,7 @@ grep -rln "ARCH-007" constitution/ knowledge/ skills/ blueprints/ workflows/ age
 grep -rln "coding-mvi" workflows/ agents/ AGENTS.md
 
 # Find knowledge dependents
-grep -rln "knowledge/coding/coroutines/essentials.md [KB → develop/coding-coroutines, kb_search "coroutines essentials"]" skills/ blueprints/
+grep -rln "knowledge/coding/coroutines/essentials.md [KB → develop/kotlin-coroutine, kb_search "coroutines essentials"]" skills/ blueprints/
 ```
 
 Output: impact map
@@ -128,12 +128,12 @@ Date: YYYY-MM-DD
 ## Rationale
 <evidence-based, not opinion>
 Example: Kotlin 2.1 release deprecates `Flow.flowOn(Dispatchers.Unconfined)` behavior.
-Current knowledge/coding/coroutines/essentials.md [KB → develop/coding-coroutines, kb_search "coroutines essentials"] §Dispatcher states "Unconfined OK for test".
+Current knowledge/coding/coroutines/essentials.md [KB → develop/kotlin-coroutine, kb_search "coroutines essentials"] §Dispatcher states "Unconfined OK for test".
 Need update.
 
 ## Scope
 Files touched:
-- knowledge/coding/coroutines/essentials.md [KB → develop/coding-coroutines, kb_search "coroutines essentials"] §Dispatcher table
+- knowledge/coding/coroutines/essentials.md [KB → develop/kotlin-coroutine, kb_search "coroutines essentials"] §Dispatcher table
 - Possibly skills/coding-coroutines/SKILL.md §Dispatcher selection
 
 ## Rules affected

@@ -156,7 +156,7 @@ Fail bất kỳ gate → không được tuyên bố DONE. Chi tiết: `constitu
 |---|---|
 | `AGENTS.md` | Full file index + task routing table (30+ row) + agent roles 14 role + workflows list |
 | `agents/workflows/README.md` | 5 pipeline routing docs (feature-full-flow, bugfix-fast-path, bug-triage, release-gate, parallel-features) + artifact ownership + handoff rules |
-| `knowledge/README.md [KB → develop/index, kb_search "README"]` | 7-category knowledge index (coding/product/design/pm/testing/meta/cross-cutting) + lookup pattern + naming convention |
+| `knowledge/README.md [KB → develop, kb_search "README"]` | 7-category knowledge index (coding/product/design/pm/testing/meta/cross-cutting) + lookup pattern + naming convention |
 | `constitution/` | 14 ADR + CORO + KOT rules với ID + Konsist verify + Severity |
 
 ## Architecture constraints (quick reference)
