@@ -18,7 +18,7 @@ priority: P1
 ## Prerequisites
 
 1. `agents/harness-guardian.md` — role mindset
-2. `knowledge/meta/harness-governance/essentials.md` — permission levels + protected baseline
+2. `knowledge/meta/harness-governance/essentials.md [KB → team/arch-meta-governance, kb_search "harness governance essentials"]` — permission levels + protected baseline
 3. `workflows/harness-maintenance.md` — change lifecycle
 4. GitHub repo access với `gh` CLI
 5. (Optional) `registry/*.yaml` cho impact analysis fast
@@ -88,7 +88,7 @@ grep -rln "ARCH-007" constitution/ knowledge/ skills/ blueprints/ workflows/ age
 grep -rln "coding-mvi" workflows/ agents/ AGENTS.md
 
 # Find knowledge dependents
-grep -rln "knowledge/coding/coroutines/essentials.md" skills/ blueprints/
+grep -rln "knowledge/coding/coroutines/essentials.md [KB → team/arch-coding-coroutines, kb_search "coroutines essentials"]" skills/ blueprints/
 ```
 
 Output: impact map
@@ -113,7 +113,7 @@ Dựa trên scope impact:
 
 **Protected Baseline** (12 ADR cốt lõi): Guardian **không được** tự modify. Chỉ propose L3.
 
-Chi tiết: `knowledge/meta/harness-governance/essentials.md`.
+Chi tiết: `knowledge/meta/harness-governance/essentials.md [KB → team/arch-meta-governance, kb_search "harness governance essentials"]`.
 
 ### Step 4 — Draft change proposal
 
@@ -128,12 +128,12 @@ Date: YYYY-MM-DD
 ## Rationale
 <evidence-based, not opinion>
 Example: Kotlin 2.1 release deprecates `Flow.flowOn(Dispatchers.Unconfined)` behavior.
-Current knowledge/coding/coroutines/essentials.md §Dispatcher states "Unconfined OK for test".
+Current knowledge/coding/coroutines/essentials.md [KB → team/arch-coding-coroutines, kb_search "coroutines essentials"] §Dispatcher states "Unconfined OK for test".
 Need update.
 
 ## Scope
 Files touched:
-- knowledge/coding/coroutines/essentials.md §Dispatcher table
+- knowledge/coding/coroutines/essentials.md [KB → team/arch-coding-coroutines, kb_search "coroutines essentials"] §Dispatcher table
 - Possibly skills/coding-coroutines/SKILL.md §Dispatcher selection
 
 ## Rules affected
@@ -321,7 +321,7 @@ User tự setup. Harness document pattern, không impl.
 
 - `agents/harness-guardian.md` — role mindset
 - `workflows/harness-maintenance.md` — change lifecycle workflow
-- `knowledge/meta/harness-governance/essentials.md` — permission levels detail
+- `knowledge/meta/harness-governance/essentials.md [KB → team/arch-meta-governance, kb_search "harness governance essentials"]` — permission levels detail
 - ChatGPT reference: "Harness Guardian" model (2026-10-15)
 
 ---

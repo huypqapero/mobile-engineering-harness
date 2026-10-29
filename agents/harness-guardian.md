@@ -47,7 +47,7 @@ Guardian có quyền phân tầng — không được auto-apply mọi thay đ�
 
 **12 ADR cốt lõi** là Protected Baseline — Guardian **không được tự sửa**:
 
-- ADR-001..014 (xem `constitution/architecture-rules.md`)
+- ADR-001..014 (xem `constitution/architecture-rules.md [KB → team/arch-constitution, kb_search "architecture rules"]`)
 - MOD-001..003 (Future-SDK Discipline)
 - CORO-001..010 (concurrency rules core)
 
@@ -244,7 +244,7 @@ Guardian query registry trước change → know scope impact. Nếu không có 
 
 - Skill: `skills/harness-maintenance/SKILL.md` — procedure chi tiết
 - Workflow: `workflows/harness-maintenance.md` — change lifecycle
-- Knowledge: `knowledge/meta/harness-governance/essentials.md` — permission levels + protected baseline
+- Knowledge: `knowledge/meta/harness-governance/essentials.md [KB → team/arch-meta-governance, kb_search "harness governance essentials"]` — permission levels + protected baseline
 - Trigger: scheduled routine OR user `invoke harness-guardian` explicit
 
 ## Example invocation

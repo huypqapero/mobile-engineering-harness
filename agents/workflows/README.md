@@ -27,7 +27,8 @@ Tổng: **12 role-based agent** (product/engineering) + **2 subagent QA** + **3 
 | `bug-triage.md` | QA phát hiện bug sau implement | QA report | Coder (code bug) / Architect (design bug) / Product Analyst (spec bug) |
 | `release-gate.md` | Feature xong, chuẩn bị release | Tech Lead + PM co-sign request | Release approved |
 | `parallel-features.md` | Nhiều feature độc lập cùng sprint | PM request Tech Lead | Multiple features converge |
-| `library-flow.md` | Tạo & vận hành KMP/Android lib repo riêng (greenfield + extract) | Library Architect (trigger check ≥ 2 consumer) | Publish + consumer migrate |
+| `library-flow.md` | Tạo & vận hành KMP/Android lib repo riêng (SDK pure, không UI, greenfield + extract) | Library Architect (trigger check ≥ 5 consumer) | Publish + consumer migrate |
+| `feature-store-flow.md` | Tạo & vận hành Feature Store artifact (có UI + flow, 2-module core + ui, greenfield + extract) — 12 stage | Feature Store Architect (trigger check: UI + flow + ≥ 5 consumer) | Publish + consumer migrate + source product migrate (extract mode) |
 
 ## Nguyên tắc chung điều hướng
 

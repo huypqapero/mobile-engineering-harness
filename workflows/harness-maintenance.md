@@ -40,7 +40,7 @@ Signal source: Kotlin 2.1 release notes
 Date: 2026-10-15
 Content: Flow.flowOn(Dispatchers.Unconfined) deprecated in test context
 Reference: https://kotlinlang.org/releases/2.1.0.html
-Impact estimate: medium (knowledge/coding/coroutines/essentials.md section Dispatcher)
+Impact estimate: medium (knowledge/coding/coroutines/essentials.md [KB → team/arch-coding-coroutines, kb_search "coroutines essentials"] section Dispatcher)
 ```
 
 ## Stage 2 — Triage
@@ -300,7 +300,7 @@ Nếu release ship wrong:
 ```
 Stage 1: Signal — ChatGPT scraper detect release notes
 Stage 2: Triage — classify "external change", harness need adapt
-Stage 3: Impact — affects CORO-002, knowledge/coding/coroutines/essentials.md
+Stage 3: Impact — affects CORO-002, knowledge/coding/coroutines/essentials.md [KB → team/arch-coding-coroutines, kb_search "coroutines essentials"]
 Stage 4: Draft — PROPOSAL-042 Level L1 (knowledge update, non-behavior)
 Stage 5: Validate — markdown lint PASS, reference check PASS, no eval regression
 Stage 6: Review — CI pass, auto-merge
@@ -313,4 +313,4 @@ Total time: ~30 min với Guardian audit mode + maintain mode.
 
 - `agents/harness-guardian.md` — role mindset
 - `skills/harness-maintenance/SKILL.md` — procedure chi tiết
-- `knowledge/meta/harness-governance/essentials.md` — permission levels + protected baseline
+- `knowledge/meta/harness-governance/essentials.md [KB → team/arch-meta-governance, kb_search "harness governance essentials"]` — permission levels + protected baseline

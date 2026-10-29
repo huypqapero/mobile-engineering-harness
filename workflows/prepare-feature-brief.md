@@ -106,7 +106,7 @@ Fetch notes không block pipeline; serve informational cho downstream.
 1. Switch role → `agents/product-analyst.md`
 2. Invoke skill `business-analyze --phase spec`:
    - Input: `briefs/<slug>/assets/sources/spec.md`
-   - Follow `knowledge/product/input-analysis/requirement-extraction-rules.md`
+   - Follow `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis requirement extraction rules"]`
 3. Produce:
    - `briefs/<slug>/requirements.md` (prose)
    - `briefs/<slug>/acceptance-criteria.md`
@@ -141,7 +141,7 @@ Phase P2 độc lập với Phase P3. Multi-agent setup có thể spawn parallel
 1. Switch role → `agents/design-analyst.md`
 2. Invoke skill `business-analyze --phase design`:
    - Input: `briefs/<slug>/assets/sources/screenshots/`
-   - Follow `knowledge/product/input-analysis/screenshot-reading-rules.md`
+   - Follow `knowledge/product/input-analysis/screenshot-reading-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis screenshot reading rules"]`
 3. Produce:
    - `briefs/<slug>/design.md` (prose)
    - Partial `brief.yaml`: `screens[]`
@@ -171,7 +171,7 @@ Phase P2 độc lập với Phase P3. Multi-agent setup có thể spawn parallel
 
 1. Invoke skill `business-analyze --phase reconcile`:
    - Input: spec analysis + design analysis
-   - Follow `knowledge/product/input-analysis/reconciliation-matrix.md`
+   - Follow `knowledge/product/input-analysis/reconciliation-matrix.md [KB → team/arch-product-input-analysis, kb_search "input analysis reconciliation matrix"]`
 2. Procedure:
    - R1: collect outputs
    - R2: cross-reference (spec→design, design→spec, direct conflict)

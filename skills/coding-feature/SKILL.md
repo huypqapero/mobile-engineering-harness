@@ -29,8 +29,8 @@ Optional:
 Trước khi code, đọc:
 
 1. Project root `CLAUDE.md` — 14 rules
-2. `constitution/architecture-rules.md` — ARCH-001..014
-3. `knowledge/coding/clean-arch/clean-mvi.md`
+2. `constitution/architecture-rules.md [KB → team/arch-constitution, kb_search "architecture rules"]` — ARCH-001..014
+3. `knowledge/coding/clean-arch/clean-mvi.md [KB → team/arch-coding-clean-arch, kb_search "clean arch clean mvi"]`
 4. Spec file liên quan
 
 ## Execution procedure
@@ -140,9 +140,9 @@ Theo mẫu `definition-of-done.md §Report`.
 
 Load thêm khi task yêu cầu:
 
-- Compose heavy UI → `knowledge/coding/compose/essentials.md`
-- Complex state transition → `knowledge/coding/mvi/essentials.md`
-- Concurrent operations → `knowledge/coding/coroutines/essentials.md`
+- Compose heavy UI → `knowledge/coding/compose/essentials.md [KB → team/arch-coding-compose, kb_search "compose essentials"]`
+- Complex state transition → `knowledge/coding/mvi/essentials.md [KB → team/arch-coding-mvi, kb_search "mvi essentials"]`
+- Concurrent operations → `knowledge/coding/coroutines/essentials.md [KB → team/arch-coding-coroutines, kb_search "coroutines essentials"]`
 - Platform SDK integration → `android-sdk-structure` skill (nếu có)
 
 ## Output contract

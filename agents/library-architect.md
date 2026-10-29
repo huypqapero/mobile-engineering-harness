@@ -6,7 +6,7 @@ Role này **cross-cutting**, không consume harness overlay vì lib không nằm
 
 ## SDK Mindset (nền tảng)
 
-Mọi quyết định của role này phải trace về `knowledge/cross-cutting/shared-library/sdk-mindset.md`:
+Mọi quyết định của role này phải trace về `knowledge/coding-sdk/sdk-mindset.md [KB → team/arch-coding-sdk, kb_search "coding sdk sdk mindset"]`:
 
 - **SDK ≠ feature-first module**: audience là **≥ 5 consumer** (real + straw-man). Dưới 5 → BLOCKED pipeline, downgrade sang shared module.
 - **3 guarantee**: Stability (API freeze sau 1.0), Configurability (Builder/DSL + default sensible), Extensibility (SPI declarative, không fork lib). Thiếu 1 = anti-SDK.
@@ -60,12 +60,12 @@ Extract mode:
 - Lý do tách (≥ 2 consumer, boundary ổn định)
 
 Luôn đọc (SDK knowledge set — bắt buộc đọc toàn bộ, không skim):
-- `knowledge/cross-cutting/shared-library/sdk-mindset.md` — ADR SDK-001..006 (foundation)
-- `knowledge/cross-cutting/shared-library/pattern-catalog.md` — pattern canonical mapping
-- `knowledge/cross-cutting/shared-library/layered-architecture.md` — 5-layer kernel-plugin
-- `knowledge/cross-cutting/shared-library/brainstorm-process.md` — 10-step Phase 0
-- `knowledge/cross-cutting/shared-library/testing-kit-rules.md` — TestingKit mandatory
-- `knowledge/cross-cutting/shared-library/essentials.md` — rule checklist
+- `knowledge/coding-sdk/sdk-mindset.md [KB → team/arch-coding-sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006 (foundation)
+- `knowledge/coding-sdk/pattern-catalog.md [KB → team/arch-coding-sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical mapping
+- `knowledge/coding-sdk/layered-architecture.md [KB → team/arch-coding-sdk, kb_search "coding sdk layered architecture"]` — 5-layer kernel-plugin
+- `knowledge/coding-sdk/brainstorm-process.md [KB → team/arch-coding-sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0
+- `knowledge/coding-sdk/testing-kit-rules.md [KB → team/arch-coding-sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
+- `knowledge/coding-sdk/essentials.md [KB → team/arch-coding-sdk, kb_search "coding sdk essentials"]` — rule checklist
 - `knowledge/coding/clean-arch/*` (để tôn trọng chain nếu lib expose domain-ish concept)
 - `~/.claude/rules/development-rules.md` + `~/.claude/rules/review-audit-self-decision.md`
 
@@ -151,7 +151,7 @@ Save tại repo lib root `docs/library-contract.md` (hoặc tạm `plans/<date>-
 - L4 Integration: <component list>
 
 Dependency direction: L_N chỉ gọi L_(N-1) qua public API. Konsist rule enforce.
-Reference: `knowledge/cross-cutting/shared-library/layered-architecture.md`
+Reference: `knowledge/coding-sdk/layered-architecture.md [KB → team/arch-coding-sdk, kb_search "coding sdk layered architecture"]`
 
 ## Pattern Catalog mapping (bắt buộc)
 
@@ -503,17 +503,17 @@ Khi lib ship version mới:
 ## Pair với knowledge
 
 ### SDK core knowledge (đọc toàn bộ, không skim)
-- `knowledge/cross-cutting/shared-library/sdk-mindset.md` — ADR SDK-001..006, 3 guarantee, anti-pattern
-- `knowledge/cross-cutting/shared-library/pattern-catalog.md` — pattern canonical ↔ component ↔ ref SDK
-- `knowledge/cross-cutting/shared-library/layered-architecture.md` — 5-layer kernel-plugin, SPI, Konsist
-- `knowledge/cross-cutting/shared-library/brainstorm-process.md` — Phase 0 top-down 10-step
-- `knowledge/cross-cutting/shared-library/testing-kit-rules.md` — TestingKit mandatory
-- `knowledge/cross-cutting/shared-library/essentials.md` — checklist rule cứng
+- `knowledge/coding-sdk/sdk-mindset.md [KB → team/arch-coding-sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006, 3 guarantee, anti-pattern
+- `knowledge/coding-sdk/pattern-catalog.md [KB → team/arch-coding-sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical ↔ component ↔ ref SDK
+- `knowledge/coding-sdk/layered-architecture.md [KB → team/arch-coding-sdk, kb_search "coding sdk layered architecture"]` — 5-layer kernel-plugin, SPI, Konsist
+- `knowledge/coding-sdk/brainstorm-process.md [KB → team/arch-coding-sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 top-down 10-step
+- `knowledge/coding-sdk/testing-kit-rules.md [KB → team/arch-coding-sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
+- `knowledge/coding-sdk/essentials.md [KB → team/arch-coding-sdk, kb_search "coding sdk essentials"]` — checklist rule cứng
 
 ### Cross-cutting
 - `knowledge/coding/clean-arch/*` — khi lib expose domain-shape concept
-- `knowledge/cross-cutting/build-strategy/essentials.md` — Gradle config lib repo
-- `knowledge/cross-cutting/security/essentials.md` — khi lib handle credential/token
+- `knowledge/cross-cutting/build-strategy/essentials.md [KB → team/arch-xcut-build-strategy, kb_search "build strategy essentials"]` — Gradle config lib repo
+- `knowledge/cross-cutting/security/essentials.md [KB → team/arch-xcut-security, kb_search "security essentials"]` — khi lib handle credential/token
 
 ## Pair với skills
 
@@ -536,7 +536,7 @@ Khi lib ship version mới:
 
 ## Report format
 
-Theo mẫu `constitution/definition-of-done.md §Report`, với bổ sung field:
+Theo mẫu `constitution/definition-of-done.md [KB → team/arch-constitution, kb_search "definition of done"] §Report`, với bổ sung field:
 
 ```
 API diff: PASS | BREAKING (require RFC) | NEW_SYMBOLS (minor bump)

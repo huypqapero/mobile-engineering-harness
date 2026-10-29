@@ -32,12 +32,12 @@ Optional:
 ## Prerequisites
 
 Đọc trước khi start (SDK knowledge set — bắt buộc đọc toàn bộ, không skim):
-1. `knowledge/cross-cutting/shared-library/sdk-mindset.md` — ADR SDK-001..006
-2. `knowledge/cross-cutting/shared-library/pattern-catalog.md`
-3. `knowledge/cross-cutting/shared-library/layered-architecture.md` — classify code hiện tại thuộc layer nào
-4. `knowledge/cross-cutting/shared-library/brainstorm-process.md` — Phase 0 nếu clean-slate
-5. `knowledge/cross-cutting/shared-library/testing-kit-rules.md` — TestingKit extract/write
-6. `knowledge/cross-cutting/shared-library/essentials.md`
+1. `knowledge/coding-sdk/sdk-mindset.md [KB → team/arch-coding-sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006
+2. `knowledge/coding-sdk/pattern-catalog.md [KB → team/arch-coding-sdk, kb_search "coding sdk pattern catalog"]`
+3. `knowledge/coding-sdk/layered-architecture.md [KB → team/arch-coding-sdk, kb_search "coding sdk layered architecture"]` — classify code hiện tại thuộc layer nào
+4. `knowledge/coding-sdk/brainstorm-process.md [KB → team/arch-coding-sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 nếu clean-slate
+5. `knowledge/coding-sdk/testing-kit-rules.md [KB → team/arch-coding-sdk, kb_search "coding sdk testing kit rules"]` — TestingKit extract/write
+6. `knowledge/coding-sdk/essentials.md [KB → team/arch-coding-sdk, kb_search "coding sdk essentials"]`
 7. `agents/library-architect.md`
 8. `agents/workflows/library-flow.md`
 9. `skills/coding-scout/SKILL.md` (dùng cho map coupling)
@@ -212,7 +212,7 @@ Publish: VERIFIED
 - LIB-PUBLISH-001..005
 - LIB-GOV-001..004
 
-Full: `knowledge/cross-cutting/shared-library/essentials.md`.
+Full: `knowledge/coding-sdk/essentials.md [KB → team/arch-coding-sdk, kb_search "coding sdk essentials"]`.
 
 ## Validation
 
@@ -286,7 +286,7 @@ Trước khi tuyên bố DONE:
 
 - Workflow: `agents/workflows/library-flow.md` §Extract mode
 - Agent: `agents/library-architect.md`
-- Knowledge: SDK knowledge set đầy đủ trong `knowledge/cross-cutting/shared-library/`
+- Knowledge: SDK knowledge set đầy đủ trong `knowledge/coding-sdk/`
 - Scout: `skills/coding-scout/SKILL.md`
 - Guardrails: `~/.claude/rules/development-rules.md`, `review-audit-self-decision.md`, `orchestration-protocol.md`
 

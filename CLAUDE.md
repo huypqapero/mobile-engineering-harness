@@ -26,8 +26,10 @@ Match user intent theo keyword trước. Nếu match → trigger skill wrapper, 
 | "verify/test/QA X" | solo `qa` scope A hoặc B | — |
 | "plan/design arch X" | solo `architect` | — |
 | "chuẩn hóa spec + screenshot thành brief" | `/business-prepare-feature` | — |
-| "tạo lib X dùng chung cho A và B", "shared library mới" | `/library-new` | solo `library-architect` + `architect` + `coder` |
+| "tạo lib X dùng chung cho A và B", "shared library mới" (SDK pure, không UI) | `/library-new` | solo `library-architect` + `architect` + `coder` |
 | "tách module Y thành lib riêng", "extract code product → lib" | `/library-extract` | solo `library-architect` + `coding-scout` |
+| "tạo feature store X dùng chung cho A/B/C", "shared flow + UI" (paywall, chatbot, onboarding, KYC) | `/feature-store-new` | solo `feature-store-architect` + `coder` |
+| "tách feature Y ở product A thành feature store", "extract UI + flow sang shared" | `/feature-store-extract` | solo `feature-store-architect` + `coding-scout` |
 | Mơ hồ, không match | **ask clarify, KHÔNG tự chế workflow** | — |
 
 Full routing table 30+ row: `AGENTS.md §Task routing`.
@@ -146,7 +148,7 @@ Trước khi tuyên bố DONE / APPROVE / merge:
 5. Unit test coverage trên code mới (happy + ≥ 2 edge case)
 6. Reviewer verdict APPROVE (hoặc APPROVE_WITH_CHANGES resolved)
 
-Fail bất kỳ gate → không được tuyên bố DONE. Chi tiết: `constitution/definition-of-done.md`.
+Fail bất kỳ gate → không được tuyên bố DONE. Chi tiết: `constitution/definition-of-done.md [KB → team/arch-constitution, kb_search "definition of done"]`.
 
 ## Reference index
 
@@ -154,7 +156,7 @@ Fail bất kỳ gate → không được tuyên bố DONE. Chi tiết: `constitu
 |---|---|
 | `AGENTS.md` | Full file index + task routing table (30+ row) + agent roles 14 role + workflows list |
 | `agents/workflows/README.md` | 5 pipeline routing docs (feature-full-flow, bugfix-fast-path, bug-triage, release-gate, parallel-features) + artifact ownership + handoff rules |
-| `knowledge/README.md` | 7-category knowledge index (coding/product/design/pm/testing/meta/cross-cutting) + lookup pattern + naming convention |
+| `knowledge/README.md [KB → team/arch, kb_search "README"]` | 7-category knowledge index (coding/product/design/pm/testing/meta/cross-cutting) + lookup pattern + naming convention |
 | `constitution/` | 14 ADR + CORO + KOT rules với ID + Konsist verify + Severity |
 
 ## Architecture constraints (quick reference)

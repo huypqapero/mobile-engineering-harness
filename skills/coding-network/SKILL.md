@@ -25,9 +25,9 @@ Chọn network lib dựa trên `stack.network` trong `overlay.yaml`:
 | `ktor` | Ktor Client manual | KMP / CMP |
 | `ktorfit` | Ktor + Ktorfit annotation | KMP / CMP (Retrofit-style interface) |
 
-Chi tiết lib comparison + decision guide: `knowledge/coding/data/network.md §Library selection`.
+Chi tiết lib comparison + decision guide: `knowledge/coding/data/network.md [KB → team/arch-coding-data, kb_search "data network"] §Library selection`.
 
-Pattern + procedure chung mọi lib (tiếp theo). Lib-specific code snippet trong `knowledge/coding/data/network.md`.
+Pattern + procedure chung mọi lib (tiếp theo). Lib-specific code snippet trong `knowledge/coding/data/network.md [KB → team/arch-coding-data, kb_search "data network"]`.
 
 ## Inputs
 
@@ -38,9 +38,9 @@ Pattern + procedure chung mọi lib (tiếp theo). Lib-specific code snippet tro
 
 ## Prerequisites
 
-1. `knowledge/coding/data/network.md`
-2. `knowledge/coding/coroutines/essentials.md §Retry pattern`
-3. `constitution/concurrency-rules.md §CORO-008`
+1. `knowledge/coding/data/network.md [KB → team/arch-coding-data, kb_search "data network"]`
+2. `knowledge/coding/coroutines/essentials.md [KB → team/arch-coding-coroutines, kb_search "coroutines essentials"] §Retry pattern`
+3. `constitution/concurrency-rules.md [KB → team/arch-constitution, kb_search "concurrency rules"] §CORO-008`
 4. `ApiResult` + `DomainError` trong `{{MODULE_DOMAIN}}/core/`; `ErrorMapper` + adapter/converter trong `{{MODULE_DATA}}/core/network/` (Step 4)
 
 ## Execution procedure
@@ -123,11 +123,11 @@ internal interface BookApi {
 }
 ```
 
-Chi tiết + builder config + DI binding: xem `knowledge/coding/data/network.md`.
+Chi tiết + builder config + DI binding: xem `knowledge/coding/data/network.md [KB → team/arch-coding-data, kb_search "data network"]`.
 
 ### Step 3 — Configure client
 
-Example dưới là **Ktor** (KMP). Retrofit builder config + Ktorfit `Ktorfit.Builder()` xem `knowledge/coding/data/network.md §Option 2/3`; đăng ký adapter/converter ở Step 4.
+Example dưới là **Ktor** (KMP). Retrofit builder config + Ktorfit `Ktorfit.Builder()` xem `knowledge/coding/data/network.md [KB → team/arch-coding-data, kb_search "data network"] §Option 2/3`; đăng ký adapter/converter ở Step 4.
 
 ```kotlin
 // {{MODULE_DATA}}/di/DataModule.kt
@@ -187,7 +187,7 @@ single<HttpClient> {
 
 ### Step 4 — ApiResult tại tầng network (ErrorMapper + adapter)
 
-Contract: API service trả `ApiResult<Dto>`; exception → `DomainError` map **một lần** ở `ErrorMapper`. Bảng mapping đầy đủ + variant Retrofit của `ErrorMapper`: `knowledge/coding/data/network.md §ApiResult contract`.
+Contract: API service trả `ApiResult<Dto>`; exception → `DomainError` map **một lần** ở `ErrorMapper`. Bảng mapping đầy đủ + variant Retrofit của `ErrorMapper`: `knowledge/coding/data/network.md [KB → team/arch-coding-data, kb_search "data network"] §ApiResult contract`.
 
 `ApiResult` + extension (domain):
 
@@ -418,7 +418,7 @@ Chọn mock tool theo lib:
 - Ktor / Ktorfit → `MockEngine` (Ktor built-in)
 - Retrofit → `MockWebServer` (OkHttp lib)
 
-Test contract lỗi ở **tầng API** (assert `ApiResult.Error(DomainError.X)`); Repository test chỉ cần fake API trả `ApiResult`. Example dưới là **Ktor MockEngine**. MockWebServer snippet xem `knowledge/coding/data/network.md §Testing với MockWebServer`.
+Test contract lỗi ở **tầng API** (assert `ApiResult.Error(DomainError.X)`); Repository test chỉ cần fake API trả `ApiResult`. Example dưới là **Ktor MockEngine**. MockWebServer snippet xem `knowledge/coding/data/network.md [KB → team/arch-coding-data, kb_search "data network"] §Testing với MockWebServer`.
 
 ```kotlin
 val bookMockEngine = MockEngine { request ->

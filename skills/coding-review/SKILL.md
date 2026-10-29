@@ -20,9 +20,9 @@ priority: P0
 
 ## Prerequisites
 
-1. `constitution/architecture-rules.md` — 14 ARCH + 3 MOD
-2. `constitution/concurrency-rules.md` — CORO-001..010
-3. `constitution/engineering-principles.md`
+1. `constitution/architecture-rules.md [KB → team/arch-constitution, kb_search "architecture rules"]` — 14 ARCH + 3 MOD
+2. `constitution/concurrency-rules.md [KB → team/arch-constitution, kb_search "concurrency rules"]` — CORO-001..010
+3. `constitution/engineering-principles.md [KB → team/arch-constitution, kb_search "engineering principles"]`
 4. Project `CLAUDE.md`
 
 ## Execution procedure

@@ -123,7 +123,7 @@ Sau khi fix theo nhánh, spawn QA re-verify. PASS → close; FAIL → increment 
 Mọi bug close đều feed `lesson-miner`:
 - Code bug class recurring → update `skills/coding-review/` rule
 - Design bug class recurring → update `agents/architect.md` checklist
-- Spec bug class recurring → update `knowledge/product/input-analysis/requirement-extraction-rules.md`
+- Spec bug class recurring → update `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis requirement extraction rules"]`
 
 ## Pre-flight check
 

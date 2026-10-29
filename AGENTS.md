@@ -51,7 +51,7 @@ Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cac
 2. **Overlay** `.harness-overlay/constitution/` — product extensions
 3. **Upstream** `AGENTS.md` (file này) — generic entry + task routing
 4. **Upstream** `skills/<skill-tương-ứng>/SKILL.md` — procedure cụ thể
-5. **Upstream** `knowledge/` — load khi task yêu cầu (phân cấp 2 tầng: `knowledge/<category>/<domain>/`, index tại `knowledge/README.md`)
+5. **Upstream** `knowledge/` — load khi task yêu cầu (phân cấp 2 tầng: `knowledge/<category>/<domain>/`, index tại `knowledge/README.md [KB → team/arch, kb_search "README"]`)
 6. **Blueprint**: ưu tiên `overlay/blueprints/live-reference-feature.md` (nếu có); fallback `upstream/blueprints/reference-feature/README.md`
 
 ## Task routing
@@ -65,8 +65,10 @@ Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cac
 | Classify bug không rõ loại (code/design/spec), max 3 retry rồi escalate PM | `bug-triage` |
 | Release co-sign Tech Lead + PM (14 tech + 12 business checklist) | `release` |
 | Chạy N feature song song cùng sprint (isolation check + shared file aggregation) | `parallel-features` |
-| Tạo KMP/Android lib mới ở repo riêng + publish artifact (≥ 2 consumer) | `library-new` |
+| Tạo KMP/Android lib mới ở repo riêng + publish artifact (SDK pure headless, ≥ 5 consumer) | `library-new` |
 | Tách code product thành lib riêng + migrate source product | `library-extract` |
+| Tạo Feature Store artifact (có UI + flow, 2-module core + ui, ≥ 5 consumer) — paywall, chatbot, onboarding, KYC | `feature-store-new` |
+| Tách feature đã có trong product → Feature Store riêng (scout 5 coupling → lift-and-shift / clean-slate → migrate source) | `feature-store-extract` |
 
 ### Component-level task
 
@@ -120,7 +122,8 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 | `workflows/verify-e2e.md` | E2e regression test pipeline qua fixtures (5 stages: brief → plan → code → gates → report). Hybrid validation (golden snapshot + semantic assertion). |
 | `workflows/guard-round.md` | E2E runtime round orchestration (full vs verify, streaming bugs, early-stop, APK cache + round pin). Pattern-only, downstream build runner. |
 | `workflows/mine-lessons.md` | Convert tester bugs → structured lessons feed back vào next-run plan checks + review rules. |
-| `agents/workflows/library-flow.md` | Tạo & vận hành KMP/Android lib ở repo riêng (greenfield + extract, 10 stage: trigger check → scout → contract → impl → dual review → QA matrix → publish → consumer migrate). |
+| `agents/workflows/library-flow.md` | Tạo & vận hành KMP/Android lib ở repo riêng (SDK pure headless, greenfield + extract, 10 stage: trigger check → scout → contract → impl → dual review → QA matrix → publish → consumer migrate). |
+| `agents/workflows/feature-store-flow.md` | Tạo & vận hành Feature Store artifact (có UI + flow, 2-module core + ui, greenfield + extract, 12 stage: trigger check 3Q → scout 5 coupling → capability tuple → contract → API Freeze core → Theme Freeze ui → module layout → impl → dual review → QA 4-scenario → publish → source migrate (extract) → iterate GA). |
 
 ## Agent roles
 
@@ -137,7 +140,8 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 
 - `tech-lead.md` — Bridge business ↔ tech, plan review gate, bug triage, release co-sign (có fast-path skip)
 - `architect.md` — Plan + inspect + decisions + spec decomposition (parallel mode)
-- `library-architect.md` — Thiết kế KMP/Android library repo riêng: boundary, API contract, per-project config, versioning, publishing (cross-cutting, không bind product overlay)
+- `library-architect.md` — Thiết kế KMP/Android library repo riêng (SDK pure, không UI): boundary, API contract, per-project config, versioning, publishing (cross-cutting, không bind product overlay)
+- `feature-store-architect.md` — Thiết kế Feature Store artifact (có UI + flow, 2-module core + ui, Runtime Config pattern cho adapter, Theme Contract): capability tuple + override surface + testFixtures (cross-cutting)
 - `coder.md` — Execute theo plan, minimal scope
 - `reviewer.md` — Independent code audit, evidence-based findings
 - `qa.md` — Façade verification: Scope A (per-screen) + Scope B (full-flow E2E)
@@ -169,7 +173,7 @@ Trước khi báo cáo DONE, chạy đủ:
 3. `./gradlew detekt`
 4. Build smoke: `./gradlew :{{MODULE_APP}}:assembleDebug`
 
-Fail bất kỳ gate nào → không được tuyên bố DONE. Xem `constitution/definition-of-done.md`.
+Fail bất kỳ gate nào → không được tuyên bố DONE. Xem `constitution/definition-of-done.md [KB → team/arch-constitution, kb_search "definition of done"]`.
 
 ## Overlay vs upstream — precedence
 
@@ -182,40 +186,40 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 ## File index
 
 - `harness.yaml.template` + `overlay.schema.yaml` — config
-- `constitution/engineering-principles.md`
-- `constitution/architecture-rules.md` — ARCH-001..014 + MOD-001..003
-- `constitution/concurrency-rules.md` — CORO-001..010
-- `constitution/kotlin-conventions.md` — KOT-001..012
-- `constitution/definition-of-done.md`
-- `knowledge/meta/agent-orchestration/essentials.md` — orchestration modes + Claude Code Task tool patterns
-- `knowledge/meta/agent-orchestration/model-tier.md` — model tier routing (lite/balanced/deep)
-- `knowledge/meta/harness-governance/essentials.md` — permission levels L0-L3 + protected baseline
-- `knowledge/coding/clean-arch/architecture-profiles.md` — profile cmp/kmp/android-only + migration
-- `knowledge/cross-cutting/build-strategy/essentials.md` — 4-level build strategy (fast → regression)
-- `knowledge/meta/auto-fix/essentials.md` — auto-fix loop + fingerprint + attempt limit
-- `knowledge/coding/clean-arch/clean-mvi.md`
-- `knowledge/coding/compose/essentials.md`
-- `knowledge/coding/mvi/essentials.md`
-- `knowledge/coding/coroutines/essentials.md`
-- `knowledge/coding/data/repository-pattern.md`
-- `knowledge/coding/data/network.md`
-- `knowledge/coding/data/persistence.md`
-- `knowledge/coding/data/caching.md`
-- `knowledge/coding/patterns/common-patterns.md`
-- `knowledge/cross-cutting/security/essentials.md`
-- `knowledge/cross-cutting/performance/essentials.md`
-- `knowledge/cross-cutting/shared-library/essentials.md` — LIB-SCOPE/API/CONFIG/PORT/DEP/PLATFORM/RES/ERROR/TEST/DOC/PUBLISH/GOV rule set cho library repo riêng
-- `knowledge/product/input-analysis/requirement-extraction-rules.md` — REQ-RULE-001..006
-- `knowledge/product/input-analysis/screenshot-reading-rules.md` — DESIGN-RULE-001..012
-- `knowledge/product/input-analysis/reconciliation-matrix.md` — matrix + severity rules
-- `knowledge/product/input-analysis/confluence-fetch-rules.md` — CONF-RULE-001..012 cho MCP adapter
-- `knowledge/product/input-analysis/figma-fetch-rules.md` — FIG-RULE-001..008 + design rule overrides
-- `knowledge/testing/e2e-runtime/device-driver-contract.md` — abstract driver interface (10 methods) + 5 implementation paths comparison
-- `knowledge/testing/e2e-runtime/custom-apk-driver.md` — architecture + HTTP protocol + UiAutomation cheat sheet + 3 acquisition options (200+ cases/round scale)
-- `knowledge/testing/e2e-runtime/guard-round-pattern.md` — full vs verify round orchestration
-- `knowledge/testing/e2e-runtime/interruption-patterns.md` — ad/permission/dialog auto-dismiss
-- `knowledge/testing/e2e-runtime/runner-neutral-step.md` — step file design rationale
-- `knowledge/design/visual-compare/figma-vs-screenshot.md` — perceptual hash + SSIM thresholds
+- `constitution/engineering-principles.md [KB → team/arch-constitution, kb_search "engineering principles"]`
+- `constitution/architecture-rules.md [KB → team/arch-constitution, kb_search "architecture rules"]` — ARCH-001..014 + MOD-001..003
+- `constitution/concurrency-rules.md [KB → team/arch-constitution, kb_search "concurrency rules"]` — CORO-001..010
+- `constitution/kotlin-conventions.md [KB → team/arch-constitution, kb_search "kotlin conventions"]` — KOT-001..012
+- `constitution/definition-of-done.md [KB → team/arch-constitution, kb_search "definition of done"]`
+- `knowledge/meta/agent-orchestration/essentials.md [KB → team/arch-meta-orchestration, kb_search "agent orchestration essentials"]` — orchestration modes + Claude Code Task tool patterns
+- `knowledge/meta/agent-orchestration/model-tier.md [KB → team/arch-meta-orchestration, kb_search "agent orchestration model tier"]` — model tier routing (lite/balanced/deep)
+- `knowledge/meta/harness-governance/essentials.md [KB → team/arch-meta-governance, kb_search "harness governance essentials"]` — permission levels L0-L3 + protected baseline
+- `knowledge/coding/clean-arch/architecture-profiles.md [KB → team/arch-coding-clean-arch, kb_search "clean arch architecture profiles"]` — profile cmp/kmp/android-only + migration
+- `knowledge/cross-cutting/build-strategy/essentials.md [KB → team/arch-xcut-build-strategy, kb_search "build strategy essentials"]` — 4-level build strategy (fast → regression)
+- `knowledge/meta/auto-fix/essentials.md [KB → team/arch-meta-auto-fix, kb_search "auto fix essentials"]` — auto-fix loop + fingerprint + attempt limit
+- `knowledge/coding/clean-arch/clean-mvi.md [KB → team/arch-coding-clean-arch, kb_search "clean arch clean mvi"]`
+- `knowledge/coding/compose/essentials.md [KB → team/arch-coding-compose, kb_search "compose essentials"]`
+- `knowledge/coding/mvi/essentials.md [KB → team/arch-coding-mvi, kb_search "mvi essentials"]`
+- `knowledge/coding/coroutines/essentials.md [KB → team/arch-coding-coroutines, kb_search "coroutines essentials"]`
+- `knowledge/coding/data/repository-pattern.md [KB → team/arch-coding-data, kb_search "data repository pattern"]`
+- `knowledge/coding/data/network.md [KB → team/arch-coding-data, kb_search "data network"]`
+- `knowledge/coding/data/persistence.md [KB → team/arch-coding-data, kb_search "data persistence"]`
+- `knowledge/coding/data/caching.md [KB → team/arch-coding-data, kb_search "data caching"]`
+- `knowledge/coding/patterns/common-patterns.md [KB → team/arch-coding-patterns, kb_search "patterns common patterns"]`
+- `knowledge/cross-cutting/security/essentials.md [KB → team/arch-xcut-security, kb_search "security essentials"]`
+- `knowledge/cross-cutting/performance/essentials.md [KB → team/arch-xcut-performance, kb_search "performance essentials"]`
+- `knowledge/coding-sdk/essentials.md [KB → team/arch-coding-sdk, kb_search "coding sdk essentials"]` — LIB-SCOPE/API/CONFIG/PORT/DEP/PLATFORM/RES/ERROR/TEST/DOC/PUBLISH/GOV rule set cho library repo riêng
+- `knowledge/product/input-analysis/requirement-extraction-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis requirement extraction rules"]` — REQ-RULE-001..006
+- `knowledge/product/input-analysis/screenshot-reading-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis screenshot reading rules"]` — DESIGN-RULE-001..012
+- `knowledge/product/input-analysis/reconciliation-matrix.md [KB → team/arch-product-input-analysis, kb_search "input analysis reconciliation matrix"]` — matrix + severity rules
+- `knowledge/product/input-analysis/confluence-fetch-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis confluence fetch rules"]` — CONF-RULE-001..012 cho MCP adapter
+- `knowledge/product/input-analysis/figma-fetch-rules.md [KB → team/arch-product-input-analysis, kb_search "input analysis figma fetch rules"]` — FIG-RULE-001..008 + design rule overrides
+- `knowledge/testing/e2e-runtime/device-driver-contract.md [KB → team/arch-testing-e2e-runtime, kb_search "e2e runtime device driver contract"]` — abstract driver interface (10 methods) + 5 implementation paths comparison
+- `knowledge/testing/e2e-runtime/custom-apk-driver.md [KB → team/arch-testing-e2e-runtime, kb_search "e2e runtime custom apk driver"]` — architecture + HTTP protocol + UiAutomation cheat sheet + 3 acquisition options (200+ cases/round scale)
+- `knowledge/testing/e2e-runtime/guard-round-pattern.md [KB → team/arch-testing-e2e-runtime, kb_search "e2e runtime guard round pattern"]` — full vs verify round orchestration
+- `knowledge/testing/e2e-runtime/interruption-patterns.md [KB → team/arch-testing-e2e-runtime, kb_search "e2e runtime interruption patterns"]` — ad/permission/dialog auto-dismiss
+- `knowledge/testing/e2e-runtime/runner-neutral-step.md [KB → team/arch-testing-e2e-runtime, kb_search "e2e runtime runner neutral step"]` — step file design rationale
+- `knowledge/design/visual-compare/figma-vs-screenshot.md [KB → team/arch-design-compare, kb_search "visual compare figma vs screenshot"]` — perceptual hash + SSIM thresholds
 - `skills/feature/SKILL.md` — **P0** entry: feature-full-flow pipeline wrapper (BA → PM → Designer → Tech Lead → Architect → Coder → QA → Release)
 - `skills/bugfix/SKILL.md` — **P0** entry: bugfix-fast-path triage + fast/mini/full routing
 - `skills/bug-triage/SKILL.md` — bug classify code/design/spec, max 3 retry
@@ -241,8 +245,10 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `skills/coding-vibe/SKILL.md` — end-to-end pipeline (brainstorm→scout→implement→test→review→ship)
 - `skills/harness-handoff/SKILL.md` — session continuation contract (markdown)
 - `skills/harness-maintenance/SKILL.md` — Guardian procedure (meta)
-- `skills/library-new/SKILL.md` — greenfield KMP/Android lib repo riêng + publish artifact (trigger ≥ 2 consumer, contract-first)
+- `skills/library-new/SKILL.md` — greenfield KMP/Android lib repo riêng + publish artifact (SDK pure headless, trigger ≥ 5 consumer, contract-first)
 - `skills/library-extract/SKILL.md` — tách code product thành lib riêng (scout coupling → lift-and-shift vs clean-slate → extract + migrate source)
+- `skills/feature-store-new/SKILL.md` — tạo Feature Store artifact (có UI + flow, 2-module core + ui, Runtime Config pattern cho adapter, Theme Contract mandatory, testFixtures via java-test-fixtures)
+- `skills/feature-store-extract/SKILL.md` — tách feature đã tồn tại trong product thành Feature Store (scout 5 coupling: UI theme, flow, data, resource, dep → strategy lift-and-shift vs clean-slate → extract + migrate source product)
 - `blueprints/reference-feature/README.md`
 - `blueprints/network-service/README.md`
 - `blueprints/compose-screen/README.md`
@@ -266,7 +272,8 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `agents/design-analyst.md` — analyze design nguồn đã có (reverse)
 - `agents/tech-lead.md` — plan review gate + fast-path routing + bug triage
 - `agents/architect.md` — technical plan + spec decomposition
-- `agents/library-architect.md` — KMP/Android lib repo riêng: boundary + API contract + per-project config + versioning + publishing + governance (cross-cutting)
+- `agents/library-architect.md` — KMP/Android lib repo riêng (SDK pure, không UI): boundary + API contract + per-project config + versioning + publishing + governance (cross-cutting)
+- `agents/feature-store-architect.md` — Feature Store artifact (có UI + flow, 2-module core + ui): capability tuple + Runtime Config + Theme Contract + override surface + testFixtures (cross-cutting)
 - `agents/coder.md` — implement theo plan
 - `agents/reviewer.md` — independent code audit
 - `agents/qa.md` — façade Scope A + Scope B verification
@@ -281,7 +288,8 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `agents/workflows/bug-triage.md` — phân loại bug (code/design/spec)
 - `agents/workflows/release-gate.md` — Tech Lead + PM co-sign
 - `agents/workflows/parallel-features.md` — multiple feature song song
-- `agents/workflows/library-flow.md` — tạo & vận hành KMP/Android lib repo riêng (greenfield + extract mode)
+- `agents/workflows/library-flow.md` — tạo & vận hành KMP/Android lib repo riêng (SDK pure, không UI, greenfield + extract mode)
+- `agents/workflows/feature-store-flow.md` — tạo & vận hành Feature Store artifact (có UI + flow, 2-module core + ui, 12 stage greenfield + extract mode)
 - `verification/architecture-tests/TemplateArchitectureRulesTest.kt`
 - `verification/scripts/verify.sh.template`
 - `verification/detekt/README.md` + `detekt-config-template.yml`
@@ -293,14 +301,14 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `verification/e2e/fixtures/book-detail/` — pilot fixture với intentional conflict
 - `verification/e2e/scripts/stage-5-ui-visual.sh` — optional UI visual compare stage
 - `verification/e2e/validators/validate_ui_visual.py` — perceptual hash + SSIM validator
-- `briefs/README.md` — output directory input layer
+- `briefs/README.md [KB → team/business-index, kb_search "README"]` — output directory input layer
 - `evaluations/templates/e01..e05.md`
 - `evaluations/rubrics/README.md` — scoring rubric chung
 - `evaluations/regression/README.md` — trend tracking qua versions
 
 ## Report format
 
-Mọi task kết thúc bằng report theo mẫu `constitution/definition-of-done.md §Report`:
+Mọi task kết thúc bằng report theo mẫu `constitution/definition-of-done.md [KB → team/arch-constitution, kb_search "definition of done"] §Report`:
 
 ```
 Status: VERIFIED | VERIFIED_WITH_LIMITATIONS | BLOCKED | FAILED

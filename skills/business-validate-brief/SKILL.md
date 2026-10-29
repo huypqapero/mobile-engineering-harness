@@ -30,7 +30,7 @@ Trước khi validate:
 
 1. `blueprints/feature-brief/README.md` — package layout + rules
 2. `verification/brief-schema/brief.schema.json` — JSON schema
-3. `knowledge/product/input-analysis/reconciliation-matrix.md` — severity rules
+3. `knowledge/product/input-analysis/reconciliation-matrix.md [KB → team/arch-product-input-analysis, kb_search "input analysis reconciliation matrix"]` — severity rules
 
 ## Execution procedure
 

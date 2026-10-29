@@ -20,8 +20,8 @@ priority: P0
 
 ## Prerequisites
 
-1. `knowledge/coding/coroutines/essentials.md §Testing with runTest`
-2. `knowledge/coding/mvi/essentials.md §Testing MVI`
+1. `knowledge/coding/coroutines/essentials.md [KB → team/arch-coding-coroutines, kb_search "coroutines essentials"] §Testing with runTest`
+2. `knowledge/coding/mvi/essentials.md [KB → team/arch-coding-mvi, kb_search "mvi essentials"] §Testing MVI`
 3. Project `docs/architecture.md`
 
 ## Test strategy

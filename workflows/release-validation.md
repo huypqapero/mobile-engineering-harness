@@ -268,7 +268,7 @@ READY — safe to ship
 
 ## Required policies
 
-- Follow `constitution/definition-of-done.md`
+- Follow `constitution/definition-of-done.md [KB → team/arch-constitution, kb_search "definition of done"]`
 - Verify tất cả 14 ARCH + 10 CORO + 12 KOT rules compliant trong release build
 - Konsist + Detekt + Lint release variant pass
 

@@ -22,7 +22,7 @@ priority: P0
 
 ## Prerequisites
 
-1. `knowledge/coding/mvi/essentials.md`
+1. `knowledge/coding/mvi/essentials.md [KB → team/arch-coding-mvi, kb_search "mvi essentials"]`
 2. `presenter/core/mvi/BaseViewModel.kt` + `MviContracts.kt`
 3. Project `docs/architecture.md §5.1 MVI`
 

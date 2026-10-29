@@ -25,7 +25,7 @@ Extract:
 1. **≥ 5 consumer** (real + straw-man persona). Dưới 5 → BLOCKED, downgrade sang shared module. (Lift-and-shift extract có thể giãn xuống 2 real với justification.)
 2. Responsibility 1 câu không có "và"
 3. (Extract) Boundary code ổn định ≥ 6 tháng
-4. **SDK mindset acknowledged**: Library Architect confirm đã đọc `knowledge/cross-cutting/shared-library/sdk-mindset.md` + commit tới 3 guarantee (Stability, Configurability, Extensibility)
+4. **SDK mindset acknowledged**: Library Architect confirm đã đọc `knowledge/coding-sdk/sdk-mindset.md [KB → team/arch-coding-sdk, kb_search "coding sdk sdk mindset"]` + commit tới 3 guarantee (Stability, Configurability, Extensibility)
 
 Fail bất kỳ → status BLOCKED, note lý do, không spawn pipeline.
 
@@ -440,9 +440,9 @@ Agent phải raise user, không tự quyết, khi:
 
 ## Pair với knowledge (bắt buộc đọc)
 
-- `knowledge/cross-cutting/shared-library/sdk-mindset.md` — ADR SDK-001..006
-- `knowledge/cross-cutting/shared-library/pattern-catalog.md` — pattern canonical
-- `knowledge/cross-cutting/shared-library/layered-architecture.md` — 5-layer model
-- `knowledge/cross-cutting/shared-library/brainstorm-process.md` — Phase 0 10-step
-- `knowledge/cross-cutting/shared-library/testing-kit-rules.md` — TestingKit mandatory
-- `knowledge/cross-cutting/shared-library/essentials.md` — rule checklist
+- `knowledge/coding-sdk/sdk-mindset.md [KB → team/arch-coding-sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006
+- `knowledge/coding-sdk/pattern-catalog.md [KB → team/arch-coding-sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical
+- `knowledge/coding-sdk/layered-architecture.md [KB → team/arch-coding-sdk, kb_search "coding sdk layered architecture"]` — 5-layer model
+- `knowledge/coding-sdk/brainstorm-process.md [KB → team/arch-coding-sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 10-step
+- `knowledge/coding-sdk/testing-kit-rules.md [KB → team/arch-coding-sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
+- `knowledge/coding-sdk/essentials.md [KB → team/arch-coding-sdk, kb_search "coding sdk essentials"]` — rule checklist

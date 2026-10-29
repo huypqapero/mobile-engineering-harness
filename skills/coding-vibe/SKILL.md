@@ -122,7 +122,7 @@ Route theo mode:
 - Files touched match scout plan (deviation → log + continue, không block)
 - Không violate layer boundary (domain không import Android/Firebase)
 
-Fail → `coding-diagnose --mode bug` loop (max 3 attempts, pattern từ `knowledge/meta/auto-fix/essentials.md`).
+Fail → `coding-diagnose --mode bug` loop (max 3 attempts, pattern từ `knowledge/meta/auto-fix/essentials.md [KB → team/arch-meta-auto-fix, kb_search "auto fix essentials"]`).
 
 ### Stage 5 — Test
 
