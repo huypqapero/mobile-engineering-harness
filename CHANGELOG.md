@@ -4,7 +4,49 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
-## [0.21.0] — 2026-10-19
+## [0.22.0] — 2026-11-06
+
+Bản này gộp luôn [0.21.0], vì 0.21.0 chưa từng được tag hay release riêng.
+
+### Added — UI verification skills
+
+- **`ui-diff`**: so sánh UI theo mode. Mode `video-to-figma` lấy danh sách màn từ Figma trước, sau đó tách frame từ video bằng ffmpeg, ghép từng cặp màn [actual|expected] và chấm điểm từng cặp.
+- **`ui-diff-review`**: nhận xét diff, tự chấm `match_score` 0-100 theo rubric và trả verdict pass/fail theo ngưỡng. Pass 2 crop/zoom từng component và đo màu vùng (`sample_region.py`). Kết quả ghi vào `result.json`.
+- **`ui-fix-loop`**: vòng lặp chỉ ra bug UI → fix → render lại → compare lại, tối đa 3 vòng cho mỗi bug và chạy được nhiều bug song song. Có registry lưu link Figma, spec, source và preview FQN.
+- **`compare-ui-board`**: ghép ≥ 2 ảnh UI vào một canvas có nhãn để so trực tiếp, xuất findings JSON.
+- **`testing-preview`**: gate render Compose `@Preview` headless qua Android CLI rồi so với design/spec. Module có product flavor dùng `":app@<flavorBuildType>"`.
+
+### Added — Feature Store, SDK library và KB tooling
+
+- **Feature Store framework**: agent `feature-store-architect`, workflow `agents/workflows/feature-store-flow.md` (12 stage, greenfield + extract).
+- **SDK library pipeline**: agent `library-architect` (agent thứ 15), workflow `agents/workflows/library-flow.md` (10 stage), Phase 0 brainstorm gate.
+- **KB migration scripts**: `scripts/migrate-knowledge-to-kb.py`, `update-knowledge-refs.py`, `rename-kb-scope.py`, `rename-kb-scope-nested.py`.
+- **`docs/knowledge-base-ops.md`**: hướng dẫn cài đặt, scope convention, workflow push/fetch/conflict.
+- **`coding-database`**: thêm guide key-value storage, mặc định dùng Room. `coding-compose`, `coding-feature` và `coding-vibe` có thêm gate `testing-preview` tùy chọn.
+
+### Changed — Skill gộp thành dispatcher theo mode
+
+| Cũ | Mới |
+|---|---|
+| `bugfix`, `bug-triage` | `/bug --mode fix\|triage` (+ `--parallel` cho batch bug, có evidence schema + `validate_evidence.py`) |
+| `parallel-features` | `/feature --parallel` |
+| `library-new`, `library-extract` | `/library --mode new\|extract` |
+| `feature-store-new`, `feature-store-extract` | `/feature-store --mode new\|extract` |
+
+`AGENTS.md`, `CLAUDE.md`, `agents/*` và `skills/release` đã được cập nhật routing theo bảng trên.
+
+### Changed — Knowledge chuyển sang KB MCP
+
+- Đã bỏ `knowledge/`, `constitution/` và `briefs/` khỏi repo. Nội dung chuyển sang repo team-knowledge, agent đọc khi chạy qua MCP `team-knowledge` + `basic-memory`.
+- Các reference trong agent/skill dùng locator `[KB → <scope>, kb_search "<query>"]`, scope phân 2 cấp (`develop/…`, `product/…`, `testing/…`).
+- Knowledge chia 2 tầng: 7 category × 18 domain.
+
+### Breaking changes
+
+- Các skill `bugfix`, `bug-triage`, `parallel-features`, `library-new`, `library-extract`, `feature-store-new`, `feature-store-extract` đã bị xóa. Hãy dùng dispatcher mới theo bảng ở trên.
+- Đường dẫn `knowledge/…` cục bộ không còn. Consumer phải cấu hình MCP `team-knowledge` (xem `docs/knowledge-base-ops.md`).
+
+## [0.21.0] — 2026-10-19 (chưa release riêng, nằm trong 0.22.0)
 
 ### Added — Software-factory agent model (14 agent, 5 workflow routing)
 
