@@ -148,8 +148,8 @@ Sau 7 ngày stable → ingest lesson qua `lesson-miner`.
 ## Pair với skill khác
 
 - `feature` — khi feature chưa qua Stage 8, skill `release` sẽ reject
-- `bugfix` — hotfix flow kick off bugfix, rồi gọi `release` cho hotfix version
-- `bug-triage` — khi release gate phát hiện bug critical cuối phút
+- `bug --mode fix` — hotfix flow kick off bugfix, rồi gọi `release` cho hotfix version
+- `bug --mode triage` — khi release gate phát hiện bug critical cuối phút
 
 ## Khi NÀO không dùng skill này
 
@@ -164,7 +164,7 @@ Nếu post-release trigger rollback:
 1. PM thông báo stakeholder
 2. Tech Lead revert deploy (store console hoặc feature flag kill switch)
 3. Open P0 bug với evidence (crash log + metric chart)
-4. Chạy `bug-triage` để classify
+4. Chạy `bug --mode triage` để classify
 5. Fix → chạy `release` cho hotfix version
 
 Nếu 2+ feature trong bundle fail → consider revert toàn bundle, chuyển sequential sprint sau.

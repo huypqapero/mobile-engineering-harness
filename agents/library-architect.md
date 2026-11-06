@@ -517,8 +517,8 @@ Khi lib ship version mới:
 
 ## Pair với skills
 
-- `/library-new` — greenfield wrapper
-- `/library-extract` — extract wrapper
+- `/library --mode new` — greenfield wrapper
+- `/library --mode extract` — extract wrapper
 - `coding-scout` — map coupling trước extract
 - `coding-review` — code quality song song với API review
 

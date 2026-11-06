@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bugfix batch — per-issue evidence",
+  "description": "Một file evidence.json cho mỗi Jira issue tại plans/bugfix-batch-<id>/evidence/<ISSUE>/evidence.json. Validator skills/bug/scripts/validate_evidence.py kiểm cơ học: artifact tồn tại thật, verdict set, mỗi AC có evidence file có thật, commit khớp manifest.base_commit.",
+  "type": "object",
+  "required": ["issue", "commit", "verdict", "verification", "artifacts", "acceptance_criteria"],
+  "additionalProperties": true,
+  "properties": {
+    "issue": {
+      "type": "string",
+      "description": "Jira issue key, vd BUG-101."
+    },
+    "commit": {
+      "type": "string",
+      "description": "Git commit evidence sinh ra — PHẢI khớp manifest.base_commit của batch."
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "NEEDS_VERIFICATION"],
+      "description": "Kết quả verify issue. Chỉ PASS mới cho qua Completion gate."
+    },
+    "bug_type": {
+      "type": "string",
+      "enum": ["ui", "logic", "navigation", "crash", "ads", "animation"],
+      "description": "Loại bug — quyết định verification bắt buộc theo Verify matrix."
+    },
+    "verification": {
+      "type": "object",
+      "description": "Trạng thái từng loại check đã chạy. Key tùy loại bug; value PASS|FAIL|SKIP.",
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["PASS", "FAIL", "SKIP"]
+      }
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "platform": { "type": "string" },
+        "device": { "type": "string" },
+        "build_variant": { "type": "string" }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "description": "Đường dẫn artifact TƯƠNG ĐỐI so với thư mục evidence/<ISSUE>/. Validator check từng file tồn tại thật.",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "description": "Mỗi AC của issue phải có result + evidence trỏ 1 file trong artifacts.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "result", "evidence"],
+        "properties": {
+          "id": { "type": "string" },
+          "result": {
+            "type": "string",
+            "enum": ["PASS", "FAIL", "NEEDS_VERIFICATION"]
+          },
+          "evidence": {
+            "type": "string",
+            "description": "Tên artifact (phải nằm trong artifacts và tồn tại thật)."
+          }
+        }
+      }
+    }
+  }
+}

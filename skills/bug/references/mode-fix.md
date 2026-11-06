@@ -1,19 +1,8 @@
----
-name: bugfix
-description: Kick off bugfix-fast-path pipeline. Tech Lead triage check 4 fast-path conditions, route sang fast-path (3 stage, 1-4h) / mini-plan (4 stage) / full-flow (fallback) tùy scope. Dành cho bug report từ user, QA, monitoring, lesson-miner.
-priority: P0
----
+# bug — `--mode fix` (default)
 
-# Skill: bugfix
+Kick off bugfix-fast-path pipeline. Tech Lead triage check 4 fast-path conditions, route fast-path (3 stage, 1-4h) / mini-plan (4 stage) / full-flow (fallback). Dành cho bug mới chưa classify, mặc định thử fast-path trước.
 
-Thin wrapper invoke bugfix pipeline qua Tech Lead triage + `bugfix-fast-path` workflow.
-
-## Trigger
-
-- "Fix bug X" / "Fix crash Y" / "Fix lỗi Z"
-- "Sửa bug X" / "Khắc phục crash Y"
-- Bug report có evidence (repro steps + log/screenshot)
-- Hotfix request
+> Dùng mode này khi: bug mới có evidence, chưa biết loại. Nếu đã biết là design/spec bug, hoặc fast-path đã fail cần re-classify → `--mode triage` (xem `mode-triage.md`).
 
 ## Inputs
 
@@ -108,8 +97,23 @@ Task verify:
 Verdict:
 - PASS → close bug, update lesson-miner feed
 - FAIL (retry < 3) → loop lại Coder
-- FAIL (retry = 3) → auto-escalate Tech Lead (có thể design bug ẩn, chuyển bug-triage.md)
+- FAIL (retry = 3) → auto-escalate Tech Lead (có thể design bug ẩn, chuyển `--mode triage`)
 ```
+
+### Verify matrix (route theo loại bug)
+
+Dùng chung cho cả single `fix` và `fix --parallel`. QA chọn verification + evidence **theo bản chất bug** (Tech Lead gán `bug_type` ở Step 1), không dùng 1 cách verify cho mọi loại:
+
+| `bug_type` | Verification bắt buộc | Evidence | Công cụ |
+|---|---|---|---|
+| `ui` | Render + đối chiếu design gốc | screenshot / PNG | `/testing-preview` (skip nếu thiếu `android` CLI / design ref) |
+| `logic` | Unit + regression test (happy + ≥1 edge) PASS | test report | `./gradlew :<module>:test` |
+| `navigation` | E2E user journey | E2E report + screenshot | ARTEMIS (`artemis-android`) |
+| `crash` / ANR | Reproduction/regression + log analysis | test report + logcat | ARTEMIS + `adb logcat` |
+| `ads` | Test lifecycle + callback (sandbox scenario) | E2E + log + screenshot | ARTEMIS |
+| `animation` | UI validation qua thời gian | video / chuỗi frame | ARTEMIS `mobile_take_screenshot` loop |
+
+Bug lai (vd UI + logic) → chạy cả hai hàng. Verify FAIL → loop Coder (single: max 3; parallel lane: max 2) → escalate triage.
 
 ### Step 4 — Close + record
 
@@ -123,13 +127,6 @@ Verdict:
 - [ ] Branch bugfix riêng (hoặc hotfix branch)
 - [ ] Có thể reproduce được local hoặc dev build
 
-## Pair với skill khác
-
-- `feature` — khi scope không fit fast-path/mini-plan
-- `bug-triage` — nếu đã biết là design bug hoặc spec bug, skip fast-path check
-- `coding-diagnose` — low-level root cause analysis
-- `coding-review` — review diff bugfix trước commit
-
 ## Timing guide
 
 | Pipeline | Agent | Typical time |
@@ -138,8 +135,9 @@ Verdict:
 | Mini-plan (2-3 files) | + architect | 4-8h |
 | Full-flow (invoke `feature`) | 7+ agent | days |
 
-## Khi NÀO không dùng skill này
+## Khi NÀO không dùng mode này
 
-- Feature mới không phải fix → dùng `feature`
+- Feature mới không phải fix → dùng `/feature`
 - Chỉ triage không fix → dùng tech-lead agent standalone
+- Đã biết design/spec bug → `--mode triage`
 - Spec gap → chuyển product-analyst update PRD trước

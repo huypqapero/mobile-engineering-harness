@@ -1,66 +1,24 @@
----
-name: feature-store-new
-description: Tạo Feature Store artifact mới (KMP/Android library có UI + business flow, 2-module topology core + ui, Runtime Config pattern cho adapter). Trigger khi user yêu cầu "tạo feature store X dùng chung cho A/B/C", "design kit UI/flow dùng chung nhiều app" (paywall, chatbot, onboarding, kyc). Spawn feature-store-architect agent dẫn pipeline FS-mindset-first (Phase 0 Brainstorm → Capability Contract → API + Theme + Flow → 2-module layout → testFixtures → Publish).
-priority: P1
----
+# feature-store — `--mode new`
 
-# Skill: feature-store-new
+Greenfield: tạo Feature Store artifact (có UI + flow, 2-module `:core` + `:ui`) mới từ zero, FS-mindset-first.
 
-## Trigger
+> Prerequisites (FS knowledge set) + common inputs: xem `../SKILL.md`. Đọc đủ trước khi start, skip → bias feature-first drift, mất 4 guarantee FS.
 
-- "Tạo feature store X dùng chung cho A/B/C"
-- "Design kit UI dùng chung nhiều app" (paywall, chatbot, onboarding, KYC, review-prompt)
-- "Build shared flow Y publish Maven cho N consumer"
-- "Design khung feature-store để tôi review"
+## Inputs (mode-specific)
 
-**Không trigger khi**:
-- **Không có UI** (headless infrastructure, API facade) → dùng `/library-new` (SDK pure)
-- **Không có business flow** (chỉ UI component thuần) → dùng shared-ui-component (hiếm, considerconsider SDK UI lib)
-- **< 5 consumer** (real + straw-man) → BLOCKED, downgrade feature thường trong app
-- Chỉ 1 app ("sẽ có app thứ 2 sau") → BLOCKED, giữ trong app presenter
-- Extract code từ product → dùng `/feature-store-extract` (TBD)
-
-## Inputs
-
-Bắt buộc:
 - Tên FS (artifact id, kebab-case, không chứa tên product)
 - Danh sách consumer: ≥ 2 real + straw-man persona lấp đủ ≥ 5 total
-- Responsibility 1 câu (không "và")
 - Capability sơ bộ: D?, U?, F?, S?, E?, L? (dùng decision tree `capability-contract.md §FS-CAP-002`)
-- Platform scope: KMP common / androidMain / cần iosMain?
-- **Design system consumer**: chung Material 3 hay mỗi app brand khác? (ảnh hưởng Theme Contract scope)
-- **Backend consumer**: chung backend hay mix (Firebase, REST, GraphQL)? (ảnh hưởng D1/D2/D3)
 - Publishing target: Maven Central / internal Nexus / GitHub Packages
-
-Optional:
-- Design reference nếu FS có API shape mong muốn
-- Deadline
-- Steward (owner FS dài hạn)
-
-## Prerequisites
-
-Đọc trước khi start (bắt buộc đầy đủ, không skim):
-
-1. `knowledge/coding-feature-store/mindset.md [KB → develop/feature-store, kb_search "coding feature store mindset"]` — ADR FS-001..007, foundation
-2. `knowledge/coding-feature-store/capability-contract.md [KB → develop/feature-store, kb_search "coding feature store capability contract"]` — 6-trục YAML + decision tree
-3. `knowledge/coding-feature-store/module-topology.md [KB → develop/feature-store, kb_search "coding feature store module topology"]` — 2-module template
-4. `knowledge/coding-feature-store/data-port-runtime-config.md [KB → develop/feature-store, kb_search "coding feature store data port runtime config"]` — Runtime Config pattern + compileOnly + classpath guard
-5. `knowledge/coding-feature-store/theme-adapter.md [KB → develop/feature-store, kb_search "coding feature store theme adapter"]` — Theme Contract (nếu U ≥ U1)
-6. `knowledge/coding-feature-store/testing-kit.md [KB → develop/feature-store, kb_search "coding feature store testing kit"]` — testFixtures mandatory
-7. `knowledge/coding-feature-store/essentials.md [KB → develop/feature-store, kb_search "coding feature store essentials"]` — checklist rule cứng
-8. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` — rule BCV/deprecation chung
-9. `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0 (dùng chung)
-10. `agents/feature-store-architect.md` — role mindset
-
-Skip prerequisite → bias feature-first drift, mất 4 guarantee FS.
+- (Optional) Design reference nếu FS có API shape mong muốn
 
 ## Execution procedure
 
 ### Step 0 — Scope lock
 
 Verify 3 câu hỏi trước khi spawn agent:
-1. FS có UI Compose không? → nếu không, dùng `/library-new` thay vì skill này
-2. Có business flow / state nghiệp vụ không? → nếu không, considerconsider shared-ui-component
+1. FS có UI Compose không? → nếu không, dùng `/library` thay vì skill này
+2. Có business flow / state nghiệp vụ không? → nếu không, consider shared-ui-component
 3. ≥ 5 consumer (real + straw-man) không? → nếu không, BLOCKED, downgrade feature thường
 
 Trả lời bất kỳ "không" → **STOP**, báo user chọn skill phù hợp.
@@ -231,12 +189,12 @@ Spawn `feature-store-architect` subagent với prompt:
 
 ```
 Role: feature-store-architect
-Task: /feature-store-new cho <fs-name>
+Task: /feature-store --mode new cho <fs-name>
 Working directory: <absolute path>
 Inputs: <đầy đủ từ user>
 Load knowledge:
 - knowledge/coding-feature-store/*
-- knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"] + brainstorm-process.md + essentials.md
+- knowledge/coding-sdk/sdk-mindset.md + brainstorm-process.md + essentials.md
 Rules: ~/.claude/rules/development-rules.md + review-audit-self-decision.md
 Report path: plans/reports/
 Plan dir: plans/<date>-<slug>/
@@ -289,7 +247,7 @@ Cuối pipeline, tạo `plans/reports/feature-store-new-<date>-<slug>.md`:
 
 ## Rules
 
-- Luôn chạy Scope lock Stage 0 trước spawn agent. Fail → block.
+- Luôn chạy Scope lock Step 0 trước spawn agent. Fail → block.
 - Luôn chạy Phase 0 Brainstorm trước Capability Contract.
 - Luôn verify 2-module topology, không chấp nhận 3+ module trừ RFC đặc biệt.
 - Luôn verify `compileOnly` adapter deps.
@@ -297,9 +255,6 @@ Cuối pipeline, tạo `plans/reports/feature-store-new-<date>-<slug>.md`:
 - testFixtures mandatory trước release 1.0.
 - Breaking change `:core` yêu cầu RFC + sign-off ≥ 3/5.
 
-## Reference
+## Overlay gate
 
-- Agent: `agents/feature-store-architect.md`
-- Knowledge: `knowledge/coding-feature-store/` (6 file)
-- Shared SDK knowledge: `knowledge/coding-sdk/` (BCV, brainstorm process, essentials chung)
-- Sibling skill: `skills/library-new/SKILL.md` (SDK pure infra, không UI)
+FS ở repo riêng, tự quản gradle/package — không phụ thuộc overlay của consumer product.

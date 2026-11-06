@@ -61,14 +61,15 @@ Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cac
 | Task | Skill |
 |---|---|
 | Implement feature mới end-to-end (BA → PM → Designer → Tech Lead → Architect → Coder → QA → Release) | `feature` |
-| Fix bug với fast-path triage (4 cond → fast/mini/full-flow) | `bugfix` |
-| Classify bug không rõ loại (code/design/spec), max 3 retry rồi escalate PM | `bug-triage` |
+| Fix bug với fast-path triage (4 cond → fast/mini/full-flow) | `bug --mode fix` |
+| Classify bug không rõ loại (code/design/spec), max 3 retry rồi escalate PM | `bug --mode triage` |
+| Fix batch N bug từ Jira/JQL song song (cluster theo root cause + scout 1 lần + lane song song + evidence validator + resume) | `bug --mode fix --parallel` |
 | Release co-sign Tech Lead + PM (14 tech + 12 business checklist) | `release` |
-| Chạy N feature song song cùng sprint (isolation check + shared file aggregation) | `parallel-features` |
-| Tạo KMP/Android lib mới ở repo riêng + publish artifact (SDK pure headless, ≥ 5 consumer) | `library-new` |
-| Tách code product thành lib riêng + migrate source product | `library-extract` |
-| Tạo Feature Store artifact (có UI + flow, 2-module core + ui, ≥ 5 consumer) — paywall, chatbot, onboarding, KYC | `feature-store-new` |
-| Tách feature đã có trong product → Feature Store riêng (scout 5 coupling → lift-and-shift / clean-slate → migrate source) | `feature-store-extract` |
+| Chạy N feature song song cùng sprint (isolation check + shared file aggregation) | `feature --parallel` |
+| Tạo KMP/Android lib mới ở repo riêng + publish artifact (SDK pure headless, ≥ 5 consumer) | `library --mode new` |
+| Tách code product thành lib riêng + migrate source product | `library --mode extract` |
+| Tạo Feature Store artifact (có UI + flow, 2-module core + ui, ≥ 5 consumer) — paywall, chatbot, onboarding, KYC | `feature-store --mode new` |
+| Tách feature đã có trong product → Feature Store riêng (scout 5 coupling → lift-and-shift / clean-slate → migrate source) | `feature-store --mode extract` |
 
 ### Component-level task
 
@@ -98,6 +99,7 @@ Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cac
 | Performance profile + optimize startup/UI/memory/network | `coding-diagnose --mode perf` |
 | Review PR, diff, module | `coding-review` |
 | Viết unit/UI/integration test | `testing-android` |
+| Verify UI headless: render Compose preview + đối chiếu design (optional UI gate) | `testing-preview` |
 | Orchestrate multi-agent / parallel feature build | `coding-orchestrator` |
 | Scout codebase — tìm file/caller/blast radius trước khi touch | `coding-scout` |
 | Brainstorm trade-off trước implementation (lock outcome contract) | `coding-brainstorm` |
@@ -220,11 +222,9 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `knowledge/testing/e2e-runtime/interruption-patterns.md [KB → testing/e2e-runtime, kb_search "e2e runtime interruption patterns"]` — ad/permission/dialog auto-dismiss
 - `knowledge/testing/e2e-runtime/runner-neutral-step.md [KB → testing/e2e-runtime, kb_search "e2e runtime runner neutral step"]` — step file design rationale
 - `knowledge/design/visual-compare/figma-vs-screenshot.md [KB → product/design-compare, kb_search "visual compare figma vs screenshot"]` — perceptual hash + SSIM thresholds
-- `skills/feature/SKILL.md` — **P0** entry: feature-full-flow pipeline wrapper (BA → PM → Designer → Tech Lead → Architect → Coder → QA → Release)
-- `skills/bugfix/SKILL.md` — **P0** entry: bugfix-fast-path triage + fast/mini/full routing
-- `skills/bug-triage/SKILL.md` — bug classify code/design/spec, max 3 retry
+- `skills/feature/SKILL.md` — **P0** entry: feature delivery, dispatcher theo scope. single (default) = feature-full-flow pipeline wrapper (BA → PM → Designer → Tech Lead → Architect → Coder → QA → Release); `--parallel` = N feature song song + isolation check + shared file aggregation
+- `skills/bug/SKILL.md` — **P0** entry: xử lý bug, dispatcher `--mode fix|triage` (+ cờ `--parallel`). fix (default) = bugfix-fast-path triage + fast/mini/full routing; `fix --parallel` = batch N bug (Jira/list) → cluster root cause → scout 1 lần/batch → lane song song giữa cluster (tuần tự trong cluster, auto-fix cap 2) → verify matrix per-issue → evidence validator deterministic (`scripts/validate_evidence.py`) → state `plans/bugfix-batch-<id>/` resume được; triage = classify code/design/spec, max 3 retry
 - `skills/release/SKILL.md` — **P0** entry: release-gate co-sign Tech Lead + PM
-- `skills/parallel-features/SKILL.md` — parallel N feature + isolation check + shared file aggregation
 - `skills/business-prepare-feature/SKILL.md` — orchestrator input layer
 - `skills/business-fetch/SKILL.md` — MCP adapter Confluence/Figma (dispatcher `--source`)
 - `skills/business-analyze/SKILL.md` — spec/design/reconcile dispatcher (`--phase`)
@@ -239,16 +239,15 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `skills/coding-diagnose/SKILL.md` — bug/perf dispatcher (`--mode`)
 - `skills/coding-review/SKILL.md`
 - `skills/testing-android/SKILL.md`
+- `skills/testing-preview/SKILL.md` — optional UI verification gate: render Compose `@Preview` headless qua `android` CLI → PNG + component-tree → đối chiếu design/spec. Vai verify (không authoring). Cần `android` standalone CLI + Python 3.10+. Không certify E2E/runtime.
 - `skills/coding-orchestrator/SKILL.md`
 - `skills/coding-scout/SKILL.md` — fast codebase discovery (read-only)
 - `skills/coding-brainstorm/SKILL.md` — trade-off + outcome lock gate
 - `skills/coding-vibe/SKILL.md` — end-to-end pipeline (brainstorm→scout→implement→test→review→ship)
 - `skills/harness-handoff/SKILL.md` — session continuation contract (markdown)
 - `skills/harness-maintenance/SKILL.md` — Guardian procedure (meta)
-- `skills/library-new/SKILL.md` — greenfield KMP/Android lib repo riêng + publish artifact (SDK pure headless, trigger ≥ 5 consumer, contract-first)
-- `skills/library-extract/SKILL.md` — tách code product thành lib riêng (scout coupling → lift-and-shift vs clean-slate → extract + migrate source)
-- `skills/feature-store-new/SKILL.md` — tạo Feature Store artifact (có UI + flow, 2-module core + ui, Runtime Config pattern cho adapter, Theme Contract mandatory, testFixtures via java-test-fixtures)
-- `skills/feature-store-extract/SKILL.md` — tách feature đã tồn tại trong product thành Feature Store (scout 5 coupling: UI theme, flow, data, resource, dep → strategy lift-and-shift vs clean-slate → extract + migrate source product)
+- `skills/library/SKILL.md` — KMP/Android lib repo riêng + publish artifact (SDK pure headless, không UI). Dispatcher `--mode new|extract`: new = greenfield contract-first (≥ 5 consumer); extract = tách code product (scout coupling → lift-and-shift vs clean-slate → migrate source)
+- `skills/feature-store/SKILL.md` — Feature Store artifact (có UI + flow, 2-module core + ui, Runtime Config pattern cho adapter, Theme Contract mandatory, testFixtures via java-test-fixtures). Dispatcher `--mode new|extract`: new = greenfield; extract = tách feature product (scout 5 coupling: UI theme, flow, data, resource, dep → lift-and-shift vs clean-slate → migrate source)
 - `blueprints/reference-feature/README.md`
 - `blueprints/network-service/README.md`
 - `blueprints/compose-screen/README.md`

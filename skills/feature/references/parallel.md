@@ -1,19 +1,8 @@
----
-name: parallel-features
-description: Kick off parallel-features workflow khi N feature độc lập cần ship cùng sprint. Tech Lead check feasibility, Architect decompose + isolation-check, Orchestrator spawn N × (Coder + Reviewer + QA) song song, aggregate shared files sequential, release bundle gate.
-priority: P1
----
+# feature — `--parallel`
 
-# Skill: parallel-features
+Kick off parallel execution khi N feature độc lập cần ship cùng sprint (deadline hard + scope frozen + team capacity). Tech Lead check feasibility, Architect decompose + isolation-check, Orchestrator spawn N × (Coder + Reviewer + QA) song song, aggregate shared files sequential, release bundle gate.
 
-Thin wrapper invoke parallel execution khi deadline hard + scope frozen + có team capacity.
-
-## Trigger
-
-- "Chạy parallel feature X, Y, Z"
-- "Ship cả 3 feature này cùng sprint"
-- PM thấy deadline conflict không thể cắt scope, cần N feature cùng lúc
-- Có backlog N feature đã qua Stage 1-6 độc lập
+> Dùng khi ≥ 2 feature đã qua Stage 1-6 độc lập. 1 feature → bỏ `--parallel` (xem `single.md`). Rule of thumb: parallel chỉ worth khi N ≥ 3 và SAFE; N = 2 thường sequential rẻ hơn.
 
 ## Inputs
 
@@ -58,7 +47,7 @@ Verdict: APPROVE_PARALLEL | REJECT (go sequential)
 Output: plans/reports/parallel-feasibility-{{sprint}}.md
 ```
 
-Nếu REJECT → surface user, suggest chuyển `feature` cho từng feature sequential.
+Nếu REJECT → surface user, suggest chạy `/feature` (single) cho từng feature sequential.
 
 ### Step 2 — Architect spec decomposition
 
@@ -76,7 +65,7 @@ Task:
    - shared_files per feature (DI module, NavHost, strings.xml, AnalyticsEvent)
    - cross_dep per feature
 
-Verification: 
+Verification:
 - Nếu 2 feature share owned_package → UNSAFE, chuyển sequential cho cặp đó
 - Nếu cross_dep ≠ none → sequential cho chain
 - SAFE combination → ready for parallel spawn
@@ -140,7 +129,7 @@ Task:
 
 Verdict:
 - PASS → GOTO Release Gate
-- FAIL per feature → bug-triage, có thể rollback feature đó độc lập
+- FAIL per feature → /bug --mode triage, có thể rollback feature đó độc lập
 - FAIL integration → merge issue, raise Tech Lead
 ```
 
@@ -200,16 +189,9 @@ Khi 1 feature trong bundle fail Stage 5:
 
 Nếu 2+ feature fail → consider revert toàn bundle, chuyển sequential.
 
-## Pair với skill khác
+## Khi NÀO không dùng mode này
 
-- `feature` — khi feature chưa qua Stage 1-6, chạy từng feature trước
-- `release` — bundle release gate cuối
-- `bug-triage` — khi QA Stage 5 integration fail
-- `worktree` — low-level git worktree management (nếu có skill global)
-
-## Khi NÀO không dùng skill này
-
-- N = 1 feature → dùng `feature`
-- Features chưa plan → dùng `feature` cho từng feature trước
+- N = 1 feature → bỏ `--parallel` (single)
+- Features chưa plan → chạy `/feature` (single) cho từng feature trước
 - Features có cross-dep heavy → sequential thường rẻ hơn + ít rủi ro
 - Deadline flexible → không cần parallel

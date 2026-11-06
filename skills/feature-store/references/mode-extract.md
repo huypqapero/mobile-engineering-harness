@@ -1,56 +1,15 @@
----
-name: feature-store-extract
-description: Tách feature đã tồn tại trong 1 product (có UI + flow + business logic) thành Feature Store artifact riêng, 2-module topology (core + ui), publish ở repo riêng cho ≥ 5 consumer. Trigger khi feature đã ổn định ≥ 6 tháng ở 1 product repo và cần dùng chung ở ≥ 2 product khác. Scout coupling (UI theme, flow, data, resource) → chọn strategy lift-and-shift vs clean-slate → extract + migrate source product.
-priority: P1
----
+# feature-store — `--mode extract`
 
-# Skill: feature-store-extract
+Tách feature đã tồn tại trong 1 product (có UI + flow + logic) thành Feature Store artifact (2-module `:core` + `:ui`) riêng + migrate source product.
 
-## Trigger
+> Prerequisites (FS knowledge set) + common inputs: xem `../SKILL.md`. Mode này thêm `agents/workflows/feature-store-flow.md` (12 stage) + `skills/coding-scout/SKILL.md`. Skip prerequisite → bias feature-first drift, mất 4 guarantee FS.
 
-- "Tách feature Y ở product A thành feature store riêng"
-- "Product B/C/D cần dùng lại UI + flow của feature Y, extract thành shared"
-- "Move <feature-with-UI-and-flow> sang shared feature store"
+## Inputs (mode-specific)
 
-**Không trigger khi**:
-- Feature **không có UI** (headless, chỉ data/logic) → dùng `/library-extract` (SDK pure)
-- Feature **không có business flow** (chỉ UI component thuần) → consider shared-ui-component
-- Chỉ 1 consumer sử dụng → giữ ở product
-- Boundary feature chưa ổn định (< 6 tháng, UI/flow đang bay) → chờ settle
-- Feature tạo mới chưa có code trong product → dùng `/feature-store-new`
-
-## Inputs
-
-Bắt buộc:
 - Product repo nguồn + path feature sẽ extract (ví dụ `product-a/presenter/paywall/`)
 - Danh sách ≥ 2 consumer thật cam kết migrate + lấp đủ ≥ 5 total với straw-man
 - Lý do extract (business + technical)
 - Target repo FS (đã có hay cần tạo mới)
-- **Design system diversity**: consumer đã dùng Material 3 chung hay mỗi app brand khác? (ảnh hưởng Theme Contract scope)
-- **Backend diversity**: consumer chung backend với source product hay backend khác? (ảnh hưởng D1/D2/D3)
-
-Optional:
-- Deadline migration source product
-- Steward FS dài hạn
-
-## Prerequisites
-
-Đọc trước khi start (FS knowledge set — bắt buộc đầy đủ, không skim):
-
-1. `knowledge/coding-feature-store/mindset.md [KB → develop/feature-store, kb_search "coding feature store mindset"]` — ADR FS-001..007
-2. `knowledge/coding-feature-store/capability-contract.md [KB → develop/feature-store, kb_search "coding feature store capability contract"]` — 6-trục + decision tree
-3. `knowledge/coding-feature-store/module-topology.md [KB → develop/feature-store, kb_search "coding feature store module topology"]` — 2-module template (classify code hiện tại fit layer nào)
-4. `knowledge/coding-feature-store/data-port-runtime-config.md [KB → develop/feature-store, kb_search "coding feature store data port runtime config"]` — Runtime Config pattern (identify adapter candidate)
-5. `knowledge/coding-feature-store/theme-adapter.md [KB → develop/feature-store, kb_search "coding feature store theme adapter"]` — Theme Contract (identify UI theme coupling cần chuyển)
-6. `knowledge/coding-feature-store/testing-kit.md [KB → develop/feature-store, kb_search "coding feature store testing kit"]` — testFixtures
-7. `knowledge/coding-feature-store/essentials.md [KB → develop/feature-store, kb_search "coding feature store essentials"]`
-8. `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 nếu clean-slate
-9. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` — rule BCV chung
-10. `agents/feature-store-architect.md` — role lead
-11. `agents/workflows/feature-store-flow.md` — pipeline 12 stage
-12. `skills/coding-scout/SKILL.md` — dùng cho map coupling
-
-Skip prerequisite → bias feature-first drift, mất 4 guarantee FS.
 
 ## Execution procedure
 
@@ -58,7 +17,7 @@ Skip prerequisite → bias feature-first drift, mất 4 guarantee FS.
 
 Verify 6 gate:
 
-1. **FS có UI Compose consumer dùng được không?** Nếu không → downgrade dùng `/library-extract`
+1. **FS có UI Compose consumer dùng được không?** Nếu không → downgrade dùng `/library`
 2. **Có business flow / state nghiệp vụ không?** Nếu không → consider shared-ui-component
 3. **≥ 5 consumer** (real + straw-man) cho **clean-slate mode**, hoặc **≥ 2 real consumer** cho **lift-and-shift mode** với justification scope hẹp
 4. Boundary feature ổn định ≥ 6 tháng (UI pattern không bay, flow stable, không có refactor lớn gần đây)
@@ -145,7 +104,7 @@ Lift-and-shift chọn → chấp nhận FS không có Theme Contract đầy đ�
 
 ### Step 4 — Phase 0 Brainstorm (chỉ clean-slate)
 
-Spawn `feature-store-architect` chạy Phase 0 đầy đủ như `/feature-store-new` Step 1:
+Spawn `feature-store-architect` chạy Phase 0 đầy đủ như `--mode new` Step 1 (xem `mode-new.md`):
 
 1-10. Full 10-step + 2 FS extend (backend-diversity + design-system-diversity audit)
 
@@ -291,7 +250,7 @@ Spawn `feature-store-architect` subagent với prompt:
 
 ```
 Role: feature-store-architect (extract mode)
-Task: /feature-store-extract từ <source-product-path> → <fs-name>
+Task: /feature-store --mode extract từ <source-product-path> → <fs-name>
 Working directory: <absolute path>
 Inputs:
   - Source product repo: <path>
@@ -302,7 +261,7 @@ Inputs:
   - Strategy preference: <lift-and-shift|clean-slate|auto-recommend>
 Load knowledge:
   - knowledge/coding-feature-store/* (7 file)
-  - knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"] + brainstorm-process.md + essentials.md
+  - knowledge/coding-sdk/sdk-mindset.md + brainstorm-process.md + essentials.md
 Rules: ~/.claude/rules/development-rules.md + review-audit-self-decision.md
 Report path: plans/reports/
 Plan dir: plans/<date>-<slug>/
@@ -384,11 +343,10 @@ Status: 0.1.0-alpha publish OK | source product migrated
 - testFixtures mandatory trước release 1.0.
 - Breaking change source product (hiếm) phải có migration guide + deadline.
 
-## Reference
+## Overlay gate
 
-- Agent: `agents/feature-store-architect.md`
-- Workflow pipeline: `agents/workflows/feature-store-flow.md` (12 stage)
-- Knowledge: `knowledge/coding-feature-store/` (7 file)
-- Shared SDK knowledge: `knowledge/coding-sdk/` (BCV, brainstorm, essentials chung)
-- Sibling skill: `skills/feature-store-new/SKILL.md` (greenfield)
-- Sibling skill: `skills/library-extract/SKILL.md` (SDK pure headless extract)
+Skill chạy ở **2 repo khác nhau**:
+- **Source product repo**: có `.harness-overlay/overlay.yaml` — Step 2 (scout) và Step 10 (migrate) đọc overlay như skill thường
+- **FS repo**: KHÔNG consume overlay — Step 7-9 không đọc placeholder, FS repo tự quản gradle/package
+
+Agent phải phân biệt rõ context "đang ở repo nào" khi execute step.

@@ -1,46 +1,15 @@
----
-name: library-extract
-description: Tách code đang tồn tại trong 1 product thành KMP/Android library riêng + publish artifact. Trigger khi ≥ 2 consumer thật cần dùng chung code đã ổn định ≥ 6 tháng ở 1 product repo. Scout coupling → chọn strategy lift-and-shift vs clean-slate → extract + migrate source product.
-priority: P1
----
+# library — `--mode extract`
 
-# Skill: library-extract
+Tách code đang tồn tại trong 1 product thành KMP/Android lib (SDK pure, không UI) riêng + migrate source product.
 
-## Trigger
+> Prerequisites (SDK knowledge set) + common inputs: xem `../SKILL.md`. Mode này thêm `skills/coding-scout/SKILL.md` cho map coupling. Skip prerequisite → bias feature-first drift.
 
-- "Tách module Y ở product A thành lib riêng"
-- "Product B/C/D cần dùng lại code từ product A, extract thành lib"
-- "Move <feature> sang shared library"
+## Inputs (mode-specific)
 
-**Không trigger khi**:
-- Chỉ 1 consumer sử dụng code đó → giữ ở product
-- Boundary code chưa ổn định (< 6 tháng, API đang bay) → chờ settle
-- Code tạo mới chưa có trong product → dùng `library-new`
-
-## Inputs
-
-Bắt buộc:
 - Product repo nguồn + path code sẽ extract (ví dụ `product-a/presenter/analytics/`)
 - Danh sách ≥ 2 consumer thật cam kết migrate
 - Lý do extract (business + technical)
 - Target repo lib (đã có hay cần tạo mới)
-
-Optional:
-- Deadline migration source product
-- Steward lib dài hạn
-
-## Prerequisites
-
-Đọc trước khi start (SDK knowledge set — bắt buộc đọc toàn bộ, không skim):
-1. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006
-2. `knowledge/coding-sdk/pattern-catalog.md [KB → develop/sdk, kb_search "coding sdk pattern catalog"]`
-3. `knowledge/coding-sdk/layered-architecture.md [KB → develop/sdk, kb_search "coding sdk layered architecture"]` — classify code hiện tại thuộc layer nào
-4. `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` — Phase 0 nếu clean-slate
-5. `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/sdk, kb_search "coding sdk testing kit rules"]` — TestingKit extract/write
-6. `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"]`
-7. `agents/library-architect.md`
-8. `agents/workflows/library-flow.md`
-9. `skills/coding-scout/SKILL.md` (dùng cho map coupling)
 
 ## Execution procedure
 
@@ -54,7 +23,7 @@ Verify 4 gate:
 
 Fail bất kỳ → BLOCKED, note lý do.
 
-### Step 2 — Scout coupling + Layer classification 🆕
+### Step 2 — Scout coupling + Layer classification
 
 Delegate `coding-scout` tại product repo nguồn. Scan:
 - Symbol phụ thuộc product-specific concept (tên feature, enum product)
@@ -78,7 +47,7 @@ Output: `plans/<date>-<slug>/scout-report.md` liệt kê:
 
 Spawn `library-architect`:
 
-**Clean-slate mode**: chạy **Phase 0 Brainstorm đầy đủ** như `library-new` Step 0:
+**Clean-slate mode**: chạy **Phase 0 Brainstorm đầy đủ** như `--mode new` Step 0 (xem `mode-new.md`):
 - `brainstorm.md` (10-step)
 - `use-case-matrix.md` (≥ 15 use case, 3-axis)
 - `straw-man-personas.md` (≥ 5 persona, lấp từ 2 real consumer)
@@ -125,7 +94,7 @@ Gate: không extract nếu source product không approve migration cost.
 
 ### Step 6 — Setup lib repo
 
-Nếu lib repo chưa tồn tại → delegate `coder` scaffold như trong `library-new` Step 4 (gradle setup, BCV, publish, CI).
+Nếu lib repo chưa tồn tại → delegate `coder` scaffold như `--mode new` Step 4 (gradle setup, BCV, publish, CI; xem `mode-new.md`).
 
 Nếu lib repo đã có → skip scaffold, chỉ add module mới.
 
@@ -147,7 +116,7 @@ Coder:
 #### Clean-slate
 
 1. `library-architect` + `architect` draft public API theo contract minimal + Layer Map 5-layer + SPI Contract
-2. **SPI Freeze** như `library-new` Step 2b (code chỉ interface + sealed, BCV commit)
+2. **SPI Freeze** như `--mode new` Step 2b (code chỉ interface + sealed, BCV commit)
 3. Coder impl lại từ đầu theo plan Architect, theo đúng 5-layer module split
 4. Reference code product chỉ để đọc, không copy
 5. Unit test viết mới per layer
@@ -201,22 +170,7 @@ Consumer migration: source product MIGRATED | PENDING; other consumers PENDING
 Publish: VERIFIED
 ```
 
-## Required policies
-
-- LIB-SCOPE-001..003 (boundary + flavor)
-- LIB-API-001..006 (minimality + BCV)
-- LIB-CONFIG-001..005 (DI-agnostic)
-- LIB-PORT-001..004 (side-effect injection)
-- LIB-DEP-001..005 (no transitive leak)
-- LIB-RES-001..003 (resource prefix, consumer-rules)
-- LIB-PUBLISH-001..005
-- LIB-GOV-001..004
-
-Full: `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"]`.
-
-## Validation
-
-Trước khi tuyên bố DONE:
+## Validation (trước khi tuyên bố DONE)
 
 ### Trigger & scout
 - [ ] Trigger check pass (consumer count đạt mode tương ứng)
@@ -279,16 +233,6 @@ Trước khi tuyên bố DONE:
 ### SPI
 - Extract code có inheritance mà không chuyển sang Strategy + Registry SPI
 - Hardcoded Clock/Logger từ product giữ nguyên trong lib → phải convert sang port
-
----
-
-## Harness context
-
-- Workflow: `agents/workflows/library-flow.md` §Extract mode
-- Agent: `agents/library-architect.md`
-- Knowledge: SDK knowledge set đầy đủ trong `knowledge/coding-sdk/`
-- Scout: `skills/coding-scout/SKILL.md`
-- Guardrails: `~/.claude/rules/development-rules.md`, `review-audit-self-decision.md`, `orchestration-protocol.md`
 
 ## Overlay gate
 

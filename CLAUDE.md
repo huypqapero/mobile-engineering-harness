@@ -18,18 +18,19 @@ Match user intent theo keyword trước. Nếu match → trigger skill wrapper, 
 | User intent | Entry skill | Fallback khi skill không fit |
 |---|---|---|
 | "implement/add/build feature X", "làm/thêm tính năng X" | `/feature` | solo `architect` + `coder` |
-| "fix bug/crash X", "sửa bug/lỗi X" | `/bugfix` | solo `tech-lead` triage |
+| "fix bug/crash X", "sửa bug/lỗi X" | `/bug --mode fix` | solo `tech-lead` triage |
 | "release vX.Y.Z", "ship version", "phát hành" | `/release` | solo `tech-lead` + `project-manager` co-sign |
-| "triage bug X", "phân loại bug" | `/bug-triage` | — |
-| "parallel features A, B, C", "N feature cùng sprint" | `/parallel-features` | — |
+| "triage bug X", "phân loại bug" | `/bug --mode triage` | — |
+| "fix batch bug từ Jira/JQL", "sửa N bug cùng lúc", "fix các bug sprint này" | `/bug --mode fix --parallel` | `/bug --mode fix` tuần tự từng bug |
+| "parallel features A, B, C", "N feature cùng sprint" | `/feature --parallel` | — |
 | "review PR N", "check code" | solo `reviewer` | — |
 | "verify/test/QA X" | solo `qa` scope A hoặc B | — |
 | "plan/design arch X" | solo `architect` | — |
 | "chuẩn hóa spec + screenshot thành brief" | `/business-prepare-feature` | — |
-| "tạo lib X dùng chung cho A và B", "shared library mới" (SDK pure, không UI) | `/library-new` | solo `library-architect` + `architect` + `coder` |
-| "tách module Y thành lib riêng", "extract code product → lib" | `/library-extract` | solo `library-architect` + `coding-scout` |
-| "tạo feature store X dùng chung cho A/B/C", "shared flow + UI" (paywall, chatbot, onboarding, KYC) | `/feature-store-new` | solo `feature-store-architect` + `coder` |
-| "tách feature Y ở product A thành feature store", "extract UI + flow sang shared" | `/feature-store-extract` | solo `feature-store-architect` + `coding-scout` |
+| "tạo lib X dùng chung cho A và B", "shared library mới" (SDK pure, không UI) | `/library --mode new` | solo `library-architect` + `architect` + `coder` |
+| "tách module Y thành lib riêng", "extract code product → lib" | `/library --mode extract` | solo `library-architect` + `coding-scout` |
+| "tạo feature store X dùng chung cho A/B/C", "shared flow + UI" (paywall, chatbot, onboarding, KYC) | `/feature-store --mode new` | solo `feature-store-architect` + `coder` |
+| "tách feature Y ở product A thành feature store", "extract UI + flow sang shared" | `/feature-store --mode extract` | solo `feature-store-architect` + `coding-scout` |
 | Mơ hồ, không match | **ask clarify, KHÔNG tự chế workflow** | — |
 
 Full routing table 30+ row: `AGENTS.md §Task routing`.
@@ -52,7 +53,7 @@ Khi:
 - User request orchestrator pattern
 - Task tốn token, cần preserve main context
 
-→ Invoke `/feature`, `/bugfix`, `/release` skill wrapper (chúng tự spawn subagent qua Orchestrator agent).
+→ Invoke `/feature`, `/bug`, `/release` skill wrapper (chúng tự spawn subagent qua Orchestrator agent).
 
 ### Mindset chain (1 session chuyển role)
 Khi:

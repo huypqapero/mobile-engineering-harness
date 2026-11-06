@@ -1,119 +1,48 @@
 ---
 name: feature
-description: Kick off feature-full-flow pipeline cho feature mới. Spawn Orchestrator điều phối chain Product Analyst → PM → Designer → Tech Lead → Architect → Tech Lead review gate → Coder → Reviewer + QA → Release Gate (8 stage). Entry point chuẩn cho mọi feature request.
+description: Entry point chuẩn cho mọi feature request. Dispatcher theo scope. Default (1 feature) = feature-full-flow pipeline, spawn Orchestrator chain Product Analyst → PM → Designer → Tech Lead → Architect → review gate → Coder → Reviewer + QA → Release Gate (8 stage). --parallel (N feature độc lập cùng sprint) = Tech Lead feasibility + Architect isolation-check + Orchestrator spawn N lane song song + shared-file aggregation + release bundle gate.
 priority: P0
 ---
 
 # Skill: feature
 
-Thin wrapper invoke pipeline đầy đủ qua Orchestrator agent + `feature-full-flow` workflow.
+Dispatcher cho feature delivery. **File này chỉ chọn scope.** Sau khi chọn, **đọc đúng file reference và theo procedure trong đó**:
+
+| Scope | Khi nào | Reference thực thi |
+|---|---|---|
+| single (default) | 1 feature mới | `references/single.md` |
+| `--parallel` | ≥ 2 feature độc lập cần ship cùng sprint (mỗi feature đã qua Stage 1-6, có plan.md approved) | `references/parallel.md` |
+
+## Scope selection
+
+1. User truyền `--parallel` + feature list ≥ 2 → parallel.
+2. Mặc định (1 feature, hoặc không có cờ) → single.
+3. Parallel nhưng isolation-check fail / N = 1 → fallback single sequential cho từng feature.
+
+Rule of thumb: `--parallel` chỉ worth khi N ≥ 3 và các feature SAFE isolation; N = 2 thường sequential rẻ hơn + ít rủi ro.
 
 ## Trigger
 
-- "Implement feature X" / "Add feature X" / "Build feature X"
-- "Làm tính năng X" / "Thêm tính năng X"
-- Feature request mới chưa có plan.md
-- Có PRD/spec nhưng chưa qua pipeline
+**single**: "Implement / Add / Build feature X" · "Làm / Thêm tính năng X" · feature request mới chưa có plan.md · có PRD/spec nhưng chưa qua pipeline.
+
+**`--parallel`**: "Chạy parallel feature X, Y, Z" · "Ship cả 3 feature này cùng sprint" · PM thấy deadline conflict không cắt được scope · backlog N feature đã qua Stage 1-6 độc lập.
 
 ## Inputs
 
-Bắt buộc:
-- **Feature description**: 1-3 câu outcome
-- **Feature slug** (optional, auto-generate từ description nếu không có): kebab-case
+- **single**: feature description (1-3 câu outcome) + optional slug. Optional `--deadline`, `--priority`, `--spec`, `--design`, `--plan` (skip stage tương ứng).
+- **`--parallel`**: feature list ≥ 2 slug (mỗi slug có plan.md approved) + target release. Optional `--mode safe|unsafe-force`, `--max-concurrent`.
 
-Optional:
-- `--deadline <YYYY-MM-DD>`: target release date (PM lock)
-- `--priority <P0|P1|P2>`: default P1
-- `--spec <path>`: path spec có sẵn → skip Stage 1
-- `--design <path>`: path design có sẵn → skip Stage 3
-- `--plan <path>`: path plan.md có sẵn → skip tới Stage 7
+Chi tiết: xem đầu file reference tương ứng.
 
-## Procedure
+## Shared behavior
 
-### Step 1 — Classify entry stage
+- Cả hai đều spawn **Orchestrator** (`agents/orchestrator.md`) điều phối subagent chain.
+- Handoff doc tạo tại `plans/handoff/<slug>/` sau mỗi stage; BLOCKER → surface user ngay, không continue.
+- Pre-flight check (repo clean, branch đúng, gradlew OK, device ready nếu UI), output report, rollback: **trong file reference từng scope**.
 
-Dựa vào input artifact có sẵn:
+## Harness context
 
-| Có sẵn | Entry stage | Entry agent |
-|---|---|---|
-| Chỉ description | Stage 1 Discovery | product-analyst |
-| description + spec | Stage 2 Planning | project-manager |
-| spec + design | Stage 4 Tech Brief | tech-lead |
-| spec + design + plan.md | Stage 7 Implementation | coder (fast-path check trước) |
-
-### Step 2 — Announce workflow
-
-Trước khi spawn, log 1 dòng:
-```
-Pipeline: feature-full-flow
-Entry stage: <N>
-Entry agent: <name>
-Skip stage: <list nếu có>
-```
-
-### Step 3 — Delegate Orchestrator
-
-Spawn Task tool với prompt:
-
-```
-Role = Orchestrator. Đọc:
-- agents/orchestrator.md
-- agents/workflows/feature-full-flow.md
-- agents/workflows/README.md (artifact ownership + handoff rules)
-
-Feature:
-- Description: {{feature-description}}
-- Slug: {{slug}}
-- Deadline: {{deadline nếu có}}
-- Priority: {{priority}}
-
-Input artifact available:
-- {{spec: path | design: path | plan: path | none}}
-
-Task:
-1. Entry stage: {{N}}, entry agent: {{name}}
-2. Spawn subagent chain theo workflow 8-stage, SKIP các stage đã có artifact
-3. Validate handoff doc sau mỗi stage (plans/handoff/{{slug}}/*.md)
-4. Escalate PM khi BLOCKER hoặc max retry
-5. Report sau mỗi stage completion
-```
-
-### Step 4 — Monitor + aggregate
-
-- Theo dõi handoff doc tạo tại `plans/handoff/<slug>/`
-- Nếu subagent raise BLOCKER → surface user ngay, không continue
-- Pipeline done → aggregate final report tại `plans/reports/feature-{{slug}}-summary.md`
-
-## Pre-flight check
-
-Trước khi kick off, verify:
-
-- [ ] Repo clean hoặc đã commit WIP
-- [ ] Branch đúng (feature branch, không main)
-- [ ] `./gradlew` wrapper OK (cho stage 7+)
-- [ ] Nếu feature có UI → device/emulator ready (cho QA stage)
-- [ ] `agents/orchestrator.md` + `agents/workflows/feature-full-flow.md` tồn tại
-
-Thiếu check → surface user, không spawn.
-
-## Output
-
-- `plans/reports/feature-<slug>-summary.md` — aggregate report cuối pipeline
-- Chain handoff doc tại `plans/handoff/<slug>/`
-- Code changes trong feature branch
-- Release Readiness report nếu đi tới Stage 9
-
-## Pair với skill khác
-
-- `bugfix` — khi task là fix bug, không phải feature mới
-- `parallel-features` — khi có nhiều feature chạy cùng sprint
-- `release` — sau khi feature done, trigger release gate
-- `coding-orchestrator` — low-level orchestration cho sub-tasks
-- `business-prepare-feature` — nếu chỉ cần làm input layer (brief) chưa muốn full pipeline
-
-## Khi NÀO không dùng skill này
-
-- Task là bugfix nhỏ → dùng `bugfix` thay thế
-- Chỉ cần review PR → dùng reviewer agent standalone
-- Chỉ cần QA regression → dùng qa agent standalone
-- Chỉ cần plan không impl → dùng architect agent standalone
+- Workflow: `agents/workflows/feature-full-flow.md` (single) + `agents/workflows/parallel-features.md` (parallel)
+- Agent: `agents/orchestrator.md` (điều phối), chain 8-stage product → engineering → release
+- Pair: `/bug` (khi task là fix bug, không phải feature mới), `release` (sau khi feature done → release gate), `coding-orchestrator` (low-level orchestration sub-tasks), `business-prepare-feature` (chỉ cần input layer brief)
+- Guardrails: `~/.claude/rules/development-rules.md`, `review-audit-self-decision.md`, `orchestration-protocol.md`

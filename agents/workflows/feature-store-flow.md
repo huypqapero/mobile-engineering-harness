@@ -6,8 +6,8 @@ Pipeline tạo & vận hành Feature Store artifact ở **repo riêng + publish 
 
 Workflow có 2 mode, chọn theo trigger:
 
-- **Greenfield**: FS mới, chưa có code tồn tại (dùng skill `/feature-store-new`)
-- **Extract**: tách feature từ product repo thành FS riêng (dùng skill `/feature-store-extract`)
+- **Greenfield**: FS mới, chưa có code tồn tại (dùng skill `/feature-store --mode new`)
+- **Extract**: tách feature từ product repo thành FS riêng (dùng skill `/feature-store --mode extract`)
 
 ## Trigger
 
@@ -622,6 +622,5 @@ Fast-path không áp dụng vì FS luôn multi-module + public API cross-consume
 ## Reference agent/skill
 
 - `agents/feature-store-architect.md` — role lead pipeline
-- `skills/feature-store-new/SKILL.md` — entry greenfield
-- `skills/feature-store-extract/SKILL.md` — entry extract
+- `skills/feature-store/SKILL.md` — entry dispatcher (`--mode new` greenfield | `--mode extract`)
 - `agents/workflows/library-flow.md` — workflow sibling cho SDK pure (không UI)

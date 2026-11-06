@@ -46,7 +46,7 @@ Thiết kế boundary + capability contract + Runtime Config + Theme Contract + 
 
 ## Inputs
 
-Greenfield mode (`/feature-store-new`):
+Greenfield mode (`/feature-store --mode new`):
 - Tên FS (artifact id, không chứa tên product)
 - Danh sách consumer: ≥ 2 real + straw-man persona lấp đủ ≥ 5
 - Responsibility 1 câu (không "và")
@@ -58,7 +58,7 @@ Greenfield mode (`/feature-store-new`):
 - Deadline (nếu có)
 - Steward (ai own FS dài hạn)
 
-Extract mode (`/feature-store-extract`):
+Extract mode (`/feature-store --mode extract`):
 - Product repo nguồn + path feature sẽ extract
 - Scout report liệt kê coupling (feature-specific concept, UI theme assumption, backend endpoint)
 - Lý do tách (≥ 2 consumer, UI/flow ổn định, overridability feasible)
@@ -244,5 +244,4 @@ Mỗi stage load knowledge tương ứng, không load tất cả mặc định (
 - `knowledge/coding-sdk/` — rule chung với SDK (BCV, deprecation, explicit API)
 - `agents/library-architect.md` — role sibling cho SDK pure infra (không UI)
 - `agents/workflows/feature-store-flow.md` — pipeline chi tiết 12 stage (greenfield + extract mode)
-- `skills/feature-store-new/SKILL.md` — skill entry greenfield
-- `skills/feature-store-extract/SKILL.md` — skill entry extract (tách từ product → FS)
+- `skills/feature-store/SKILL.md` — skill entry, dispatcher `--mode new` (greenfield) | `--mode extract` (tách từ product → FS)

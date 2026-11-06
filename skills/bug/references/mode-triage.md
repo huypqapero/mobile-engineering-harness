@@ -1,26 +1,8 @@
----
-name: bug-triage
-description: Kick off bug-triage workflow khi QA báo fail hoặc bug không rõ loại (code / design / spec). Tech Lead classify 3 nhánh, route Coder (code bug) / Architect (design bug) / Product Analyst (spec bug). Max 3 retry rồi escalate PM.
-priority: P1
----
+# bug — `--mode triage`
 
-# Skill: bug-triage
+Bug classification + delegate đúng agent sửa gốc. Tech Lead classify 3 nhánh: code bug → Coder, design bug → Architect, spec bug → Product Analyst. Max 3 retry rồi escalate PM.
 
-Thin wrapper invoke bug classification + delegate đúng agent sửa gốc.
-
-## Trigger
-
-- "Triage bug X" / "Phân loại bug Y"
-- QA report FAIL ở Stage 8 feature-full-flow
-- Fast-path của skill `bugfix` fail → cần re-classify
-- Bug tái diễn > 3 lần dù đã fix
-
-## Khác biệt với skill `bugfix`
-
-| Skill | Khi nào |
-|---|---|
-| `bugfix` | Bug mới, chưa classify, mặc định thử fast-path trước |
-| `bug-triage` | Bug đã fail fast-path, hoặc đã biết không phải code bug (ví dụ QA report + plan review thấy plan thiếu state) |
+> Dùng mode này khi: bug đã fail fast-path của `--mode fix`, hoặc đã biết không phải code bug (vd QA report + plan review thấy plan thiếu state). Bug mới chưa classify → `--mode fix` (xem `mode-fix.md`), mặc định thử fast-path trước.
 
 ## Inputs
 
@@ -134,15 +116,9 @@ Mọi bug close đều feed `lesson-miner`:
 
 Thiếu PRD hoặc plan → classify sẽ guess, không reliable.
 
-## Pair với skill khác
+## Khi NÀO không dùng mode này
 
-- `bugfix` — khi bug mới chưa chắc classify (bắt đầu từ fast-path)
-- `feature` — nếu spec bug cascade quá rộng, có thể cần full re-plan
-- `lesson-miner` — ingest bug closed
-- `coding-review` — review fix diff trước commit
-
-## Khi NÀO không dùng skill này
-
-- Bug 100% code bug đơn giản → `bugfix` fast-path nhanh hơn
+- Bug 100% code bug đơn giản → `--mode fix` fast-path nhanh hơn
 - Chưa có QA report → chạy QA agent trước để có evidence
 - Chỉ muốn thảo luận "feature này nên design lại không" → architect brainstorm, không phải triage
+- Nếu spec bug cascade quá rộng → có thể cần full re-plan qua `/feature`

@@ -1,55 +1,18 @@
----
-name: library-new
-description: Tạo SDK publish artifact (KMP/Android lib) mới ở repo riêng. Trigger khi user yêu cầu "tạo lib X dùng chung cho A và B" hoặc "design SDK cho ...". Spawn library-architect agent dẫn pipeline SDK-mindset-first (Phase 0 Brainstorm → Contract → SPI Freeze → Impl → TestingKit → Publish).
-priority: P1
----
+# library — `--mode new`
 
-# Skill: library-new
+Greenfield: tạo KMP/Android lib (SDK pure, không UI) mới từ zero, SDK-mindset-first.
 
-## Trigger
+> Prerequisites (SDK knowledge set) + common inputs: xem `../SKILL.md`. Đọc đủ trước khi start, skip → bias feature-first drift.
 
-- "Tạo lib X dùng chung cho A và B"
-- "Build shared library / SDK cho ..."
-- "Setup repo lib Y publish lên Maven Central"
-- "Design SDK cho ..." / "Design khung SDK để tôi review"
+## Inputs (mode-specific)
 
-**Không trigger khi**:
-- **< 5 consumer** (real + straw-man) → BLOCKED, downgrade shared module monorepo
-- Chỉ 1 consumer thật ("sẽ có consumer thứ 2 sau") → BLOCKED
-- Extract code đang tồn tại từ product → dùng `library-extract`
-- Util nhỏ < 200 lines dùng cho 1-2 project → giữ monorepo shared module
-
-## Inputs
-
-Bắt buộc:
 - Tên lib (artifact id)
 - Danh sách consumer: ≥ 2 real + straw-man persona lấp đủ ≥ 5 total
-- Responsibility 1 câu (không có "và")
-- Platform scope: KMP common / androidMain / cần iosMain?
-- Publishing target: Maven Central / internal Nexus / GitHub Packages
-
-Optional:
-- Design reference nếu lib có API shape mong muốn
-- Deadline
-- Steward (ai sẽ own lib dài hạn)
-
-## Prerequisites
-
-Đọc trước khi start (bắt buộc đầy đủ):
-1. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` — ADR SDK-001..006, foundation mindset
-2. `knowledge/coding-sdk/pattern-catalog.md [KB → develop/sdk, kb_search "coding sdk pattern catalog"]` — pattern canonical mapping
-3. `knowledge/coding-sdk/layered-architecture.md [KB → develop/sdk, kb_search "coding sdk layered architecture"]` — 5-layer kernel-plugin
-4. `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` — 10-step Phase 0
-5. `knowledge/coding-sdk/testing-kit-rules.md [KB → develop/sdk, kb_search "coding sdk testing kit rules"]` — TestingKit mandatory
-6. `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"]` — rule checklist
-7. `agents/library-architect.md`
-8. `agents/workflows/library-flow.md`
-
-Skip prerequisite → bias feature-first drift.
+- (Optional) Design reference nếu lib có API shape mong muốn
 
 ## Execution procedure
 
-### Step 0 — Phase 0 Brainstorm (Library Architect) 🆕
+### Step 0 — Phase 0 Brainstorm (Library Architect)
 
 Spawn `library-architect` agent chạy 10-step top-down theo `brainstorm-process.md §BRAIN-002`:
 
@@ -109,7 +72,7 @@ Spawn `library-architect` (nếu solo session, giữ cùng session) produce `lib
 - [ ] 11 checklist item trong `library-flow.md §Stage 3 Gate`
 - [ ] SDK-002 3 guarantee verify (Stability, Configurability, Extensibility)
 
-### Step 2b — SPI Freeze (Library Architect + Coder) 🆕
+### Step 2b — SPI Freeze (Library Architect + Coder)
 
 Code **chỉ** interface SPI + sealed hierarchy + data class public API, **không impl** nội dung:
 
@@ -166,7 +129,7 @@ Coder impl từng public API theo plan + contract. Thứ tự:
 
 Coder không được expand public API ngoài contract. Phát hiện cần expand → raise Library Architect.
 
-### Step 6 — TestingKit implementation (Coder) 🆕
+### Step 6 — TestingKit implementation (Coder)
 
 Impl `:lib-testing` artifact theo Contract §TestingKit + `testing-kit-rules.md`:
 
@@ -228,28 +191,7 @@ Konsist layer rule: PASS
 Publish: VERIFIED | FAILED
 ```
 
-## Required policies
-
-### SDK-level (bắt buộc)
-- SDK-001..006 (xem `sdk-mindset.md`)
-- Pattern Catalog mapping (xem `pattern-catalog.md`)
-- 5-layer architecture + Konsist rule (xem `layered-architecture.md`)
-- BRAIN-001..007 (xem `brainstorm-process.md`, bao gồm Step 5.5 Intersection audit + Cross-cutting concern catalog)
-- TEST-001..011 TestingKit (xem `testing-kit-rules.md`)
-
-### Rule-level (từ essentials)
-- LIB-SCOPE-001..003 (boundary)
-- LIB-API-001..006 (versioning + minimality)
-- LIB-CONFIG-001..005 (DI-agnostic config)
-- LIB-PORT-001..004 (side-effect injection)
-- LIB-DEP-001..005 (dependency hygiene)
-- LIB-PATTERN-001..006 (pattern per lib type)
-- LIB-PUBLISH-001..005 (publishing pipeline)
-- LIB-GOV-001..004 (governance)
-
-## Validation
-
-Trước khi tuyên bố DONE:
+## Validation (trước khi tuyên bố DONE)
 
 ### Phase 0 artifacts
 - [ ] `brainstorm.md` committed (10 step + Step 5.5 Intersection audit + Cross-cutting lens)
@@ -357,15 +299,6 @@ Trước khi tuyên bố DONE:
 - CI không có BCV gate
 - CI không có Konsist gate
 
----
-
-## Harness context
-
-- Workflow: `agents/workflows/library-flow.md`
-- Agent: `agents/library-architect.md`
-- Knowledge: full SDK knowledge set trong `knowledge/coding-sdk/`
-- Guardrails: `~/.claude/rules/development-rules.md`, `review-audit-self-decision.md`, `orchestration-protocol.md`
-
 ## Overlay gate
 
-Skill này **không** đọc `.harness-overlay/overlay.yaml` vì lib ở repo riêng, không consume harness overlay của consumer product. Lib repo tự quản gradle config, package root, module layout — không phụ thuộc placeholder `{{PACKAGE_ROOT}}` etc.
+Skill **không** đọc `.harness-overlay/overlay.yaml` vì lib ở repo riêng, không consume harness overlay của consumer product. Lib repo tự quản gradle config, package root, module layout — không phụ thuộc placeholder `{{PACKAGE_ROOT}}` etc.
