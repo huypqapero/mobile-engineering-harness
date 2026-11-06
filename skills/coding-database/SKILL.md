@@ -21,14 +21,79 @@ Chọn DB lib dựa trên `stack.database` trong `overlay.yaml`:
 
 | Value | Lib | Platform |
 |---|---|---|
-| `sqldelight` | SQLDelight 2.x | KMP + Android (SQL-first, generated Kotlin API) |
-| `room` | Room 2.7+ | Android native + KMP experimental (annotation-based) |
-| `datastore` | DataStore Preferences/Proto | Key-value, không relational |
+| `room` | Room 2.7+ | Android native + KMP 2.7+ (annotation-based) — **fixed default** |
+| `sqldelight` | SQLDelight 2.x | Alternative legacy (chỉ project đã dùng; không chọn mới) |
 | `none` | — | In-memory / filesystem only |
 
-Chi tiết lib comparison + decision guide: `knowledge/coding/data/persistence.md [KB → develop/networking, kb_search "data persistence"] §Relational DB`.
+Fixed stack (2026-10-29): relational default = **Room** cho cả Android + KMP. Key-value tách riêng (`stack.keyvalue`, xem §Key-value storage), **không** thuộc `stack.database`.
+
+Chi tiết lib comparison + decision guide: `knowledge/coding/data/persistence.md [KB → develop/database, kb_search "data persistence"] §Relational DB`.
 
 Procedure phần lớn generic. Lib-specific snippet đánh dấu rõ.
+
+## Key-value storage (preference, settings, feature flags)
+
+Không relational. Theo fixed stack: **SharedPreferences** (Android), **multiplatform-settings** (KMP). Wrap sau 1 interface ở `{{MODULE_DOMAIN}}/`; **cấm** gọi trực tiếp từ ViewModel/presenter. Secret → SecureStorage (KeyStore/Keychain), không plain.
+
+### Android — SharedPreferences
+
+```kotlin
+// data/local/PreferenceStoreImpl.kt (Android)
+internal class PreferenceStoreImpl(
+    private val prefs: SharedPreferences,
+) : PreferenceStore {
+
+    override fun observeTheme(): Flow<Theme> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { p, key ->
+            if (key == KEY_THEME) trySend(readTheme(p))
+        }
+        trySend(readTheme(prefs))
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
+    override suspend fun setTheme(theme: Theme) = prefs.edit { putString(KEY_THEME, theme.name) }
+
+    private fun readTheme(p: SharedPreferences): Theme =
+        Theme.fromString(p.getString(KEY_THEME, null) ?: Theme.System.name)
+
+    private companion object { const val KEY_THEME = "app_theme" }
+}
+```
+
+SharedPreferences không reactive sẵn → bridge sang `Flow` bằng `callbackFlow` + `OnSharedPreferenceChangeListener`. Ghi bằng `edit { }` (apply async).
+
+### KMP — multiplatform-settings
+
+Lib `com.russhwolf:multiplatform-settings` (+ `multiplatform-settings-coroutines` cho Flow). `ObservableSettings` tạo qua expect/actual (Android dựng trên chính SharedPreferences → đồng nhất stack Android; iOS `NSUserDefaults`).
+
+```kotlin
+// commonMain
+expect fun provideSettings(): ObservableSettings
+
+// androidMain
+actual fun provideSettings(): ObservableSettings =
+    SharedPreferencesSettings(context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE))
+
+// iosMain
+actual fun provideSettings(): ObservableSettings =
+    NSUserDefaultsSettings(NSUserDefaults.standardUserDefaults)
+```
+
+```kotlin
+// commonMain impl
+internal class PreferenceStoreImpl(private val settings: ObservableSettings) : PreferenceStore {
+    @OptIn(ExperimentalSettingsApi::class)
+    override fun observeTheme(): Flow<Theme> =
+        settings.getStringFlow(KEY_THEME, Theme.System.name).map { Theme.fromString(it) }
+
+    override suspend fun setTheme(theme: Theme) = settings.putString(KEY_THEME, theme.name)
+
+    private companion object { const val KEY_THEME = "app_theme" }
+}
+```
+
+Test: KMP dùng `MapSettings()` (in-memory `ObservableSettings`); Android dùng Robolectric `getSharedPreferences(...)`. Chi tiết + rules: `knowledge/coding/data/persistence.md [KB → develop/database, kb_search "data persistence"] §Key-value`.
 
 ## Inputs
 

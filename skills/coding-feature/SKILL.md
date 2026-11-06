@@ -119,6 +119,8 @@ Chạy đủ gates (xem `definition-of-done.md`):
 ./gradlew detekt
 ```
 
+**Optional — UI preview verify** (chỉ khi feature có UI): sau khi viết `@Preview` cho 5 state, invoke `/testing-preview` để render headless + đối chiếu design gốc (nếu có design reference). Bỏ qua khi: không có UI, không có design reference, hoặc môi trường thiếu `android` CLI. Gate này **optional, không block DONE** — PASS_PREVIEW là bonus, không phải điều kiện bắt buộc của quality gate.
+
 ### Step 5 — Report
 
 Theo mẫu `definition-of-done.md §Report`.

@@ -145,6 +145,8 @@ private fun BookDetailErrorPreview() {
 
 Preview mọi state visible, không chỉ success.
 
+> Skill này chỉ **viết** `@Preview`. Để **render headless + đối chiếu design gốc** (optional), dùng `/testing-preview` sau khi preview đã viết xong.
+
 ### Step 7 — Accessibility
 
 - `contentDescription` cho mọi icon-only button

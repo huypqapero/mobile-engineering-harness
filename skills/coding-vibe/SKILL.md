@@ -50,8 +50,9 @@ Skills cần installed:
 - `coding-feature` HOẶC `coding-diagnose` (theo mode)
 - `testing-android`
 - `coding-review`
+- `testing-preview` (optional — chỉ cần khi feature UI muốn preview-verify; thiếu → skip gate đó, không BLOCKED)
 
-Nếu skill thiếu → BLOCKED, raise cho user install.
+Nếu skill required thiếu → BLOCKED, raise cho user install. `testing-preview` thiếu chỉ skip UI preview gate.
 
 ## Pipeline stages
 
@@ -129,6 +130,8 @@ Fail → `coding-diagnose --mode bug` loop (max 3 attempts, pattern từ `knowle
 Invoke `testing-android` với:
 - Scope = files touched trong Stage 4
 - Level = unit + integration (UI test optional, flag per feature)
+
+**Optional — UI preview verify:** nếu mode = `feature` + feature có UI + có design reference + môi trường có `android` CLI → invoke `/testing-preview` render + đối chiếu design. Optional, không thuộc Gate G5 (thiếu `android` CLI → skip, không fail pipeline).
 
 **Gate G5:**
 - Unit test touched: pass
