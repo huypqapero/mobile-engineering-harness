@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "feature": "profile",
+  "target": ":feature:profile",
+  "references": [],
+  "cases": [
+    {
+      "id": "ready-default",
+      "fqn": "com.example.profile.ProfilePreviewsKt.ProfileDefaultPreview",
+      "expected_images": 1,
+      "review_kind": "requirements",
+      "reference_ids": [],
+      "configuration_note": "Verify source: 360x800dp, vi locale, light theme, ready fixture",
+      "requirements": [
+        {"id": "cta-present", "text": "The save action is visible and not obscured by profile content."}
+      ]
+    },
+    {
+      "id": "long-name-narrow",
+      "fqn": "com.example.profile.ProfilePreviewsKt.ProfileStressPreview",
+      "expected_images": 1,
+      "review_kind": "requirements",
+      "reference_ids": [],
+      "configuration_note": "Verify source: 320x640dp, vi locale, long-name fixture",
+      "requirements": [
+        {"id": "no-overlap", "text": "The long name does not overlap the save action or mandatory text."}
+      ]
+    }
+  ]
+}
