@@ -63,7 +63,8 @@ Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cac
 | Implement feature mới end-to-end (BA → PM → Designer → Tech Lead → Architect → Coder → QA → Release) | `feature` |
 | Fix bug với fast-path triage (4 cond → fast/mini/full-flow) | `bug --mode fix` |
 | Classify bug không rõ loại (code/design/spec), max 3 retry rồi escalate PM | `bug --mode triage` |
-| Fix batch N bug từ Jira/JQL song song (cluster theo root cause + scout 1 lần + lane song song + evidence validator + resume) | `bug --mode fix --parallel` |
+| Ghi bug liên tục trong chat, mỗi bug 1 worker nền fix trong worktree riêng → 1 PR (bug chung file thì xếp hàng / stack PR) | `bug-note` |
+| Fix batch N bug từ Jira/JQL/board song song: intake Jira + Confluence + Figma, scout 1 lần (có cache), phân loại kind/verify tier, lane worktree = PR gom nhiều bug, hàng chờ thiết bị, evidence validator, resume | `bug-fix-orchestrator` (alias `bug --mode fix --parallel`) |
 | Release co-sign Tech Lead + PM (14 tech + 12 business checklist) | `release` |
 | Chạy N feature song song cùng sprint (isolation check + shared file aggregation) | `feature --parallel` |
 | Tạo KMP/Android lib mới ở repo riêng + publish artifact (SDK pure headless, ≥ 5 consumer) | `library --mode new` |
@@ -149,6 +150,9 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 - `qa.md` — Façade verification: Scope A (per-screen) + Scope B (full-flow E2E)
   - `e2e-author.md` — Subagent QA: write runner-neutral step files cho E2E
   - `ui-judge.md` — Subagent QA: visual compare Figma vs app screenshot
+- `bug-scout.md` — Native subagent read-only: scout 1 lần cho cả batch bug (Architect inspect), output scout.json tái dùng
+- `bug-fixer.md` — Native subagent lane worker: Architect + Coder cho 1 cụm bug (hoặc 1 bug của bug-note), 1 worktree = 1 PR; bắt buộc chuẩn fix gốc theo rule project, cấm fix ngọn
+- `bug-reviewer.md` — Native subagent read-only: review độc lập PR fix bug (checklist A–J coding-review + gốc hay ngọn), PR chỉ ready khi APPROVE
 
 ### Meta layer
 
@@ -223,7 +227,9 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `knowledge/testing/e2e-runtime/runner-neutral-step.md [KB → testing/e2e-runtime, kb_search "e2e runtime runner neutral step"]` — step file design rationale
 - `knowledge/design/visual-compare/figma-vs-screenshot.md [KB → product/design-compare, kb_search "visual compare figma vs screenshot"]` — perceptual hash + SSIM thresholds
 - `skills/feature/SKILL.md` — **P0** entry: feature delivery, dispatcher theo scope. single (default) = feature-full-flow pipeline wrapper (BA → PM → Designer → Tech Lead → Architect → Coder → QA → Release); `--parallel` = N feature song song + isolation check + shared file aggregation
-- `skills/bug/SKILL.md` — **P0** entry: xử lý bug, dispatcher `--mode fix|triage` (+ cờ `--parallel`). fix (default) = bugfix-fast-path triage + fast/mini/full routing; `fix --parallel` = batch N bug (Jira/list) → cluster root cause → scout 1 lần/batch → lane song song giữa cluster (tuần tự trong cluster, auto-fix cap 2) → verify matrix per-issue → evidence validator deterministic (`scripts/validate_evidence.py`) → state `plans/bugfix-batch-<id>/` resume được; triage = classify code/design/spec, max 3 retry
+- `skills/bug-note/SKILL.md` — intake bug liên tục trong chat: mỗi bug 1 worker nền → worktree riêng → PR; claim file (chờ hoặc stack PR khi chung file), tier verify T1–T4, khóa thiết bị + hàng chờ test tay `DEVICE-TEST-QUEUE.md`. State `<git-common-dir>/bug-note/` qua `scripts/bug_queue.py`
+- `skills/bug-fix-orchestrator/SKILL.md` — **P0** leader batch bug: Jira + Confluence + Figma + docs refs → scout 1 lần (`bug-scout`, cache `plans/bugfix-cache/`) → phân loại `kind` + `verify` (none/unit/preview/device) → group theo root cause → lane worktree song song = 1 PR/lane (`bug-fixer`) → hàng chờ thiết bị (`artemis-android`) → evidence validator. State `plans/bugfix-batch-<id>/` qua `scripts/bfo_state.py`, resume được
+- `skills/bug/SKILL.md` — **P0** entry: xử lý bug, dispatcher `--mode fix|triage` (+ cờ `--parallel`). fix (default) = bugfix-fast-path triage + fast/mini/full routing; `fix --parallel` chuyển sang skill `bug-fix-orchestrator`; skill `bug` vẫn giữ evidence validator (`scripts/validate_evidence.py`) + schema dùng chung; triage = classify code/design/spec, max 3 retry
 - `skills/release/SKILL.md` — **P0** entry: release-gate co-sign Tech Lead + PM
 - `skills/business-prepare-feature/SKILL.md` — orchestrator input layer
 - `skills/business-fetch/SKILL.md` — MCP adapter Confluence/Figma (dispatcher `--source`)
@@ -278,6 +284,9 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `agents/qa.md` — façade Scope A + Scope B verification
 - `agents/e2e-author.md` — subagent QA: step files
 - `agents/ui-judge.md` — subagent QA: visual compare
+- `agents/bug-scout.md` — native subagent: scout batch bug read-only
+- `agents/bug-fixer.md` — native subagent: lane fix cụm bug → PR
+- `agents/bug-reviewer.md` — native subagent: review độc lập PR fix bug
 - `agents/orchestrator.md` — multi-agent spawn + aggregate coordinator
 - `agents/lesson-miner.md` — distill bugs thành lessons
 - `agents/harness-guardian.md` — meta (maintain harness)
