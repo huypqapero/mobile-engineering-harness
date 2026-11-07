@@ -4,6 +4,20 @@ Tất cả thay đổi đáng chú ý của Mobile Engineering Harness.
 
 Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và semver.
 
+## [Unreleased]
+
+### Added — Batch bugfix orchestrator
+
+- **`bug-fix-orchestrator`**: leader điều phối batch bug từ Jira (JQL, board, sprint, danh sách key). Lấy spec Confluence, Figma node và docs tham chiếu của repo một lần; scout codebase một lần và lưu cache dùng lại giữa các batch; phân loại `kind` (code/ui/content/spec-gap/needs-info/…) và mức verify (`none`/`unit`/`preview`/`device`); gom group theo root cause, xếp lane worktree song song (mỗi lane 1 PR gom nhiều bug); bug cần thiết bị vào hàng chờ, chỉ chạy khi thiết bị rảnh. State `plans/bugfix-batch-<id>/` qua `scripts/bfo_state.py` (kiểm plan cơ học, giới hạn số lane, hàng chờ thiết bị), resume được.
+- **Agent `bug-scout`** (read-only, scout batch) và **`bug-fixer`** (Architect + Coder, 1 lane → 1 PR, cũng là worker 1 bug của `bug-note`): agent native có frontmatter, nạp sẵn skill harness. `bug-fixer` bắt buộc đọc rule project, viết `fix-design.md` (root cause ở layer nào, fix đặt ở đâu, vì sao) và không dùng các mẫu fix ngọn (delay né race, catch nuốt lỗi, guard UI, flag rời, logic trong Composable…).
+- **Agent `bug-reviewer`** (read-only): review độc lập mọi PR fix bug theo checklist A–J của `coding-review` và tiêu chí gốc/ngọn; PR của `bug-fix-orchestrator` và `bug-note` giữ draft tới khi APPROVE (tối đa 2 vòng sửa).
+
+- **`bug-note`** (chuyển từ `~/.claude/skills/` vào harness): ghi bug liên tục trong chat, mỗi bug 1 worker nền fix trong worktree riêng rồi mở PR; bug chung file thì chờ hoặc stack PR. Sửa kèm: worker không dùng `git stash` (stash dùng chung mọi worktree) mà commit WIP; tier `T2-ui` so preview với Figma bằng `compare-ui-board` + `ui-diff-review` thay vì `ui-diff`; khóa thiết bị không bị chiếm khi bug giữ khóa chưa xong, bug bị chặn chuyển `waiting` thay vì poll, thêm `device-release`. Worker giờ là agent harness `bug-fixer` thay cho `general-purpose`.
+
+### Changed
+
+- `bug --mode fix --parallel` chuyển sang `bug-fix-orchestrator`; xoá `skills/bug/references/mode-fix-parallel.md`. Evidence validator + schema vẫn ở `skills/bug/`.
+
 ## [0.22.0] — 2026-11-06
 
 Bản này gộp luôn [0.21.0], vì 0.21.0 chưa từng được tag hay release riêng.

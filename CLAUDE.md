@@ -21,7 +21,8 @@ Match user intent theo keyword trước. Nếu match → trigger skill wrapper, 
 | "fix bug/crash X", "sửa bug/lỗi X" | `/bug --mode fix` | solo `tech-lead` triage |
 | "release vX.Y.Z", "ship version", "phát hành" | `/release` | solo `tech-lead` + `project-manager` co-sign |
 | "triage bug X", "phân loại bug" | `/bug --mode triage` | — |
-| "fix batch bug từ Jira/JQL", "sửa N bug cùng lúc", "fix các bug sprint này" | `/bug --mode fix --parallel` | `/bug --mode fix` tuần tự từng bug |
+| "/bug-note", "ghi bug", "note bug", báo liên tiếp nhiều bug trong chat và muốn tự fix + PR | `/bug-note` | `/bug --mode fix` từng bug |
+| "fix batch bug từ Jira/JQL/board", "sửa N bug cùng lúc", "fix các bug sprint này" | `/bug-fix-orchestrator` | `/bug --mode fix` tuần tự từng bug |
 | "parallel features A, B, C", "N feature cùng sprint" | `/feature --parallel` | — |
 | "review PR N", "check code" | solo `reviewer` | — |
 | "verify/test/QA X" | solo `qa` scope A hoặc B | — |
