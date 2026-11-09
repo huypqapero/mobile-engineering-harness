@@ -15,10 +15,10 @@ Leader nhận task rồi giao cho agent bên dưới thực thi; luồng chính 
 | Leader TỰ làm (điều phối) | Leader GIAO agent (thực thi) |
 |---|---|
 | Đọc input user, lấy Jira/Confluence qua MCP khi agent con không có MCP (chỉ ghi nguyên văn vào `B/`) | Đọc code, tìm file:line, call chain, so spec ↔ code → `bug-scout` |
-| State `S` (init, load-plan, lane, issue, device-*), `check-plan` | Root cause, sửa code, build, unit test, mở/cập nhật PR → `bug-fixer` |
+| State `S` (init, load-plan, lane, lane-remove, issue, device-*, jira-sync), `check-plan` | Root cause, sửa code, build, unit test, mở/cập nhật PR → `bug-fixer` |
 | Phân loại + gom lane từ output scout, trình plan, hỏi user | Review PR → `bug-reviewer` |
 | Jira transition + assignee, `gh pr ready`, `gh pr list` | Chạy thiết bị, chụp ảnh, logcat → `artemis-android` |
-| So giờ APK với commit head; `adb devices` để chọn máy | Trích spec dài, gom docs/DEC, health check main, phân tích crash/log/APK/Remote Config, mọi điều tra khác → agent phù hợp (`bug-scout` / `bug-fixer` của lane / `general-purpose`) |
+| Chạy `./gradlew assemble<Variant>` trong worktree lane trước khi giao device job; `adb devices` để chọn máy | Trích spec dài, gom docs/DEC, health check main, phân tích crash/log/APK/Remote Config, mọi điều tra khác → agent phù hợp (`bug-scout` / `bug-fixer` của lane / `general-purpose`) |
 
 - Device job FAIL hoặc kết quả lạ → **không tự đọc log / dexdump / grep tìm nguyên nhân**: chuyển nguyên kết quả + đường dẫn evidence cho `bug-fixer` của lane (SendMessage nếu agent còn sống, không thì spawn mới với brief đủ ngữ cảnh) để tự truy root cause và sửa.
 - Câu hỏi "code hiện tại làm gì / spec nói gì" → giao `bug-scout` (read-only), không tự đọc.
@@ -53,11 +53,11 @@ Không có PR nào ready khi chưa có `bug-reviewer` APPROVE. Không dùng agen
 7. Health check main: giao `general-purpose` chạy trong `R` theo `references/intake-and-context.md` §Main health → `B/context/main-health.md`. Hỏng → báo user + đề xuất lane `main-fix` (lane khác `after` nó).
 8. Tránh đụng việc đang làm: `gh pr list --state open --json number,title,headRefName` và `git worktree list` → ghi vào `B/context/in-flight.md` cho Phase 2–3.
 
-`resume <batch>` → đọc `S board B` (+ mục đã trả lời trong `confirm-checklist.md` → thêm lane `C<n>` theo classify-and-plan §Không chặn tiến độ), kiểm `manifest.base_commit` còn là tổ tiên của `<remote>/<base>`; tiếp tục từ phase dở (không làm lại phase đã xong). `status` → `S board B` + link PR.
+`resume <batch>` → đọc `S board B` (+ mục đã trả lời trong `confirm-checklist.md` → thêm lane `C<n>` theo classify-and-plan §Không chặn tiến độ), kiểm `manifest.base_commit` còn là tổ tiên của `<remote>/<base>`; tiếp tục từ phase dở (không làm lại phase đã xong). `status` → `S board B` + link PR. `sync-jira [batch]` → quét PR merged (`gh pr list --state merged`), ghi `merged=`/`ready=` vào lane, chạy `S jira-sync B` và thực thi kế hoạch (§Jira status).
 
 ## Phase 1 — Intake + context pack (leader)
 
-Theo `references/intake-and-context.md`: Jira → `B/bugs.json` (+ ảnh đính kèm), Confluence → `B/context/spec.md` (ghi version), Figma → `B/context/figma-index.json` (ưu tiên screen registry của repo), docs tham chiếu → `B/context/references.md`. Bug thiếu thông tin tối thiểu → `needs-info`, không đoán.
+Theo `references/intake-and-context.md`: Jira → `B/bugs.json` (+ ảnh đính kèm), Confluence → `B/context/spec.md` (ghi version), Figma → `B/context/figma-index.json` (ưu tiên screen registry của repo), docs tham chiếu → `B/context/references.md`. Bug thiếu thông tin tối thiểu → `needs-info`, không đoán. Việc không có Jira (user giao miệng/ảnh) → key `TASK-<slug>` (chữ thường, ≥1 chữ cái) trong `bugs.json` (`url: null`); vào plan/lane/hàng chờ thiết bị như bug thường, không bao giờ transition Jira.
 
 ## Phase 2 — Scout một lần (agent `bug-scout`)
 
@@ -68,10 +68,10 @@ Kiểm cache trước (`references/intake-and-context.md` §Scout cache): area k
 Theo `references/classify-and-plan.md`. **Bước 0 bắt buộc: so 1-1 từng bug với spec/Figma** (tester nói / spec nói / code làm). Chỉ bug `spec_verdict: confirmed` (có `spec_ref` trích được) mới được fix; nghi ngờ (hiểu nhầm, ngoài spec, spec im lặng/mâu thuẫn, nghi môi trường test) → `needs-confirm` + `question`, vào `B/confirm-checklist.md` đủ ngữ cảnh để user trả lời sau — **không chặn** lane khác. Mỗi bug có `kind` + `verify` + `reason`; bug sửa được vào `group` (cùng root cause/file); group xếp vào `lane` (= worktree = PR). Ghi `B/plan.json` rồi gate cơ học:
 
 ```bash
-S check-plan B/plan.json --bugs B/bugs.json --repo R
+S check-plan B/plan.json --bugs B/bugs.json --repo R --batch B
 ```
 
-Exit ≠ 0 → sửa plan, không bỏ qua. Ghi `B/plan-summary.md` (lane → bug → verify → PR dự kiến; bug bị loại; điểm cần user quyết) và `B/confirm-checklist.md`, trình user. **Chờ user duyệt** (trừ `--yes` hoặc user đã nói "fix luôn bug chắc chắn" — khi đó chạy luôn lane confirmed, checklist trả lời bất đồng bộ); user sửa plan → sửa `plan.json`, check lại. Duyệt xong mới `S load-plan B B/plan.json --bugs B/bugs.json --repo R`, rồi gỡ `R`.
+Exit ≠ 0 → sửa plan, không bỏ qua (`--batch` bỏ qua chồng file với lane đã merge). Gỡ lane: `S lane-remove B <L> --plan B/plan.json`, không sửa tay. Ghi `B/plan-summary.md` (lane → bug → verify → PR dự kiến; bug bị loại; điểm cần user quyết) và `B/confirm-checklist.md`, trình user. **Chờ user duyệt** (trừ `--yes` hoặc user đã nói "fix luôn bug chắc chắn" — khi đó chạy luôn lane confirmed, checklist trả lời bất đồng bộ); user sửa plan → sửa `plan.json`, check lại. Duyệt xong mới `S load-plan B B/plan.json --bugs B/bugs.json --repo R`, rồi gỡ `R`.
 
 Crash chưa có stack (`repro_first: true`): trước khi lane chạy, `S device-request B <KEY> --lane <L> --purpose repro` để verifier tái hiện + lấy logcat; lane chứa bug đó chờ (`S lane B <L> status=waiting`) tới khi có log. Không có thiết bị → xin logcat/video từ reporter, bug giữ `blocked`.
 
@@ -87,7 +87,7 @@ Crash chưa có stack (`repro_first: true`): trước khi lane chạy, `S device
 | `DONE` | Ghi PR (draft) vào state; spawn `bug-reviewer` cho lane (worktree, base, evidence). `APPROVE` → báo user (lane, PR, bug, verify), chạy Phase 5 nếu có device job, không còn device job thì `gh pr ready` + chuyển Jira các bug `verified` của lane sang **Resolved** (§Jira status). `REQUEST_CHANGES` → SendMessage findings cho chính `bug-fixer` đó, review lại sau khi push (tối đa 2 vòng, vượt → lane `FAILED`, báo user). `ESCALATE` → hỏi user |
 | `NEEDS_CONTEXT` (cần file ngoài lane) | Kiểm đụng lane khác: không đụng → mở rộng `files` trong plan, `load-plan`, SendMessage cho lane tiếp tục; đụng → thêm `after` hoặc chuyển bug sang lane kia |
 | `DONE_WITH_CONCERNS` / spec-gap | Chuyển câu hỏi cho user; bug liên quan → `blocked` |
-| `BLOCKED` / `FAILED` | Báo user lý do 1 dòng; không chạy lại từ đầu — tiếp tục agent cũ bằng SendMessage khi có thông tin mới |
+| `BLOCKED` / `FAILED` | Lane đợi quyết định/thông tin ngoài → `S lane B <L> status=blocked note=…` (không chiếm chỗ `max_lanes`). Báo user lý do 1 dòng; không chạy lại từ đầu — tiếp tục agent cũ bằng SendMessage khi có thông tin mới |
 
 **PR của batch được merge** (user merge, phát hiện qua `gh pr list --state merged` mỗi lần resume/status/lane báo về): chuyển Jira theo §Jira status, báo các lane đang chạy có `after` PR đó hoặc chung file (SendMessage: cần gate fresh-with-main), chạy lại health check main (`references/intake-and-context.md` §Main health) trước khi spawn lane kế tiếp.
 
@@ -95,7 +95,8 @@ Crash chưa có stack (`repro_first: true`): trước khi lane chạy, `S device
 
 Theo `references/device-queue.md`. Tóm tắt: lane xếp job bằng `device-request`; leader chạy `S device-dispatch B --exclude <serial đang bị task ngoài giữ>`:
 - in `JOB SERIAL KEY PURPOSE` → spawn `artemis-android` với `device_serial` đó (background; `repro` = tái hiện + logcat, `verify` = chạy checklist);
-- exit 3 → còn job nhưng hết thiết bị: để **pending**, dispatch lại khi một job xong hoặc lane khác báo về.
+- exit 3 → còn job sẵn sàng nhưng hết thiết bị: để **pending**, dispatch lại khi một job xong hoặc lane khác báo về;
+- exit 4 → còn job chưa sẵn sàng (thiếu APK / APK build ở commit cũ): chạy `assemble`, `S device-request … --apk … --head …` lại rồi dispatch (`device-queue.md` §Chuẩn bị APK).
 Job xong → `S device-done B <JOB> --result pass|fail`, cập nhật PR (bỏ draft khi mọi bug của lane `verified`). Job FAIL → leader không tự điều tra: chuyển kết quả + đường dẫn evidence cho `bug-fixer` của lane truy root cause (§Leader chỉ điều phối); lane push code mới → `bug-reviewer` review lại → xếp job mới.
 
 ## Phase 6 — Đóng batch
@@ -107,7 +108,7 @@ Job xong → `S device-done B <JOB> --result pass|fail`, cập nhật PR (bỏ d
 
 ## Jira status (bắt buộc, leader làm)
 
-Sau **mỗi sự kiện** (lane `running`, PR ready, PR merged, device job xong, quyết định đổi) đối chiếu bảng và chuyển ngay; không đợi user hỏi "đã update Jira chưa". Mỗi lần resume/status cũng quét lại một lượt.
+Sau **mỗi sự kiện** (lane `running`, PR ready, PR merged, device job xong, quyết định đổi) và mỗi lần resume/status: ghi `ready=yes|no` / `merged=no|base|other` vào lane, chạy `S jira-sync B` — script **chỉ in kế hoạch** (issue: hiện tại -> đích, lý do), không gọi Jira. Leader thực thi từng dòng (`jira_get_transitions` luôn trước), không đợi user hỏi "đã update Jira chưa". Bảng dưới là quy tắc script áp dụng.
 
 | Thời điểm | Bug nào | Trạng thái đích |
 |---|---|---|
@@ -120,7 +121,7 @@ Sau **mỗi sự kiện** (lane `running`, PR ready, PR merged, device job xong,
 - PR merge vào branch khác base (PR stack merge sau khi PR dưới đã vào base) → code **chưa** vào base: không chuyển Reviewing, mở PR đưa branch đó vào base trước.
 - Transition id khác nhau theo trạng thái nguồn: luôn `jira_get_transitions` rồi chọn transition dẫn tới đích (vd Request → "Start Progress", Reopened → "Re-Progress", In Progress/Request → "Resolve Issue", Resolved → "Request Review"). Đích Reviewing mà đang In Progress → đi qua Resolved trước (2 bước). Đọc lại `status` trong kết quả, sai đích → báo user.
 - Mỗi lần chuyển trạng thái: gán luôn assignee = user đang chạy batch (vd `jira_update_issue` `{"assignee": "<username>"}`), kể cả khi đang gán cho người khác (QA reopen). Không rõ username → hỏi user một lần ở Phase 0.
-- Ghi vào state: `S issue B <KEY> note="jira=<status>"`.
+- Ghi vào state sau mỗi lần chuyển: `S issue B <KEY> jira="<status>"` (đây là "hiện tại" của `jira-sync`; `?` = chưa ghi, đọc từ Jira).
 
 ## Rules
 

@@ -69,7 +69,7 @@ git log --oneline HEAD..<remote>/<base> | head                              # PR
 | `none` | compile; strings → kiểm đủ mọi `values-*` liên quan; ghi diff tóm tắt vào evidence; UI tĩnh không preview → checklist test tay vào PR + `B/device-test-queue.md` (không chặn PR) |
 | `unit` | viết/sửa unit test regression (happy + ≥1 edge) cho ViewModel/UseCase; chạy test module bị đụng |
 | `preview` | render preview trước (base) và sau (lane) bằng `testing-preview` runner hoặc `android preview render`; ghép board với ảnh Figma (`compare-ui-board`) và chấm (`ui-diff-review`, ngưỡng theo repo, mặc định 95). Lệch còn lại → `ui-fix-loop` (≤ 3 vòng) |
-| `device` | chạy phần `unit` nếu có logic; build APK lane (`assemble<Variant>`) sau gate §4, ghi path; `S device-request B <KEY> --lane <L>`; viết checklist device (bước → kết quả mong đợi, điều kiện: remote key, mạng, quyền, ads test) vào `evidence/<KEY>/device-checklist.md`. **Không tự chạy thiết bị.** |
+| `device` | chạy phần `unit` nếu có logic; build APK lane (`assemble<Variant>`) sau gate §4, ghi path; `S device-request B <KEY> --lane <L> --apk <path> --head <sha>`; viết checklist device (bước → kết quả mong đợi, điều kiện: remote key, mạng, quyền, ads test) vào `evidence/<KEY>/device-checklist.md`. **Không tự chạy thiết bị.** |
 
 Gate chung trước push (sau gate fresh-with-main): compile variant chính + unit test module bị đụng PASS; detekt/konsist nếu repo cấu hình (`./gradlew tasks --all | grep -E "detekt|konsist"`). Không tắt/skip test để qua gate. Tự kiểm diff theo checklist A–J của `coding-review`, ghi `self-review.md` vào evidence mỗi bug.
 

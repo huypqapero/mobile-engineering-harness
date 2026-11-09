@@ -11,6 +11,17 @@ job:   pending → running → done | failed        (release thủ công → pen
 
 Một thiết bị giữ tối đa 1 job (`state.devices[serial].holder`). ARTEMIS cũng có mutex riêng theo thiết bị — hai lớp khóa, không chạy 2 job trên 1 emulator.
 
+## Chuẩn bị APK (trước `device-request`)
+
+Không so mtime APK với giờ commit (Gradle up-to-date làm mtime cũ dù APK đúng). Luôn chạy trong worktree lane, sau gate fresh-with-main (`lane-protocol.md` §4):
+
+```bash
+./gradlew assemble<Variant>      # up-to-date thì gần như tức thì; không cần đoán APK cũ hay mới
+S device-request B <KEY> --lane <L> --apk <abs path APK> --head $(git -C <WT> rev-parse HEAD) [--priority N]
+```
+
+Lane push commit mới sau đó → APK cũ vô hiệu: build lại và gọi lại `device-request` cùng tham số (cập nhật job pending). `--priority` lớn chạy trước (crash Highest, job chặn PR ready); mặc định 0. Job không có APK, APK không tồn tại hoặc `head` lệch HEAD worktree lane thì `device-dispatch` bỏ qua và in lý do.
+
 ## Khi nào leader dispatch
 
 Gọi `S device-dispatch B --exclude <serial…>` mỗi khi:
@@ -22,7 +33,8 @@ Gọi `S device-dispatch B --exclude <serial…>` mỗi khi:
 
 Kết quả:
 - In `DJ-001 emulator-5554 PROJ-48 verify` → spawn verifier cho từng dòng (cột cuối `repro` hoặc `verify`).
-- Exit 3 → còn job nhưng không có thiết bị rảnh: báo user "N bug đang chờ thiết bị", **không** chiếm thiết bị đang bận, không poll vòng lặp — chờ sự kiện kế tiếp ở trên.
+- Exit 4 → chỉ còn job chưa sẵn sàng (stderr nêu job + lý do): bổ sung APK/head như trên rồi dispatch lại.
+- Exit 3 → còn job sẵn sàng nhưng không có thiết bị rảnh: báo user "N bug đang chờ thiết bị", **không** chiếm thiết bị đang bận, không poll vòng lặp — chờ sự kiện kế tiếp ở trên.
 - Không in gì, exit 0 → hết job.
 
 Không có thiết bị nào (`adb devices` rỗng) → job giữ `pending`; báo user cắm máy / bật emulator (`mobile_diagnose(launch_avd=…)`), batch vẫn đóng được với bug `pending_device` + checklist test tay.
@@ -44,7 +56,7 @@ Model ARTEMIS: thao tác ngắn/đơn giản → Flash; flow dài, cần log/ADB
 
 ## Job `repro` (crash chưa có stack, trước khi fix)
 
-Cài APK build từ base (`<remote>/<base>`, build trong `R` hoặc một worktree tạm), làm theo repro của Jira, lưu `logcat.txt` + screenshot vào `B/evidence/<KEY>/device/`. Xong → `S device-done B <JOB> --result pass` (tái hiện được) hoặc `fail` (không tái hiện → hỏi reporter thêm thông tin), rồi `S lane B <L> status=planned` để lane chạy với log đó.
+Cài APK build từ base (`<remote>/<base>`, `assemble` trong `R` hoặc một worktree tạm; `device-request --purpose repro --apk …`), làm theo repro của Jira, lưu `logcat.txt` + screenshot vào `B/evidence/<KEY>/device/`. Xong → `S device-done B <JOB> --result pass` (tái hiện được) hoặc `fail` (không tái hiện → hỏi reporter thêm thông tin), rồi `S lane B <L> status=planned` để lane chạy với log đó.
 
 ## Khi job verify xong
 

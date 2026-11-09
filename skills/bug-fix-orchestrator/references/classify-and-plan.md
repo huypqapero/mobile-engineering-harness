@@ -69,7 +69,7 @@ Fix **độc lập** (group riêng, lane riêng nếu có thể): crash Highest,
 ## Bước 4 — Xếp `lane` (= worktree = PR)
 
 1. Ghép group vào lane theo **feature package** (vd `features/player/`), mỗi lane ≤ 8 bug (script cảnh báo khi vượt).
-2. Hai lane sửa chung file → script báo lỗi; chọn: gộp chung lane (ưu tiên), hoặc `after: [<lane trước>]` (lane sau rebase lên branch lane trước, PR stack).
+2. Hai lane sửa chung file → script báo lỗi; chọn: gộp chung lane (ưu tiên), hoặc `after: [<lane trước>]` (lane sau rebase lên branch lane trước, PR stack). Lane đã merge vào base (`status=done` hoặc `merged=base`) không còn tính chồng file: chạy `check-plan --batch B` khi thêm lane mới sau khi batch đã có PR merge.
 3. Shared file (DI module, NavHost, `strings.xml`, Analytics, `build.gradle.kts`) chỉ nên nằm ở 1 lane; nhiều lane cần → lane đó chạy cuối bằng `after`.
 4. Lane chỉ có bug `none`/`unit`/`preview` xong sớm, PR ready ngay; lane có bug `device` mở PR **draft** tới khi job device pass. Muốn PR ready sớm → tách bug `device` ra lane riêng.
 5. Thứ tự ưu tiên chạy: lane có Highest/crash trước (đặt tên `L1`, `L2`… theo ưu tiên; `next-lanes` sắp tự nhiên, `L2` trước `L10`).
@@ -106,7 +106,7 @@ Fix **độc lập** (group riêng, lane riêng nếu có thể): crash Highest,
 }
 ```
 
-Field bắt buộc: issue fixable → `kind, verify, group, reason, spec_verdict: "confirmed", spec_ref` (+ `repro_first` tuỳ chọn); issue loại → `kind, reason` (không `group`), `needs-confirm` thêm `question`; group → `issues, files, cause` (+ `shared_files`, `new_files_ok`); lane → `groups` (+ `after`, `slug`). Đường dẫn file repo-relative. Mọi key trong `bugs.json` phải có trong `issues` (`check-plan --bugs` bắt).
+Field bắt buộc: issue fixable → `kind, verify, group, reason, spec_verdict: "confirmed", spec_ref` (+ `repro_first` tuỳ chọn); issue loại → `kind, reason` (không `group`), `needs-confirm` thêm `question`; group → `issues, files, cause` (+ `shared_files`, `new_files_ok`); lane → `groups` (+ `after`, `slug`). Đường dẫn file repo-relative. Mọi key trong `bugs.json` phải có trong `issues` (`check-plan --bugs` bắt). Key issue: Jira `PROJ-123` hoặc `TASK-<slug>` cho việc không có Jira (slug chữ thường, ≥1 chữ cái; script bỏ qua khi `jira-sync`).
 
 ## `confirm-checklist.md` — câu hỏi không chặn tiến độ
 
@@ -134,6 +134,7 @@ Thứ tự: bug ưu tiên cao trước; gom câu hỏi trùng chủ đề (vd m�
   - **A (fix)** → issue thành `code`/`ui`/`content` + `spec_verdict: confirmed`, `spec_ref: "User xác nhận <ngày>: <tóm tắt>"`, tạo group + lane **mới** (`C1`, `C2`…; không nhét vào lane đang chạy); đụng file của lane đang chạy → `after: [<lane đó>]`. `check-plan` → `load-plan` (lane đang chạy giữ nguyên trạng thái) → `next-lanes`.
   - **B (không fix)** → `not-a-bug`, `reason` = câu trả lời; ghi vào báo cáo để gửi tester/BA.
   - Đánh dấu `[x]` + ghi câu trả lời trong `confirm-checklist.md`.
+- Lane chờ câu trả lời/quyết định ngoài (không phải lỗi agent) → `S lane B <L> status=blocked note=…`; trả lời xong `status=planned` (hoặc tiếp tục agent). Lane bị huỷ/gộp vào lane khác → `S lane-remove B <L> --plan B/plan.json`, gán lại group mồ côi vào lane còn lại rồi `check-plan` + `load-plan` (không sửa `plan.json` tay để gỡ lane).
 - Chưa trả lời khi đóng batch → liệt kê trong báo cáo cuối, batch vẫn đóng được.
 
 ## Trình user (trước Phase 4) — ghi `B/plan-summary.md`
