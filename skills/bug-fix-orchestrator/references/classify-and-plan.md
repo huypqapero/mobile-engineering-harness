@@ -137,6 +137,31 @@ Thứ tự: bug ưu tiên cao trước; gom câu hỏi trùng chủ đề (vd m�
 - Lane chờ câu trả lời/quyết định ngoài (không phải lỗi agent) → `S lane B <L> status=blocked note=…`; trả lời xong `status=planned` (hoặc tiếp tục agent). Lane bị huỷ/gộp vào lane khác → `S lane-remove B <L> --plan B/plan.json`, gán lại group mồ côi vào lane còn lại rồi `check-plan` + `load-plan` (không sửa `plan.json` tay để gỡ lane).
 - Chưa trả lời khi đóng batch → liệt kê trong báo cáo cuối, batch vẫn đóng được.
 
+## Decision board — `B/decisions-pending.md`
+
+Mỗi quyết định cần PO/BA/user có **một ID** (`D1`, `D2`… tăng dần, không tái dùng). Gom câu hỏi trùng chủ đề (nhiều bug cùng hỏi "tắt remote key X") vào một ID. Chi tiết từng bug vẫn ở `confirm-checklist.md`; board chỉ là chỉ mục:
+
+```
+| ID | Câu hỏi (1 dòng) | Bug | Lựa chọn | Đề xuất | Trạng thái |
+| D1 | Ẩn hay disable nút Retry khi offline? | PROJ-12, -13 | A. ẩn / B. disable | A | open |
+| D2 | Quality có ẩn 360/480? | PROJ-23 | A. ẩn / B. giữ | B | answered A · 261110 · PO (ảnh sheet) |
+```
+
+- Mỗi tin gửi user chỉ liệt kê dòng `open` **mới hoặc đổi** (ID + câu hỏi + lựa chọn + đề xuất), không nhắc lại dòng đã gửi trừ khi user hỏi; user trả lời theo ID ("D1=A, D2=B"). Quyết định nằm trong ảnh/sheet → chép nguyên văn nguồn vào cột Trạng thái.
+- Có câu trả lời → cập nhật `answered <lựa chọn> · <ngày> · <nguồn>`, áp dụng như §Không chặn tiến độ (mục `[x]` trong checklist, bug vào lane `C<n>` hoặc `not-a-bug`), sửa `spec_ref` thành `D<id>`.
+- Quyết định `answered` đổi hành vi so với spec → giao `general-purpose` ghi DEC vào file decisions-outside-spec của repo (id DEC kế tiếp theo quy ước repo; ghi ID board, ngày, nguồn, bug liên quan) trong **một PR docs của batch** (draft, không chặn lane). Repo không có file đó → ghi trong báo cáo cuối.
+
+## Quyết định đổi sau khi PR đã ready
+
+PO/BA đổi quyết định cho bug mà PR đã `gh pr ready` (hoặc Jira đã Resolved). Chưa merge:
+1. `gh pr ready <pr> --undo` (về draft); `S lane B <L> status=running ready=no`; `S jira-sync B` rồi đưa các issue bị ảnh hưởng về **In Progress**.
+2. Ghi quyết định vào board (ID mới hoặc `answered` đổi), cập nhật `spec_ref`/`verify` trong plan, `check-plan` + `load-plan`.
+3. SendMessage `bug-fixer` của lane (agent đã kết thúc → spawn mới kèm brief + diff hiện tại): quyết định mới, issue ảnh hưởng, cập nhật `fix-design.md`; lane chạy lại gate fresh-with-main.
+4. Evidence cũ của issue thành stale: device job đã pass không còn giá trị — `device-request` lại với APK mới nếu tier `device`.
+5. `bug-reviewer` review vòng mới (đếm lại từ vòng 1 cho thay đổi do quyết định) → APPROVE → `gh pr ready` + Resolved.
+
+PR đã merge rồi → không hạ draft: lane mới (`C<n>`, PR mới từ base), issue về **Reopened/In Progress**.
+
 ## Trình user (trước Phase 4) — ghi `B/plan-summary.md`
 
 ```

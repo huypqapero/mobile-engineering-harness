@@ -57,7 +57,7 @@ Không có PR nào ready khi chưa có `bug-reviewer` APPROVE. Không dùng agen
 
 ## Phase 1 — Intake + context pack (leader)
 
-Theo `references/intake-and-context.md`: Jira → `B/bugs.json` (+ ảnh đính kèm), Confluence → `B/context/spec.md` (ghi version), Figma → `B/context/figma-index.json` (ưu tiên screen registry của repo), docs tham chiếu → `B/context/references.md`. Bug thiếu thông tin tối thiểu → `needs-info`, không đoán. Việc không có Jira (user giao miệng/ảnh) → key `TASK-<slug>` (chữ thường, ≥1 chữ cái) trong `bugs.json` (`url: null`); vào plan/lane/hàng chờ thiết bị như bug thường, không bao giờ transition Jira.
+Theo `references/intake-and-context.md`: Jira → `B/bugs.json` (+ đính kèm tải về `evidence/<KEY>/jira/`), Confluence → `B/context/spec.md` (ghi version; luôn so version live với version docs repo, lệch → `spec-delta.md` trước khi coi bug là "chờ BA"), Figma → `B/context/figma-index.json` (ưu tiên screen registry của repo), docs tham chiếu → `B/context/references.md`. Bug thiếu thông tin tối thiểu → `needs-info`, không đoán. Việc không có Jira (user giao miệng/ảnh) → key `TASK-<slug>` (chữ thường, ≥1 chữ cái) trong `bugs.json` (`url: null`); vào plan/lane/hàng chờ thiết bị như bug thường, không bao giờ transition Jira.
 
 ## Phase 2 — Scout một lần (agent `bug-scout`)
 
@@ -71,7 +71,7 @@ Theo `references/classify-and-plan.md`. **Bước 0 bắt buộc: so 1-1 từng 
 S check-plan B/plan.json --bugs B/bugs.json --repo R --batch B
 ```
 
-Exit ≠ 0 → sửa plan, không bỏ qua (`--batch` bỏ qua chồng file với lane đã merge). Gỡ lane: `S lane-remove B <L> --plan B/plan.json`, không sửa tay. Ghi `B/plan-summary.md` (lane → bug → verify → PR dự kiến; bug bị loại; điểm cần user quyết) và `B/confirm-checklist.md`, trình user. **Chờ user duyệt** (trừ `--yes` hoặc user đã nói "fix luôn bug chắc chắn" — khi đó chạy luôn lane confirmed, checklist trả lời bất đồng bộ); user sửa plan → sửa `plan.json`, check lại. Duyệt xong mới `S load-plan B B/plan.json --bugs B/bugs.json --repo R`, rồi gỡ `R`.
+Exit ≠ 0 → sửa plan, không bỏ qua (`--batch` bỏ qua chồng file với lane đã merge). Gỡ lane: `S lane-remove B <L> --plan B/plan.json`, không sửa tay. Ghi `B/plan-summary.md` (lane → bug → verify → PR dự kiến; bug bị loại; điểm cần user quyết), `B/confirm-checklist.md` và bảng ID quyết định `B/decisions-pending.md` (user trả lời theo ID, không lặp lại câu hỏi mỗi tin), trình user. **Chờ user duyệt** (trừ `--yes` hoặc user đã nói "fix luôn bug chắc chắn" — khi đó chạy luôn lane confirmed, checklist trả lời bất đồng bộ); user sửa plan → sửa `plan.json`, check lại. Duyệt xong mới `S load-plan B B/plan.json --bugs B/bugs.json --repo R`, rồi gỡ `R`.
 
 Crash chưa có stack (`repro_first: true`): trước khi lane chạy, `S device-request B <KEY> --lane <L> --purpose repro` để verifier tái hiện + lấy logcat; lane chứa bug đó chờ (`S lane B <L> status=waiting`) tới khi có log. Không có thiết bị → xin logcat/video từ reporter, bug giữ `blocked`.
 
@@ -84,10 +84,12 @@ Crash chưa có stack (`repro_first: true`): trước khi lane chạy, `S device
 
 | Lane status | Leader làm |
 |---|---|
-| `DONE` | Ghi PR (draft) vào state; spawn `bug-reviewer` cho lane (worktree, base, evidence). `APPROVE` → báo user (lane, PR, bug, verify), chạy Phase 5 nếu có device job, không còn device job thì `gh pr ready` + chuyển Jira các bug `verified` của lane sang **Resolved** (§Jira status). `REQUEST_CHANGES` → SendMessage findings cho chính `bug-fixer` đó, review lại sau khi push (tối đa 2 vòng, vượt → lane `FAILED`, báo user). `ESCALATE` → hỏi user |
+| `DONE` | Ghi PR (draft) vào state; spawn `bug-reviewer` cho lane (worktree, base, evidence). `APPROVE` → nếu có finding `auto-apply`, SendMessage lane áp dụng ngay (cùng vòng, không tính vòng review mới; lane chạy lại gate rồi push) → báo user (lane, PR, bug, verify), chạy Phase 5 nếu có device job, không còn device job thì `gh pr ready` + chuyển Jira các bug `verified` của lane sang **Resolved** (§Jira status). `REQUEST_CHANGES` → SendMessage findings (kể cả `auto-apply`) cho chính `bug-fixer` đó, review lại sau khi push (tối đa 2 vòng, vượt → lane `FAILED`, báo user). `ESCALATE` → hỏi user |
 | `NEEDS_CONTEXT` (cần file ngoài lane) | Kiểm đụng lane khác: không đụng → mở rộng `files` trong plan, `load-plan`, SendMessage cho lane tiếp tục; đụng → thêm `after` hoặc chuyển bug sang lane kia |
 | `DONE_WITH_CONCERNS` / spec-gap | Chuyển câu hỏi cho user; bug liên quan → `blocked` |
 | `BLOCKED` / `FAILED` | Lane đợi quyết định/thông tin ngoài → `S lane B <L> status=blocked note=…` (không chiếm chỗ `max_lanes`). Báo user lý do 1 dòng; không chạy lại từ đầu — tiếp tục agent cũ bằng SendMessage khi có thông tin mới |
+
+**Quyết định đổi sau khi PR đã ready** → làm theo `references/classify-and-plan.md` §Quyết định đổi sau khi PR đã ready (hạ draft, Jira In Progress, lane sửa, review lại).
 
 **PR của batch được merge** (user merge, phát hiện qua `gh pr list --state merged` mỗi lần resume/status/lane báo về): chuyển Jira theo §Jira status, báo các lane đang chạy có `after` PR đó hoặc chung file (SendMessage: cần gate fresh-with-main), chạy lại health check main (`references/intake-and-context.md` §Main health) trước khi spawn lane kế tiếp.
 

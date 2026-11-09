@@ -6,6 +6,12 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 
 ## [Unreleased]
 
+### Changed — bug-fix-orchestrator (retro improvements)
+
+- **Lane gate "fresh with main"** trước build APK / dispatch device / push (merge base khi lane `after` đã merge hoặc base có commit đụng file lane); PR đã `MERGED`/`CLOSED` thì mở branch + PR mới thay vì push vào branch cũ.
+- **`bfo` mới**: `device-request --apk --head --priority` + `device-dispatch` chỉ giao job sẵn sàng (APK tồn tại, head khớp worktree lane; exit 4 khi chưa sẵn sàng); `jira-sync` in kế hoạch chuyển trạng thái Jira từ state (không gọi Jira); key `TASK-<slug>` cho việc không có Jira; `check-plan --batch` bỏ qua chồng file với lane đã merge; lane `blocked` và `lane-remove`. APK luôn build bằng `assemble` trước khi giao job (bỏ so mtime).
+- **Jira**: đồng bộ sau mỗi sự kiện; merge trước verify → Reviewing ngay, job vẫn chạy, fail thì lane/PR mới + reopen. **Quyết định**: bảng `decisions-pending.md` theo ID, DEC vào một PR docs, quy trình chuẩn khi quyết định đổi sau khi PR ready. **Intake**: preflight spec drift, main health check, đính kèm Jira, video ngoài/reopen. Mới `references/device-playbook.md` (đặc thù từng máy ở `.harness-overlay/devices.md` của repo app), log đo lường cho bug thời gian/đếm, suggestion `auto-apply` của `bug-reviewer`, bộ `evals/`.
+
 ## [0.23.0] — 2026-11-09
 
 ### Added — Batch bugfix orchestrator

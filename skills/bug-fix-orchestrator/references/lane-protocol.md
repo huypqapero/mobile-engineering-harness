@@ -47,6 +47,12 @@ Copy input build bị gitignore có ở main checkout (chỉ file tồn tại): 
 - Mỗi issue: `S issue B <KEY> status=fixing` khi bắt đầu, `status=fixed fix_commit=<sha>` khi xong.
 - Không `git stash`; cần cất tạm → commit WIP rồi squash trước khi push.
 
+### Log đo lường (bug thời gian / đếm, verify `device`)
+
+Ảnh chụp lệch vài giây nên không đo được thời lượng hay số lần. Bug có yếu tố thời gian (delay, countdown, animation, timeout, cooldown quảng cáo) hoặc đếm (số lần hiện, retry) → thêm log ngay trong commit fix:
+- Mức debug qua logger sẵn có của repo (vd Timber), tag riêng ổn định `<Feature>Metric`, mỗi mốc một dòng `event=<tên> value=<giá trị>`. Không log PII/token; không thêm logger/tree mới.
+- `device-checklist.md` ghi lệnh đo (`logcat -c` rồi `logcat -v time -s <TAG>`), mốc bắt đầu/kết thúc và ngưỡng PASS (vd chênh timestamp ≥ N s, dung sai); verifier kết luận bằng hiệu timestamp.
+
 ## 4. Gate "fresh with main" (trước build APK, dispatch device job và push)
 
 Nhánh lane cũ so với base là nguyên nhân verify trên code lạc hậu (APK thiếu fix đã merge) và push vào PR đã đóng. Trong `WT`:
@@ -102,4 +108,4 @@ gh pr create --base <base | branch lane trước> --head "$BRANCH" --draft \
 
 ## 8. Kết thúc
 
-Giữ worktree (device verifier cài APK của lane, leader dọn sau khi PR merge). Dừng process nền bạn tự start (watcher, server); **không** chạy `./gradlew --stop` — lệnh đó dừng daemon chung của mọi lane đang build. Trả status block của `agents/bug-fixer.md`. Leader sẽ gửi review của `bug-reviewer`: `REQUEST_CHANGES` → sửa đúng finding trong cùng worktree, cập nhật `fix-design.md`/`self-review.md`, push, báo lại (tối đa 2 vòng).
+Giữ worktree (device verifier cài APK của lane, leader dọn sau khi PR merge). Dừng process nền bạn tự start (watcher, server); **không** chạy `./gradlew --stop` — lệnh đó dừng daemon chung của mọi lane đang build. Trả status block của `agents/bug-fixer.md`. Finding `[auto-apply]` của `bug-reviewer` (kể cả khi verdict `APPROVE`) → áp dụng đúng dòng thay thế ngay, chạy lại gate, push. Leader sẽ gửi review của `bug-reviewer`: `REQUEST_CHANGES` → sửa đúng finding (kể cả `auto-apply`) trong cùng worktree, cập nhật `fix-design.md`/`self-review.md`, push, báo lại (tối đa 2 vòng).

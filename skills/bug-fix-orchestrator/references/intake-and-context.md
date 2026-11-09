@@ -10,9 +10,10 @@ B/ (= <repo>/plans/bugfix-batch-<id>/)
 │   ├── spec.md                      # Confluence snapshot (markdown) + header version
 │   ├── figma-index.json             # màn → node id → preview FQN → screenshot
 │   ├── references.md                # tóm tắt docs tham chiếu của repo + đường dẫn
+│   ├── spec-delta.md                # mục spec đổi giữa version repo ghi và version live
 │   └── main-health.md               # kết quả health check origin/main
 ├── scout.json, scout-report.md      # bug-scout
-├── plan.json, confirm-checklist.md  # Phase 3
+├── plan.json, confirm-checklist.md  # Phase 3 (+ decisions-pending.md: bảng ID quyết định)
 └── evidence/<KEY>/                  # evidence.json (lane + device verifier), jira/ (đính kèm Jira)
 ```
 
@@ -49,7 +50,7 @@ Normalize → `bugs.json`:
 
 - Ưu tiên `page_id` (URL `display/<SPACE>/<Title>` → `confluence_get_page(title, space_key)` 1 lần để lấy id; về sau dùng id). Docs của repo có thể ghi sẵn page id.
 - MCP không ghi file, nên **không chép lại cả trang**. `B/context/spec.md` = header (`pageId`, `version` lấy từ metadata, `fetched_at`) + các mục spec liên quan tới bug trong batch (trích nguyên văn, theo `screen_hint`). Cache `plans/bugfix-cache/spec-<pageId>.md` giữ cùng header; so field `version`: bằng nhau → dùng lại, không fetch.
-- Docs của repo có ghi version spec đã đối chiếu (vd "v25") khác version live → ghi cảnh báo vào `spec.md` và `plan-summary.md`: map spec↔code có thể cũ ở các mục đổi; bug trích spec cũ → kiểm lại với bản live.
+- **Preflight spec drift (luôn làm ở Phase 1, trước khi chốt bug "chờ BA")**: lấy `version` live của trang rồi so với version ghi trong docs của repo (`docs/references/*spec*summary*`, header map spec↔code, decisions). Bằng nhau → xong. Lệch → ghi cảnh báo vào `spec.md` + `plan-summary.md` và giao `general-purpose` dùng `confluence_get_page_diff` giữa hai version (hoặc đọc lại trang) → `B/context/spec-delta.md`: chỉ các mục đổi liên quan bug đang `needs-confirm` / `spec-gap` / `not-a-bug` / `already-fixed`, mỗi mục trích nguyên văn + số version. Bug "chờ BA" đã có câu trả lời trong delta → chuyển lại `confirmed` + `spec_ref` version mới; bug trích spec cũ → kiểm lại với bản live. Map spec↔code của repo có thể cũ ở các mục đổi.
 - Spec link tới trang con / sheet ads / sheet tracking: chỉ fetch khi bug cần (vd bug ads → sheet kịch bản ads). Google Sheet không đọc được qua MCP → ghi link vào context, không đoán nội dung.
 - Thứ tự ưu tiên khi lệch: lấy theo quy ước của repo (vd `docs/references/README.md`). Mặc định: **UI theo Figma live, hành vi theo Confluence**.
 
