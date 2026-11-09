@@ -48,7 +48,7 @@ Cài APK build từ base (`<remote>/<base>`, build trong `R` hoặc một worktr
 
 1. `S device-done B <JOB> --result pass|fail`.
 2. Cập nhật `evidence/<KEY>/evidence.json`: thêm artifact device, AC runtime → `PASS`/`FAIL`, `verdict`.
-3. PASS: khi mọi issue của lane `verified` → `gh pr ready <pr>`, tick checklist trong PR body. FAIL: SendMessage cho lane `bug-fixer` (cùng agent) kèm bước fail + log để fix lại (cap 2 vòng), job mới xếp lại sau khi lane push.
+3. PASS: khi mọi issue của lane `verified` → `gh pr ready <pr>`, tick checklist trong PR body. FAIL: SendMessage cho lane `bug-fixer` (cùng agent; agent đã kết thúc → spawn mới với brief đủ ngữ cảnh) kèm bước fail + đường dẫn evidence/log; **lane tự truy root cause** (leader không tự đọc log/dexdump/grep), fix lại (cap 2 vòng). Lane push code mới → `bug-reviewer` review lại → job mới xếp lại.
 4. `S device-dispatch B …` để lấy job tiếp.
 
 Agent device treo > 45 phút (`device-dispatch` cảnh báo trên stderr) → kiểm agent; treo thật → `TaskStop`, `S device-release B <SERIAL>` (job quay về pending).

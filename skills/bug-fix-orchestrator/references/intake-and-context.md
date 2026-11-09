@@ -12,7 +12,7 @@ B/ (= <repo>/plans/bugfix-batch-<id>/)
 │   └── references.md                # tóm tắt docs tham chiếu của repo + đường dẫn
 ├── input/<KEY>/                     # ảnh/video đính kèm Jira
 ├── scout.json, scout-report.md      # bug-scout
-├── plan.json, questions-for-po.md   # Phase 3
+├── plan.json, confirm-checklist.md  # Phase 3
 └── evidence/<KEY>/evidence.json     # lane + device verifier
 ```
 
@@ -91,6 +91,8 @@ Figma index: B/context/figma-index.json   References: B/context/references.md
 Cache dùng lại (không scout lại các area này): <dán area + notes>
 Area cần scout: <list>   Bug giao cho agent này: <tất cả | danh sách khi chia theo area>
 Việc đang làm (tránh trùng): B/context/in-flight.md (PR mở, worktree khác)
+Mỗi bug thêm so 1-1 spec: spec_quote (trích nguyên văn + mục/node, hoặc "spec không nói"), code_behavior (file:line),
+  spec_verdict_hint: confirmed | not-a-bug | suspect + 1 câu lý do (leader chốt ở Phase 3)
 Output: B/scout.json (hoặc B/scout-<area>.json khi chia) + B/scout-report.md theo agents/bug-scout.md
 Ngôn ngữ báo cáo: tiếng Việt. Timezone Asia/Saigon.
 ```
