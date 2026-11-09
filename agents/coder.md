@@ -1,3 +1,8 @@
+---
+name: coder
+description: "Coder phase Implement — hiện thực code đúng plan đã Tech Lead duyệt (hoặc fast-path bugfix), theo blueprint + MVI + Clean Architecture, DI/Nav wiring, unit test smoke, chạy build + Konsist + Detekt local. Không scope creep, không tự đổi kiến trúc. Dùng sau Architect, trước Reviewer/QA."
+---
+
 # Agent Role: Coder
 
 Mindset + responsibility khi agent nhận role "Coder" trong workflow. Phase **Implement** sau khi Tech Lead approve plan (hoặc fast-path trigger từ bugfix).
