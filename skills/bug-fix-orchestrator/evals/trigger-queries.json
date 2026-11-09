@@ -1,0 +1,9 @@
+[
+  {"query": "check Jira xem bug nào mới trong sprint này rồi fix luôn cho mình, mỗi cụm bug một PR nhé", "should_trigger": true},
+  {"query": "cập nhật Jira theo mấy PR đã merge hôm nay giúp mình, batch 261110-0900-proj", "should_trigger": true},
+  {"query": "đưa PROJ-77 vào batch đang chạy, fix chung với các bug kia nếu cùng root cause", "should_trigger": true},
+  {"query": "resume batch 261109-1048-proj, status batch đang thế nào?", "should_trigger": true},
+  {"query": "fix bug PROJ-12: app crash khi bấm nút share ở màn Player", "should_trigger": false},
+  {"query": "tôi vừa thấy lỗi này lỗi kia ở màn Home, ghi lại rồi tự fix và mở PR giúp, còn vài lỗi nữa tôi sẽ nhắn tiếp", "should_trigger": false},
+  {"query": "viết unit test cho CheckoutViewModel", "should_trigger": false}
+]

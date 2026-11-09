@@ -58,7 +58,7 @@ DEVICE_STALE_SECONDS = 45 * 60
 
 
 def natural_key(text: str):
-    """L2 < L10, AAP884-2 < AAP884-10."""
+    """L2 < L10, PROJ-2 < PROJ-10."""
     return [int(part) if part.isdigit() else part for part in re.split(r"(\d+)", str(text))]
 
 

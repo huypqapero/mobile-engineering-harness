@@ -80,23 +80,23 @@ Fix **độc lập** (group riêng, lane riêng nếu có thể): crash Highest,
 ```json
 {
   "issues": {
-    "AAP884-50": {"title": "[Player] Bỏ nút Share", "kind": "ui", "verify": "preview",
+    "PROJ-50": {"title": "[Player] Bỏ nút Share", "kind": "ui", "verify": "preview",
                   "group": "player-actions", "screen": "3.5", "figma_node": "17:6324",
                   "spec_verdict": "confirmed", "spec_ref": "Figma 17:6324: cột action không có Share",
                   "reason": "PlayerScreen còn ShareButton"},
-    "AAP884-48": {"title": "Crash Watch ad", "kind": "code", "verify": "device",
+    "PROJ-48": {"title": "Crash Watch ad", "kind": "code", "verify": "device",
                   "group": "unlock-ad-crash", "spec_verdict": "confirmed",
                   "spec_ref": "Crash luôn là bug (không cần spec)", "reason": "Crash runtime khi load reward ad"},
-    "AAP884-23": {"title": "Quality hiện 360/480/720", "kind": "needs-confirm",
+    "PROJ-23": {"title": "Quality hiện 360/480/720", "kind": "needs-confirm",
                   "reason": "Spec 3.6 chỉ liệt kê Auto/HD, không nói ẩn mức thấp",
                   "question": "Có ẩn 360/480 không, hay tester kỳ vọng ngoài spec?"},
-    "AAP884-53": {"title": "Thiếu login demo", "kind": "spec-gap",
+    "PROJ-53": {"title": "Thiếu login demo", "kind": "spec-gap",
                   "reason": "Spec: tài khoản demo lấy từ remote config SDK — key nào? hỏi PO"}
   },
   "groups": {
-    "player-actions": {"issues": ["AAP884-50"], "files": ["app/src/main/java/.../player/PlayerScreen.kt"],
+    "player-actions": {"issues": ["PROJ-50"], "files": ["app/src/main/java/.../player/PlayerScreen.kt"],
                        "cause": "Cột action còn Share"},
-    "unlock-ad-crash": {"issues": ["AAP884-48"], "files": ["app/src/main/java/.../unlock/UnlockViewModel.kt"],
+    "unlock-ad-crash": {"issues": ["PROJ-48"], "files": ["app/src/main/java/.../unlock/UnlockViewModel.kt"],
                         "cause": "Reward ad gọi show khi chưa load xong"}
   },
   "lanes": {
@@ -113,7 +113,7 @@ Field bắt buộc: issue fixable → `kind, verify, group, reason, spec_verdict
 Mỗi bug `needs-confirm`/`spec-gap`/`conflict` một mục, đủ ngữ cảnh để user trả lời **không cần mở Jira/code**:
 
 ```
-### [ ] AAP884-23 — [Detail film][Quality] Đang hiển thị các option 360/480/720
+### [ ] PROJ-23 — [Detail film][Quality] Đang hiển thị các option 360/480/720
 - Tester báo: <actual> → mong đợi <expected>
 - Spec nói: "<trích nguyên văn>" (Confluence v<N>, mục <x>) · Figma: <node / không có>
 - App hiện tại: <hành vi + file:line>
@@ -139,11 +139,11 @@ Thứ tự: bug ưu tiên cao trước; gom câu hỏi trùng chủ đề (vd m�
 ## Trình user (trước Phase 4) — ghi `B/plan-summary.md`
 
 ```
-Batch 261107-1904-aap884 — 52 bug: 41 vào batch / 11 loại
+Batch 261107-1904-proj — 52 bug: 41 vào batch / 11 loại
 | Lane | PR dự kiến | Bug | Verify | Ghi chú |
-| L1 | fix/aap884-unlock-ad-crash | AAP884-48, -10 | device | crash Highest, PR riêng |
-| L2 | fix/aap884-player-ui | -50, -23 | preview, unit | |
-Bị loại: AAP884-53 spec-gap (câu hỏi PO), ...
+| L1 | fix/proj-unlock-ad-crash | PROJ-48, -10 | device | crash Highest, PR riêng |
+| L2 | fix/proj-player-ui | -50, -23 | preview, unit | |
+Bị loại: PROJ-53 spec-gap (câu hỏi PO), ...
 Device: 9 bug cần thiết bị → hàng chờ trên emulator-5554
 ```
 

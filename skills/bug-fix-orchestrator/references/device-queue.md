@@ -21,7 +21,7 @@ Gọi `S device-dispatch B --exclude <serial…>` mỗi khi:
 `--exclude` = thiết bị đang bận ngoài batch: task ARTEMIS khác (`mobile_diagnose` → `tasks.active`), session `bug-note` đang giữ (`bug_queue.py list`), hoặc user nói đang dùng. Không chắc → coi là bận.
 
 Kết quả:
-- In `DJ-001 emulator-5554 AAP884-48 verify` → spawn verifier cho từng dòng (cột cuối `repro` hoặc `verify`).
+- In `DJ-001 emulator-5554 PROJ-48 verify` → spawn verifier cho từng dòng (cột cuối `repro` hoặc `verify`).
 - Exit 3 → còn job nhưng không có thiết bị rảnh: báo user "N bug đang chờ thiết bị", **không** chiếm thiết bị đang bận, không poll vòng lặp — chờ sự kiện kế tiếp ở trên.
 - Không in gì, exit 0 → hết job.
 
@@ -36,6 +36,8 @@ Checklist: <B>/evidence/<KEY>/device-checklist.md
 Bug gốc: actual=<…> expected=<…>  Điều kiện: <remote key, mạng, quyền, ads test…>
 Chụp evidence vào <B>/evidence/<KEY>/device/ (screenshot mỗi bước, logcat khi crash: adb -s <SERIAL> logcat -d > logcat.txt).
 Không sửa code. Trả: PASS/FAIL từng bước + đường dẫn ảnh + log.
+Đọc trước: <SKILL_DIR>/references/device-playbook.md
+Đặc thù máy <SERIAL>: <dán mục khớp từ <repo app>/.harness-overlay/devices.md nếu có | không có>
 ```
 
 Model ARTEMIS: thao tác ngắn/đơn giản → Flash; flow dài, cần log/ADB/report → Pro (xem rule ARTEMIS của user). Chờ thời gian (vd hộp quà 30s) → trừ độ trễ bước của model.

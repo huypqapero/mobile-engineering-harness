@@ -9,11 +9,11 @@ B/ (= <repo>/plans/bugfix-batch-<id>/)
 ├── context/
 │   ├── spec.md                      # Confluence snapshot (markdown) + header version
 │   ├── figma-index.json             # màn → node id → preview FQN → screenshot
-│   └── references.md                # tóm tắt docs tham chiếu của repo + đường dẫn
-├── input/<KEY>/                     # ảnh/video đính kèm Jira
+│   ├── references.md                # tóm tắt docs tham chiếu của repo + đường dẫn
+│   └── main-health.md               # kết quả health check origin/main
 ├── scout.json, scout-report.md      # bug-scout
 ├── plan.json, confirm-checklist.md  # Phase 3
-└── evidence/<KEY>/evidence.json     # lane + device verifier
+└── evidence/<KEY>/                  # evidence.json (lane + device verifier), jira/ (đính kèm Jira)
 ```
 
 ## 1. Jira
@@ -27,21 +27,23 @@ Input chấp nhận:
 | `selectedIssue=<KEY>` trong URL | Đó là 1 issue ví dụ — hỏi user muốn cả board/sprint hay chỉ issue đó nếu không rõ |
 | Danh sách key | `jira_get_issue` từng key (song song) |
 
-`jira_search` có `description` đã đủ cho phần lớn bug — **không** gọi `jira_get_issue` cho từng issue. Chỉ gọi (`fields="description,attachment", include="comments", comment_limit=10, update_history=false`) cho bug thiếu expected/repro hoặc cần comment/ảnh. Không đưa `attachment` vào `jira_search` (kèm email + avatar người báo, phình output). Ảnh/video: `jira_download_attachments` vào `B/input/<KEY>/`, chỉ khi bug UI/flow/crash cần nhìn.
+`jira_search` có `description` đã đủ cho phần lớn bug — **không** gọi `jira_get_issue` cho từng issue. Chỉ gọi (`fields="description,attachment", include="comments", comment_limit=10, update_history=false`) cho bug thiếu expected/repro hoặc cần comment/ảnh. Không đưa `attachment` vào `jira_search` (kèm email + avatar người báo, phình output). Đính kèm: bug có attachment (ảnh/video/log) → `jira_download_attachments` vào `B/evidence/<KEY>/jira/` và ghi đường dẫn vào `attachments`; scout/lane đọc từ đó, không tự tải lại.
 
 Normalize → `bugs.json`:
 
 ```json
-{"AAP884-50": {"title": "[Player] Bỏ nút Share trong màn xem phim", "priority": "Medium",
+{"PROJ-50": {"title": "[Player] Bỏ nút Share trong màn xem phim", "priority": "Medium",
   "screen_hint": "Player", "actual": "...", "expected": "...", "repro": "...",
-  "frequency": "Always", "attachments": ["input/AAP884-50/a.png"], "comments": ["..."],
-  "url": "https://jira.../browse/AAP884-50"}}
+  "frequency": "Always", "attachments": ["evidence/PROJ-50/jira/a.png"], "comments": ["..."],
+  "url": "https://jira.../browse/PROJ-50"}}
 ```
 
 - `screen_hint` lấy từ tiền tố `[...]` của title (`[For you][Ad native full]` → For You / Ad native full).
 - Description thường có "Kết quả thực tế / Kết quả mong đợi" → tách `actual`/`expected`.
 - Thiếu cả `expected` lẫn tham chiếu spec/Figma, hoặc không biết màn nào → `needs-info` ở Phase 3.
 - Bỏ field rác (`customfield_*` null, devSummary). Không chép email/tên reporter vào file.
+- **Video chỉ có link ngoài** (streamable, drive… agent không xem được) và description không đủ bước/kỳ vọng → `needs-info` + câu hỏi cho QA: mô tả bước, build, logcat. Không để scout suy đoán từ video.
+- **Bug reopen** (QA test lại, status Reopened hoặc comment "vẫn lỗi") → hỏi QA build/commit SHA đã test trước khi xếp job repro; build cũ hơn fix đã merge → `already-fixed`, đề nghị test lại bản mới.
 
 ## 2. Spec (Confluence)
 
@@ -63,7 +65,14 @@ Normalize → `bugs.json`:
 
 Nếu repo có quy định "dev tự quyết hành vi ngoài spec phải ghi vào file decisions trong cùng PR" → đưa vào brief lane.
 
-## 5. Scout cache (dùng lại giữa các batch)
+## 5. Main health (Phase 0, và sau mỗi PR của batch được merge)
+
+Main hỏng thì mọi lane không chạy được gate chung. Giao `general-purpose` (không phải leader) chạy trong `R` (hoặc worktree detached tại `<remote>/<base>` mới nhất):
+1. Compile test source của module chính (vd `./gradlew :app:compile<Variant>UnitTestKotlin`) + test wiring DI/smoke nếu repo có (vd `DiWiringTest`). Lệnh cụ thể lấy từ `context/references.md`.
+2. Ghi `B/context/main-health.md`: commit, lệnh, PASS/FAIL, 10 dòng lỗi đầu, commit nghi ngờ (`git log` các PR vừa merge, ngoài batch cũng tính).
+3. FAIL → báo user ngay + đề xuất lane `main-fix` (`kind: code`, `verify: unit`, chạy đầu; các lane cần gate `after` nó). Lane không bị ảnh hưởng vẫn chạy; lane bị chặn gate ghi rõ gate nào hỏng do main trong PR.
+
+## 6. Scout cache (dùng lại giữa các batch)
 
 Vị trí: `<repo>/plans/bugfix-cache/scout-<project>.json` + `.md` (không commit nếu repo ignore `plans/`).
 
