@@ -6,6 +6,8 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 
 ## [Unreleased]
 
+## [0.23.0] — 2026-11-09
+
 ### Added — Batch bugfix orchestrator
 
 - **`bug-fix-orchestrator`**: leader điều phối batch bug từ Jira (JQL, board, sprint, danh sách key). Lấy spec Confluence, Figma node và docs tham chiếu của repo một lần; scout codebase một lần và lưu cache dùng lại giữa các batch; phân loại `kind` (code/ui/content/spec-gap/needs-info/…) và mức verify (`none`/`unit`/`preview`/`device`); gom group theo root cause, xếp lane worktree song song (mỗi lane 1 PR gom nhiều bug); bug cần thiết bị vào hàng chờ, chỉ chạy khi thiết bị rảnh. State `plans/bugfix-batch-<id>/` qua `scripts/bfo_state.py` (kiểm plan cơ học, giới hạn số lane, hàng chờ thiết bị), resume được.
@@ -17,6 +19,14 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 ### Changed
 
 - `bug --mode fix --parallel` chuyển sang `bug-fix-orchestrator`; xoá `skills/bug/references/mode-fix-parallel.md`. Evidence validator + schema vẫn ở `skills/bug/`.
+- **`bug-fix-orchestrator` — leader chỉ điều phối**: đọc code, tìm root cause, fix, review, chạy thiết bị và phân tích log/APK đều giao cho `bug-scout`, `bug-fixer`, `bug-reviewer`, `artemis-android`; job thiết bị fail trả về `bug-fixer` của lane thay vì leader tự điều tra.
+- **`bug-fix-orchestrator` — spec verdict gate**: Phase 3 so từng bug 1-1 với spec/Figma; chỉ fix bug có `spec_verdict=confirmed` kèm `spec_ref` trích dẫn, bug còn nghi ngờ vào `confirm-checklist.md` dạng `needs-confirm` mà không chặn lane khác. `check-plan` kiểm cơ học các trường này.
+- **`bug-fix-orchestrator` — Jira status flow**: In Progress khi lane bắt đầu, Resolved sau khi reviewer APPROVE và device pass, Reviewing khi PR head đã vào base branch; set assignee ở mọi transition.
+- **16 agent role có frontmatter** (`architect`, `coder`, `orchestrator`, `tech-lead`, `qa`, `reviewer`, `ui-judge`, …): trước đây file mở đầu bằng `# Agent Role` nên Claude Code không đăng ký, `subagent_type: architect` lỗi. Giờ spawn trực tiếp được; `reviewer`, `ui-judge`, `architect` có allowlist tool (read-only/không sửa code, vẫn tra KB).
+
+### Fixed
+
+- `coding-orchestrator` spawn agent không tồn tại (`architect-mindset`, `implementer-mindset`, `qa-mindset`, `reviewer-mindset`) → đổi thành `architect`, `coder`, `qa`, `reviewer`.
 
 ## [0.22.0] — 2026-11-06
 
