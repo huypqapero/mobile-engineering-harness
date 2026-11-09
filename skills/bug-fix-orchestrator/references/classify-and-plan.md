@@ -1,6 +1,21 @@
 # Phân loại, gom nhóm, xếp lane (Phase 3)
 
-Input: `bugs.json`, `scout.json`, `context/spec.md`, `context/figma-index.json`. Output: `plan.json` (gate bằng `bfo_state.py check-plan`) + `questions-for-po.md`. Các bước chạy tuần tự, bước sau dùng kết quả bước trước.
+Input: `bugs.json`, `scout.json`, `context/spec.md`, `context/figma-index.json`. Output: `plan.json` (gate bằng `bfo_state.py check-plan`) + `confirm-checklist.md`. Các bước chạy tuần tự, bước sau dùng kết quả bước trước.
+
+## Bước 0 — So 1-1 với spec (spec verdict)
+
+Jira không phải lúc nào cũng đúng: tester có thể hiểu nhầm, kỳ vọng vượt spec, hoặc test trên build/config khác. **Chỉ fix khi chắc chắn là bug.** Với từng bug, đặt 3 cột cạnh nhau:
+
+| Tester nói (actual/expected) | Spec/Figma nói (trích nguyên văn + mục/node) | Code đang làm (file:line từ scout) |
+
+| Kết quả so | Verdict | Xử lý |
+|---|---|---|
+| Spec/Figma nói rõ X, app làm khác X, tester đòi đúng X | `confirmed` | fix (`code`/`ui`/`content`), ghi `spec_ref` |
+| Spec/Figma nói rõ, app đã đúng, tester kỳ vọng khác | — | `not-a-bug`, trích căn cứ |
+| Spec im lặng / mơ hồ / spec ↔ Figma lệch / tester đòi thứ ngoài spec / nghi môi trường test (remote config, build cũ, ad test) / bug chỉ là ý kiến UX | nghi ngờ | `needs-confirm` + `question`, **không fix, không chặn** |
+| Spec ghi "PO confirm"/TBD | nghi ngờ | `spec-gap` (hỏi PO) |
+
+Nguồn so theo quy ước repo (mặc định UI theo Figma live, hành vi theo Confluence) + file decisions-outside-spec. Không tự suy ra "chắc là bug" từ cảm giác UX; không có căn cứ trích được → nghi ngờ. `check-plan` chặn mọi bug fixable thiếu `spec_verdict: confirmed` + `spec_ref`.
 
 ## Bước 1 — `kind`: bug này có sửa trong batch được không?
 
@@ -10,6 +25,7 @@ Input: `bugs.json`, `scout.json`, `context/spec.md`, `context/figma-index.json`.
 | `ui` | Layout/màu/text/icon/spacing lệch Figma live, thêm/bỏ phần tử theo Figma/spec | Có |
 | `content` | Chuỗi dịch, text cố định, asset, giá trị default config — không đổi logic | Có |
 | `spec-gap` | Spec mâu thuẫn Figma, spec ghi "PO confirm", yêu cầu mới chưa có trong spec/Figma | Không — câu hỏi PO |
+| `needs-confirm` | Bước 0 ra "nghi ngờ": có thể hiểu nhầm/ngoài spec, cần user/BA/tester xác nhận | Không (tạm) — vào `confirm-checklist.md`, fix ở lane sau khi được trả lời |
 | `needs-info` | Không xác định được màn/hành vi mong đợi, không có repro | Không — hỏi reporter |
 | `duplicate` | Trùng root cause *và* triệu chứng với bug khác | Không — ghi `reason: duplicate of <KEY>` |
 | `not-a-bug` | Hành vi đúng spec/decisions-outside-spec | Không — trích căn cứ |
@@ -66,9 +82,14 @@ Fix **độc lập** (group riêng, lane riêng nếu có thể): crash Highest,
   "issues": {
     "AAP884-50": {"title": "[Player] Bỏ nút Share", "kind": "ui", "verify": "preview",
                   "group": "player-actions", "screen": "3.5", "figma_node": "17:6324",
-                  "reason": "Spec: màn xem phim không có Share; PlayerScreen còn ShareButton"},
+                  "spec_verdict": "confirmed", "spec_ref": "Figma 17:6324: cột action không có Share",
+                  "reason": "PlayerScreen còn ShareButton"},
     "AAP884-48": {"title": "Crash Watch ad", "kind": "code", "verify": "device",
-                  "group": "unlock-ad-crash", "reason": "Crash runtime khi load reward ad"},
+                  "group": "unlock-ad-crash", "spec_verdict": "confirmed",
+                  "spec_ref": "Crash luôn là bug (không cần spec)", "reason": "Crash runtime khi load reward ad"},
+    "AAP884-23": {"title": "Quality hiện 360/480/720", "kind": "needs-confirm",
+                  "reason": "Spec 3.6 chỉ liệt kê Auto/HD, không nói ẩn mức thấp",
+                  "question": "Có ẩn 360/480 không, hay tester kỳ vọng ngoài spec?"},
     "AAP884-53": {"title": "Thiếu login demo", "kind": "spec-gap",
                   "reason": "Spec: tài khoản demo lấy từ remote config SDK — key nào? hỏi PO"}
   },
@@ -85,7 +106,35 @@ Fix **độc lập** (group riêng, lane riêng nếu có thể): crash Highest,
 }
 ```
 
-Field bắt buộc: issue fixable → `kind, verify, group, reason` (+ `repro_first` tuỳ chọn); issue loại → `kind, reason` (không `group`); group → `issues, files, cause` (+ `shared_files`, `new_files_ok`); lane → `groups` (+ `after`, `slug`). Đường dẫn file repo-relative. Mọi key trong `bugs.json` phải có trong `issues` (`check-plan --bugs` bắt).
+Field bắt buộc: issue fixable → `kind, verify, group, reason, spec_verdict: "confirmed", spec_ref` (+ `repro_first` tuỳ chọn); issue loại → `kind, reason` (không `group`), `needs-confirm` thêm `question`; group → `issues, files, cause` (+ `shared_files`, `new_files_ok`); lane → `groups` (+ `after`, `slug`). Đường dẫn file repo-relative. Mọi key trong `bugs.json` phải có trong `issues` (`check-plan --bugs` bắt).
+
+## `confirm-checklist.md` — câu hỏi không chặn tiến độ
+
+Mỗi bug `needs-confirm`/`spec-gap`/`conflict` một mục, đủ ngữ cảnh để user trả lời **không cần mở Jira/code**:
+
+```
+### [ ] AAP884-23 — [Detail film][Quality] Đang hiển thị các option 360/480/720
+- Tester báo: <actual> → mong đợi <expected>
+- Spec nói: "<trích nguyên văn>" (Confluence v<N>, mục <x>) · Figma: <node / không có>
+- App hiện tại: <hành vi + file:line>
+- Vì sao nghi ngờ: <hiểu nhầm? spec im lặng? ngoài scope? môi trường test?>
+- Câu hỏi: <1 câu, trả lời được bằng chọn A/B>
+- A. Fix theo Jira — phạm vi: <file/màn>, rủi ro <thấp/vừa>, verify <tier>
+- B. Không fix — đóng/không phải bug, lý do gửi tester: <1 câu>
+- Đề xuất của dev: <A|B> vì <…>
+- Trả lời: ___
+```
+
+Thứ tự: bug ưu tiên cao trước; gom câu hỏi trùng chủ đề (vd mọi câu "tắt remote key") thành một mục có nhiều key.
+
+## Không chặn tiến độ — trả lời bất đồng bộ
+
+- Lane của bug `confirmed` chạy ngay; checklist chỉ là output, leader **không chờ** trả lời. Khi user nói "fix luôn bug chắc chắn" coi như duyệt plan cho các lane đó (tương đương `--yes`).
+- User trả lời 1 mục (bất kỳ lúc nào, có thể trong session sau qua `resume <batch>`):
+  - **A (fix)** → issue thành `code`/`ui`/`content` + `spec_verdict: confirmed`, `spec_ref: "User xác nhận <ngày>: <tóm tắt>"`, tạo group + lane **mới** (`C1`, `C2`…; không nhét vào lane đang chạy); đụng file của lane đang chạy → `after: [<lane đó>]`. `check-plan` → `load-plan` (lane đang chạy giữ nguyên trạng thái) → `next-lanes`.
+  - **B (không fix)** → `not-a-bug`, `reason` = câu trả lời; ghi vào báo cáo để gửi tester/BA.
+  - Đánh dấu `[x]` + ghi câu trả lời trong `confirm-checklist.md`.
+- Chưa trả lời khi đóng batch → liệt kê trong báo cáo cuối, batch vẫn đóng được.
 
 ## Trình user (trước Phase 4) — ghi `B/plan-summary.md`
 
@@ -100,4 +149,4 @@ Device: 9 bug cần thiết bị → hàng chờ trên emulator-5554
 
 Cuối bảng: mục **Cần user quyết** (bug `conflict`, migration, tính năng lớn, bug confidence low vẫn giữ trong batch) và cảnh báo version spec nếu có.
 
-`questions-for-po.md`: mỗi bug loại 1 mục — key, câu hỏi cụ thể, đoạn spec/Figma mâu thuẫn, đề xuất mặc định của dev.
+Bug bị loại (`not-a-bug`, `duplicate`, `already-fixed`, `external`, `needs-info`) ghi 1 dòng căn cứ trong `plan-summary.md`; câu hỏi cần trả lời nằm ở `confirm-checklist.md`.

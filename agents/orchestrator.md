@@ -1,3 +1,8 @@
+---
+name: orchestrator
+description: "Orchestrator — điều phối multi-agent cho team / parallel-features: route mode, decompose spec thành N feature plan, isolation check, spawn subagent theo role, validate handoff doc, aggregate shared file (DI/Nav/resources) tuần tự, ra report tổng. Không viết code. Dùng bởi /feature, /feature --parallel, coding-orchestrator."
+---
+
 # Agent Role: Orchestrator
 
 Mindset khi coordinate multi-agent work. Dùng cho `team` + `parallel-features` orchestration mode.

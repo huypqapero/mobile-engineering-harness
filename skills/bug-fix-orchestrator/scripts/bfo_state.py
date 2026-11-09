@@ -20,7 +20,7 @@ Lệnh (batch_dir luôn là tham số đầu, đường dẫn tuyệt đối):
   device-request <dir> <KEY> --lane L [--purpose verify|repro]
                                     xếp hàng 1 job thiết bị (idempotent theo issue + purpose).
                                     repro = tái hiện + lấy logcat TRƯỚC khi fix (crash chưa có stack)
-  device-dispatch <dir> [--exclude SERIAL ...]
+  device-dispatch <dir> [--exclude SERIAL ...] [--job JOB ...]
                                     gán job pending cho thiết bị rảnh; in "JOB SERIAL" mỗi dòng.
                                     exit 0 đã gán ≥1 · exit 3 còn job nhưng hết thiết bị · exit 0 không in gì = hết job
   device-done <dir> <JOB> --result pass|fail   trả thiết bị, ghi kết quả
@@ -42,7 +42,11 @@ from contextlib import contextmanager
 from pathlib import Path
 
 KINDS_FIXABLE = {"code", "ui", "content"}
-KINDS_EXCLUDED = {"spec-gap", "needs-info", "duplicate", "not-a-bug", "external", "already-fixed", "conflict"}
+KINDS_EXCLUDED = {"spec-gap", "needs-info", "needs-confirm", "duplicate", "not-a-bug", "external",
+                  "already-fixed", "conflict"}
+# Bug chỉ được fix khi đã so 1-1 với spec/Figma và chắc chắn lệch (spec_verdict=confirmed + spec_ref).
+# Nghi ngờ (tester hiểu nhầm, spec im lặng, spec mâu thuẫn) → needs-confirm + câu hỏi, không chặn bug khác.
+SPEC_VERDICTS = {"confirmed"}
 VERIFY_TIERS = {"none", "unit", "preview", "device"}
 ISSUE_STATUSES = {"planned", "fixing", "fixed", "pending_device", "verifying_device", "verified",
                   "pr_open", "done", "blocked", "failed", "excluded"}
@@ -140,11 +144,16 @@ def validate_plan(plan: dict, bugs: dict = None, repo: Path = None) -> tuple:
                 errors.append(f"{key}: group '{group}' không tồn tại")
             if not issue.get("reason"):
                 warnings.append(f"{key}: thiếu reason cho phân loại")
+            if issue.get("spec_verdict") not in SPEC_VERDICTS or not issue.get("spec_ref"):
+                errors.append(f"{key}: chỉ fix khi đã so spec 1-1 — cần spec_verdict=confirmed + spec_ref "
+                              f"(trích spec/Figma/decision); còn nghi ngờ → kind needs-confirm")
         elif kind in KINDS_EXCLUDED:
             if group:
                 errors.append(f"{key}: kind '{kind}' không được vào group (loại khỏi batch)")
             if not issue.get("reason"):
                 errors.append(f"{key}: bị loại ({kind}) phải ghi reason / câu hỏi cho PO")
+            if kind == "needs-confirm" and not issue.get("question"):
+                errors.append(f"{key}: needs-confirm phải có question (câu hỏi cụ thể cho user/BA/tester)")
 
     lane_of_group: dict[str, str] = {}
     for lane_id, lane in lanes.items():
@@ -268,7 +277,9 @@ def cmd_load_plan(a):
         for lane_id, lane in plan["lanes"].items():
             old = state["lanes"].get(lane_id, {})
             files = sorted(set().union(*[group_files(plan["groups"][g]) for g in lane["groups"]]))
-            state["lanes"][lane_id] = {**old, **lane, "files": files, "status": old.get("status", "planned")}
+            # Chỉ giữ field runtime của lane cũ; field plan (after, groups, slug) lấy từ plan mới.
+            runtime = {k: old[k] for k in ("status", "branch", "worktree", "agent", "pr", "note", "updated") if k in old}
+            state["lanes"][lane_id] = {**runtime, **lane, "files": files, "status": old.get("status", "planned")}
     print("plan loaded")
 
 
@@ -348,7 +359,8 @@ def cmd_device_dispatch(a):
                 print(f"# {serial} giữ bởi {dev['holder']} quá {DEVICE_STALE_SECONDS // 60} phút "
                       f"— kiểm tra agent rồi dùng device-release nếu treo", file=sys.stderr)
         free = [s for s, d in sorted(devices.items()) if not d["holder"] and s not in (a.exclude or [])]
-        pending = sorted((j for j in jobs.items() if j[1]["status"] == "pending"), key=lambda j: j[1]["created"])
+        pending = sorted((j for j in jobs.items() if j[1]["status"] == "pending"
+                          and (not a.job or j[0] in a.job)), key=lambda j: j[1]["created"])
         dispatched = 0
         for job_id, job in pending:
             if not free:
@@ -406,6 +418,10 @@ def cmd_board(a):
         for key, issue in sorted(state["issues"].items(), key=lambda kv: natural_key(kv[0])):
             print(f"| {key} | {issue.get('kind')} | {issue.get('verify', '-')} | {issue.get('lane', '-')} | "
                   f"{issue.get('status')} |")
+        pending = [k for k, i in sorted(state["issues"].items(), key=lambda kv: natural_key(kv[0]))
+                   if i.get("kind") == "needs-confirm"]
+        if pending:
+            print(f"\nChờ xác nhận (không chặn lane): {', '.join(pending)} — xem confirm-checklist.md")
         jobs = state["device_jobs"]
         if jobs or state["devices"]:
             print("\n| Device job | Issue | Purpose | Status | Serial |\n|---|---|---|---|---|")
@@ -438,6 +454,7 @@ def main(argv=None):
     s.add_argument("--lane", required=True); s.add_argument("--purpose", choices=["verify", "repro"], default="verify")
     s.set_defaults(fn=cmd_device_request)
     s = sub.add_parser("device-dispatch"); s.add_argument("batch_dir"); s.add_argument("--exclude", nargs="*")
+    s.add_argument("--job", nargs="*", help="chỉ dispatch các job này (vd job verify của lane đã review xong)")
     s.set_defaults(fn=cmd_device_dispatch)
     s = sub.add_parser("device-done"); s.add_argument("batch_dir"); s.add_argument("job")
     s.add_argument("--result", choices=["pass", "fail"], required=True); s.set_defaults(fn=cmd_device_done)

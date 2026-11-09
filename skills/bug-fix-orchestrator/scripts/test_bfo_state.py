@@ -16,8 +16,10 @@ import bfo_state  # noqa: E402
 def plan(**over):
     base = {
         "issues": {
-            "A-1": {"title": "a", "kind": "ui", "verify": "preview", "group": "g1", "reason": "r"},
-            "A-2": {"title": "b", "kind": "code", "verify": "device", "group": "g2", "reason": "r"},
+            "A-1": {"title": "a", "kind": "ui", "verify": "preview", "group": "g1", "reason": "r",
+                    "spec_verdict": "confirmed", "spec_ref": "Figma 1:2"},
+            "A-2": {"title": "b", "kind": "code", "verify": "device", "group": "g2", "reason": "r",
+                    "spec_verdict": "confirmed", "spec_ref": "Spec 3.5"},
             "A-3": {"title": "c", "kind": "spec-gap", "reason": "PO chưa chốt"},
         },
         "groups": {
@@ -41,7 +43,52 @@ def run(*argv):
     return code, out.getvalue(), err.getvalue()
 
 
+class DispatchJobFilterTest(unittest.TestCase):
+    def test_dispatch_only_selected_job(self):
+        with tempfile.TemporaryDirectory() as d:
+            b = Path(d) / "batch"
+            run("init", str(b), "--base-commit", "abc", "--base-branch", "main", "--source", "t")
+            f = Path(d) / "plan.json"; f.write_text(json.dumps(plan()))
+            run("load-plan", str(b), str(f))
+            run("device-sync", str(b), "emu-1")
+            run("device-request", str(b), "A-1", "--lane", "L1")
+            run("device-request", str(b), "A-2", "--lane", "L2")
+            code, out, _ = run("device-dispatch", str(b), "--job", "DJ-002")
+            self.assertEqual(code, 0)
+            self.assertIn("DJ-002", out)
+            self.assertNotIn("DJ-001", out)
+
+
+class ReloadPlanTest(unittest.TestCase):
+    def test_reload_drops_stale_after(self):
+        with tempfile.TemporaryDirectory() as d:
+            b = Path(d) / "batch"
+            run("init", str(b), "--base-commit", "abc", "--base-branch", "main", "--source", "t")
+            p1 = plan(); p1["lanes"]["L2"]["after"] = ["L1"]
+            f = Path(d) / "plan.json"; f.write_text(json.dumps(p1))
+            self.assertEqual(run("load-plan", str(b), str(f))[0], 0)
+            p2 = plan(); f.write_text(json.dumps(p2))
+            self.assertEqual(run("load-plan", str(b), str(f))[0], 0)
+            state = json.loads((b / "state.json").read_text())
+            self.assertNotIn("after", state["lanes"]["L2"])
+
+
 class ValidatePlanTest(unittest.TestCase):
+    def test_fixable_requires_confirmed_spec_verdict(self):
+        p = plan()
+        del p["issues"]["A-1"]["spec_verdict"]
+        errors, _ = bfo_state.validate_plan(p)
+        self.assertTrue(any("A-1" in e and "spec_verdict" in e for e in errors))
+
+    def test_needs_confirm_requires_question_and_no_group(self):
+        p = plan()
+        p["issues"]["A-3"] = {"title": "c", "kind": "needs-confirm", "reason": "tester hiểu nhầm?"}
+        errors, _ = bfo_state.validate_plan(p)
+        self.assertTrue(any("A-3" in e and "question" in e for e in errors))
+        p["issues"]["A-3"]["question"] = "Spec 3.2 không nói X — có cần fix?"
+        errors, _ = bfo_state.validate_plan(p)
+        self.assertEqual(errors, [])
+
     def test_valid_plan(self):
         errors, _ = bfo_state.validate_plan(plan())
         self.assertEqual(errors, [])
