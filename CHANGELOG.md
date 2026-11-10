@@ -6,6 +6,11 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 
 ## [Unreleased]
 
+### Added — Feature Store: mức override UI U2S (Scoped Composition)
+
+- **`feature-store`** và agent **`feature-store-architect`**: thêm mức **U2S** giữa slot (U2) và expose VM (U3). App tự sắp layout của một màn từ các khối kit đã nối sẵn state + intent (`XxxScope.SearchBar()`, `XxxScope.Body()`…), nên đổi bố cục không mất tính năng. Mức U chốt theo từng màn. Rule: scope `sealed`, khối chỉ nhận `modifier`, có `state` + `dispatch`, việc bắt buộc nằm ngoài `content`, layout mặc định dựng chỉ từ khối của scope, test 4 case + 1 preview layout tùy biến.
+- KB: note mới "Scoped Composition — mức U2S" (`develop/feature-store/structure`); cập nhật "Capability Contract" (trục U, cây quyết định theo màn, `override_points.ui_scope` / `screens`) và "Feature Store Mindset" (FS-002 4 cấp override, FS-006 breaking cho scope). Kiểm chứng trên `kit/fs/search` của AIP699-ShortDrama.
+
 ## [0.23.0] — 2026-11-09
 
 ### Added — Batch bugfix orchestrator
