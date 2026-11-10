@@ -35,7 +35,7 @@ Spawn `feature-store-architect` agent chạy 10-step top-down theo `knowledge/co
 6. Intersection audit + Cross-cutting lens
 7. Scope decision (FS vs SDK vs feature thường)
 8. **Backend diversity audit** (D1/D2/D3)
-9. **Design system diversity audit** (theme contract scope)
+9. **Design system diversity audit** (theme contract scope) + **layout diversity theo từng màn** (chốt U1/U2/U2S/U3 cho mỗi màn)
 10. Backward compat
 
 Output tại `plans/<date>-<slug>/`:
@@ -67,13 +67,15 @@ Agent draft public API cho 2 module:
 - Port interface `FsDataSource` + port khác (nếu nhiều)
 - `FsConfig` class + helper functions (`firebaseSource`, `restSource`, `customSource`)
 - Facade `*Kit.create(block: FsConfig.() -> Unit): FsClient`
-- `FsViewModel` + `FsState` + `FsIntent` + `FsEffect` (nếu U ≥ U3)
+- `FsState` + `FsIntent` public (nếu U ≥ U2S; khối app tự vẽ dùng chúng qua `scope.state` / `scope.dispatch`)
+- `FsViewModel` + `FsEffect` (nếu U ≥ U3)
 - Flow step types + `FsStepInterceptor` (nếu F ≥ F2)
 
 **`:ui`** (nếu U ≥ U1):
 - `FsTheme` interface + `LocalFsTheme` CompositionLocal
 - `Material3FsAdapter` composable
 - Public screen composable (slot API nếu U ≥ U2)
+- `sealed interface FsScope` + khối `@Composable` chỉ nhận `modifier` + `state` + `dispatch`, extension `FsScope.DefaultFsLayout()`, Host nhận `content: @Composable FsScope.() -> Unit` (nếu màn đó U ≥ U2S, xem `scoped-composition.md`)
 - Nav graph extension (nếu L2)
 
 Document trong `plans/<date>-<slug>/public-api-draft.md`.
@@ -128,6 +130,7 @@ D: ... | U: ... | F: ... | S: ... | E: ... | L: ...
 - [ ] Konsist 6 rule pass
 - [ ] `compileOnly` adapter deps + `requireClasspath()` guard
 - [ ] Theme interface + Material3 default adapter (nếu U ≥ U1)
+- [ ] Màn U2S: scope `sealed`, layout mặc định chỉ dùng khối của scope, test layout tùy biến 4 case + 1 preview layout tùy biến (`scoped-composition.md §FS-SCOPE-004`)
 - [ ] testFixtures implement đầy đủ fake + driver + assertion
 - [ ] PreviewProvider ship + screenshot test ≥ 8/screen pass CI
 - [ ] README + CHANGELOG + FS-CONTRACT.md root artifact
