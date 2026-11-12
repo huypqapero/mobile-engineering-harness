@@ -20,6 +20,7 @@ Mọi quyết định trace về `knowledge/coding-feature-store/mindset.md [KB 
 - **Theme Adapter Contract mandatory**: `FsTheme` interface + `CompositionLocal`. Cấm `MaterialTheme` direct trong screen. `isDark` mandatory. (FS-005)
 - **Breaking tolerance**: `:core` strict (BCV + deprecation 2 minor + RFC), `:ui` tolerant (1 minor), Theme semi-strict (add=minor, remove=major). (FS-006)
 - **testFixtures mandatory**: Gradle `java-test-fixtures`. Fake + TestDriver + PreviewProvider + Screenshot test. (FS-007)
+- **Override UI theo từng màn**: chọn U1 (theme) / U2 (slot) / U2S (scope: `sealed interface XxxScope`, khối đã nối state + intent, việc bắt buộc ngoài `content`) / U3 (expose VM). Bố cục khác nhau mà hành vi giống → U2S trước U3. (FS-002, `scoped-composition.md`)
 - **Anti-pattern cấm**: core phụ thuộc Compose, singleton object FS, Service Locator, God Config > 15 field, ServiceLoader auto-discovery adapter, public data class không freeze, screen composable dùng MaterialTheme direct, flow step không interceptable.
 
 ## Purpose
@@ -157,8 +158,9 @@ Draft public API cho `:core` + `:ui`:
 - Port interface (`FsDataSource`, port khác)
 - Config class + helper functions (`firebaseSource`, `restSource`, `customSource`)
 - Facade `*Kit.create()`
-- ViewModel + State + Intent + Effect (nếu U ≥ U3)
+- State + Intent public (nếu U ≥ U2S); ViewModel + Effect (nếu U ≥ U3)
 - Theme interface + CompositionLocal (nếu U ≥ U1)
+- `sealed interface XxxScope` + danh sách khối + `DefaultXxxLayout` + Host `content` (màn U2S)
 - Composable public (nếu U ≥ U1)
 - Flow step types + Interceptor interface (nếu F ≥ F2)
 
@@ -177,6 +179,7 @@ Dựa trên `module-topology.md`:
 - TestDriver interface (nếu F ≥ F2)
 - Assertion helper list
 - PreviewProvider cho mỗi screen (nếu U ≥ U1)
+- Màn U2S: Compose test layout tùy biến 4 case (mặc định, bỏ khối có side effect, dời khối, khối app tự vẽ) + 1 preview layout tùy biến
 - Screenshot test target: Paparazzi hoặc Roborazzi, ≥ 8 snapshot/screen
 
 ### 5. Review deliverables
@@ -228,7 +231,7 @@ Mỗi stage load knowledge tương ứng, không load tất cả mặc định (
 | Stage 1 Brainstorm | `knowledge/coding-sdk/brainstorm-process.md [KB → develop/sdk, kb_search "coding sdk brainstorm process"]` + `mindset.md §FS-001..002` |
 | Stage 2 Capability tuple | `capability-contract.md` toàn bộ |
 | Stage 3 Contract draft | `capability-contract.md §FS-CAP-003..004` + `essentials.md §FS-DOC-001` |
-| Stage 4 Public API | `data-port-runtime-config.md` + (nếu U) `theme-adapter.md` |
+| Stage 4 Public API | `data-port-runtime-config.md` + (nếu U) `theme-adapter.md` + (nếu U2S) `scoped-composition.md` |
 | Stage 5 Module layout | `module-topology.md` + `essentials.md §FS-TOPO/UI/ADAPTER` |
 | Stage 6 Handoff | `testing-kit.md` + `essentials.md §Validation checklist` |
 | Stage 7 API diff | `essentials.md §FS-API, FS-GOV` + `knowledge/coding-sdk/essentials.md [KB → develop/sdk, kb_search "coding sdk essentials"] §BCV` |
@@ -240,6 +243,7 @@ Mỗi stage load knowledge tương ứng, không load tất cả mặc định (
 - Approve `MaterialTheme.*` trong screen composable → vi phạm FS-005.
 - Approve adapter `implementation` thay vì `compileOnly` → vi phạm FS-004.
 - Approve FS không có testFixtures → vi phạm FS-007.
+- Approve scope U2S là `interface` mở, hoặc việc bắt buộc (load lần đầu, điều hướng, analytics) nằm trong layout → vi phạm FS-002/FS-006.
 - Approve FS 3+ production module (không có RFC vi phạm 2-module) → vi phạm FS-003.
 - Approve breaking `:core` không có RFC + sign-off → vi phạm FS-006.
 
