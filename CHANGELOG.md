@@ -6,6 +6,10 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 
 ## [Unreleased]
 
+### Added — Product spec creator
+
+- **`product-spec-creator`** (chuyển từ `~/.claude/skills/` vào harness): viết, chuẩn hoá và validate spec màn hình dạng Screen + Description (khung AAP884: Mô tả / Flow / Logic / Logic click button / Remote config) đủ để dev code không phải hỏi lại. Chế độ CAPTURE dựng spec từ video quay app mẫu: cắt frame + board có nhãn bằng script của `ui-diff`, chọn frame sạch mỗi màn, ghi chép [thấy]/[suy luận], brainstorm giữ/đổi/bỏ/thêm rồi Q&A theo lô. Hỏi nền tảng đích trước (Android/iOS/KMP → bảng Khác biệt nền tảng, Sign in with Apple, ATT), khối Motion (token + asset Lottie), giới hạn 40–80 event. Validator `scripts/check_spec.py` (kiểm cấu trúc, đối chiếu key remote / event, liệt kê PO confirm; có test). Spec ra là đầu vào `local` cho `business-prepare-feature`. Kiểm chứng trên spec Phase 1 dựng từ 3 video app mẫu (59 màn, READY 0 ERROR).
+
 ### Changed — `bug-note` + `bug-fix-orchestrator` gộp thành `bug-fix`
 
 - **Một skill `bug-fix`, hai mode**: `note` (mặc định: bug gõ trong chat hoặc đúng 1 key/link Jira, mỗi bug 1 worker → 1 PR) và `batch` (JQL / board / sprint / ≥ 2 key Jira / report `ui-diff`, nhiều đợt, lane worktree song song). `SKILL.md` mỏng, procedure ở `references/` (`mode-note.md`, `note-worker-protocol.md`, `mode-batch.md`, các reference batch và `device-queue.md` giữ nội dung của #13). `bug-note` và `bug-fix-orchestrator` còn lại là stub alias (giữ `/bug-note`, `/bug-fix-orchestrator`); `bug --mode fix --parallel` chuyển sang `bug-fix` mode batch. `CLAUDE.md`, `AGENTS.md`, agent `bug-fixer` / `bug-reviewer` / `bug-scout` cập nhật theo.
