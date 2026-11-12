@@ -59,7 +59,7 @@ Delegate `coding-scout` tại product repo nguồn. Scan 5 nhóm coupling:
 **Classify theo capability tuple** (FS target):
 
 - Data layer code hiện tại → D1 (owned backend) hay D3 (headless, port)?
-- UI layer code → U1 (chỉ theme) hay U2 (có slot) hay U3 (expose VM)?
+- UI layer code (chốt theo từng màn) → U1 (chỉ theme), U2 (có slot), U2S (scope: app đổi bố cục từ khối đã nối logic) hay U3 (expose VM)?
 - Flow layer → F0 (single screen), F1 (fixed), F2 (interceptor + skip), hay F3 (extensible)?
 - State → S0/S1/S2/S3?
 - Lifecycle → L0/L1/L2/L3?
@@ -215,7 +215,7 @@ Spawn `coder` theo Stage 6:
 3. Impl adapter built-in trong `data/<name>/` (compileOnly deps + classpath guard)
 4. Impl Theme Contract + Material3 default adapter + consumer adapter guide
 5. Impl flow state machine với interceptor hook (F2) hoặc extensible (F3)
-6. Impl default UI từ zero (lấy inspiration từ source product nhưng không copy direct)
+6. Impl default UI từ zero (lấy inspiration từ source product nhưng không copy direct). Màn U2S: tách màn thành khối của `sealed interface XxxScope`, dựng `DefaultXxxLayout` chỉ từ khối đó, chuyển việc bắt buộc (load lần đầu, effect, analytics) ra Host (`scoped-composition.md`)
 7. Impl testFixtures đầy đủ (fake + driver + assertion + preview)
 8. BCV apiDump cả `:core` + `:ui`
 
