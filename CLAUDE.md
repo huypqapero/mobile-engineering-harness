@@ -27,6 +27,7 @@ Match user intent theo keyword trước. Nếu match → trigger skill wrapper, 
 | "review PR N", "check code" | solo `reviewer` | — |
 | "verify/test/QA X" | solo `qa` scope A hoặc B | — |
 | "plan/design arch X" | solo `architect` | — |
+| "viết spec màn hình", "spec cho dev", "từ video app ra spec", "làm app giống app X", "validate spec màn hình" | `/product-spec-creator` | — |
 | "chuẩn hóa spec + screenshot thành brief" | `/business-prepare-feature` | — |
 | "tạo lib X dùng chung cho A và B", "shared library mới" (SDK pure, không UI) | `/library --mode new` | solo `library-architect` + `architect` + `coder` |
 | "tách module Y thành lib riêng", "extract code product → lib" | `/library --mode extract` | solo `library-architect` + `coding-scout` |

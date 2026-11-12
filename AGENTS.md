@@ -76,6 +76,7 @@ Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cac
 
 | Task | Skill chính |
 |---|---|
+| Viết / chuẩn hoá / validate spec màn hình (Screen + Description kiểu AAP884) từ ý tưởng, Confluence, Figma, hoặc video quay app mẫu (CAPTURE + brainstorm giữ/đổi/bỏ/thêm) — đầu vào cho `business-prepare-feature` | `product-spec-creator` |
 | Chuẩn hóa spec + screenshot thành Feature Brief | `business-prepare-feature` |
 | Fetch Confluence page + attachment qua MCP | `business-fetch --source confluence` |
 | Fetch Figma file + node tree + variables qua MCP | `business-fetch --source figma` |
@@ -231,6 +232,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `skills/bug-fix-orchestrator/SKILL.md` — **P0** leader batch bug: Jira + Confluence + Figma + docs refs → scout 1 lần (`bug-scout`, cache `plans/bugfix-cache/`) → phân loại `kind` + `verify` (none/unit/preview/device) → group theo root cause → lane worktree song song = 1 PR/lane (`bug-fixer`) → hàng chờ thiết bị (`artemis-android`) → evidence validator. State `plans/bugfix-batch-<id>/` qua `scripts/bfo_state.py`, resume được
 - `skills/bug/SKILL.md` — **P0** entry: xử lý bug, dispatcher `--mode fix|triage` (+ cờ `--parallel`). fix (default) = bugfix-fast-path triage + fast/mini/full routing; `fix --parallel` chuyển sang skill `bug-fix-orchestrator`; skill `bug` vẫn giữ evidence validator (`scripts/validate_evidence.py`) + schema dùng chung; triage = classify code/design/spec, max 3 retry
 - `skills/release/SKILL.md` — **P0** entry: release-gate co-sign Tech Lead + PM
+- `skills/product-spec-creator/SKILL.md` — viết spec màn hình Screen + Description (AUTHOR / CONVERT / VALIDATE). Video app mẫu → frame + board (`ui-diff` scripts) → observed [thấy]/[suy luận] → brainstorm → Q&A → spec; bảng Khác biệt nền tảng (Android/iOS/KMP), khối Motion, Remote config, Event tracking; validator `scripts/check_spec.py`
 - `skills/business-prepare-feature/SKILL.md` — orchestrator input layer
 - `skills/business-fetch/SKILL.md` — MCP adapter Confluence/Figma (dispatcher `--source`)
 - `skills/business-analyze/SKILL.md` — spec/design/reconcile dispatcher (`--phase`)

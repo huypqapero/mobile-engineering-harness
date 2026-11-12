@@ -1,0 +1,44 @@
+{
+  "skill_name": "product-spec-creator",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Viết spec cho app nghe podcast inhouse, phase 1 gồm: Splash, chọn ngôn ngữ, Home (podcast nổi bật, nghe tiếp, top chart), Player, Library (đã lưu, lịch sử), Settings. Mở khoá tập bằng coin, coin kiếm từ check-in hằng ngày. Mình là dev, không có BA.",
+      "expected_output": "Q&A theo lô có đề xuất mặc định cho câu chặn, sau đó spec Screen + Description đủ 4 phần A–D, điểm chưa chốt đánh [PO confirm].",
+      "files": [],
+      "assertions": [
+        {"id": "qa-batched", "text": "Trước khi viết spec, hỏi theo lô (≤ 6 câu), mỗi câu có phương án đề xuất"},
+        {"id": "sections", "text": "Spec có đủ A. Tổng quan, B. Mô tả chi tiết, C. Tổng hợp remote config, D. Event tracking"},
+        {"id": "table-format", "text": "Mỗi module ở B có bảng Screen | Description | UI, Description theo thứ tự Mô tả → Flow → Logic → Logic click button"},
+        {"id": "empty-states", "text": "Các list (Nghe tiếp, Đã lưu, Lịch sử) có trạng thái rỗng với text ghi nguyên văn"},
+        {"id": "remote-keys", "text": "Giá mở khoá và coin check-in là key remote có default, xuất hiện cả ở màn và bảng C"},
+        {"id": "no-ads", "text": "Không có mục vị trí ads hay stakeholder"},
+        {"id": "script-pass", "text": "scripts/check_spec.py chạy trên spec không có ERROR"}
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Chuẩn hoá đoạn mô tả này thành spec dev đọc được: 'Màn Search: có ô tìm kiếm, gợi ý phim hot, gõ thì ra kết quả, không có thì báo không tìm thấy. Bấm phim thì vào xem. Banner ad dưới chân.'",
+      "expected_output": "Hàng Search theo format Screen + Description, bỏ ad, bổ sung khoảng trống bằng câu hỏi hoặc [PO confirm] kèm đề xuất.",
+      "files": [],
+      "assertions": [
+        {"id": "row-blocks", "text": "Có hàng **Search** với khối Mô tả, Flow, Logic, Logic click button"},
+        {"id": "ads-removed", "text": "Không còn nhắc banner ad"},
+        {"id": "gaps-flagged", "text": "Các điểm thiếu (số gợi ý tối đa, text không có kết quả, back đi đâu, bàn phím khi vào màn) được hỏi hoặc đánh [PO confirm] kèm đề xuất"},
+        {"id": "no-invented-numbers", "text": "Không có con số nào xuất hiện mà không có nguồn hoặc đánh dấu [PO confirm]"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Validate giúp spec này có đủ để dev code chưa: docs/specs/app-phase1.md",
+      "expected_output": "Chạy check_spec.py + duyệt tay theo checklist, xuất bảng Severity | Màn | Vấn đề | Đề xuất sửa và kết luận READY / NEEDS WORK.",
+      "files": ["docs/specs/app-phase1.md"],
+      "assertions": [
+        {"id": "ran-script", "text": "Đã chạy scripts/check_spec.py"},
+        {"id": "report-table", "text": "Báo cáo dạng bảng Severity | Màn | Vấn đề | Đề xuất sửa, sắp ERROR → WARN → INFO"},
+        {"id": "manual-checks", "text": "Có findings từ duyệt tay (tap target thiếu kết quả, list thiếu empty state, popup thiếu cách đóng…) ngoài output script"},
+        {"id": "verdict", "text": "Kết luận READY hoặc NEEDS WORK kèm số ERROR/WARN"}
+      ]
+    }
+  ]
+}

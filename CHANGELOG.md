@@ -6,6 +6,10 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 
 ## [Unreleased]
 
+### Added — Product spec creator
+
+- **`product-spec-creator`** (chuyển từ `~/.claude/skills/` vào harness): viết, chuẩn hoá và validate spec màn hình dạng Screen + Description (khung AAP884: Mô tả / Flow / Logic / Logic click button / Remote config) đủ để dev code không phải hỏi lại. Chế độ CAPTURE dựng spec từ video quay app mẫu: cắt frame + board có nhãn bằng script của `ui-diff`, chọn frame sạch mỗi màn, ghi chép [thấy]/[suy luận], brainstorm giữ/đổi/bỏ/thêm rồi Q&A theo lô. Hỏi nền tảng đích trước (Android/iOS/KMP → bảng Khác biệt nền tảng, Sign in with Apple, ATT), khối Motion (token + asset Lottie), giới hạn 40–80 event. Validator `scripts/check_spec.py` (kiểm cấu trúc, đối chiếu key remote / event, liệt kê PO confirm; có test). Spec ra là đầu vào `local` cho `business-prepare-feature`. Kiểm chứng trên spec Phase 1 dựng từ 3 video app mẫu (59 màn, READY 0 ERROR).
+
 ### Added — Batch bugfix orchestrator
 
 - **`bug-fix-orchestrator`**: leader điều phối batch bug từ Jira (JQL, board, sprint, danh sách key). Lấy spec Confluence, Figma node và docs tham chiếu của repo một lần; scout codebase một lần và lưu cache dùng lại giữa các batch; phân loại `kind` (code/ui/content/spec-gap/needs-info/…) và mức verify (`none`/`unit`/`preview`/`device`); gom group theo root cause, xếp lane worktree song song (mỗi lane 1 PR gom nhiều bug); bug cần thiết bị vào hàng chờ, chỉ chạy khi thiết bị rảnh. State `plans/bugfix-batch-<id>/` qua `scripts/bfo_state.py` (kiểm plan cơ học, giới hạn số lane, hàng chờ thiết bị), resume được.
