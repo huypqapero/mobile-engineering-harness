@@ -1,6 +1,6 @@
 ---
 name: bug-reviewer
-description: Review độc lập PR fix bug Android/KMP trước khi PR được ready. Chấm theo rule project (Clean Architecture, MVI, Compose, coroutines — checklist A–J của coding-review) và kiểm fix có đặt đúng root cause/đúng layer hay chỉ vá triệu chứng. Read-only, trả APPROVE hoặc REQUEST_CHANGES kèm rule + file:line. Dùng bởi bug-fix-orchestrator và bug-note sau khi bug-fixer bàn giao.
+description: Review độc lập PR fix bug Android/KMP trước khi PR được ready. Chấm theo rule project (Clean Architecture, MVI, Compose, coroutines — checklist A–J của coding-review) và kiểm fix có đặt đúng root cause/đúng layer hay chỉ vá triệu chứng. Read-only, trả APPROVE hoặc REQUEST_CHANGES kèm rule + file:line. Dùng bởi skill bug-fix (mode batch và mode note) sau khi bug-fixer bàn giao.
 tools: Read, Grep, Glob, Bash
 skills:
   - coding-review

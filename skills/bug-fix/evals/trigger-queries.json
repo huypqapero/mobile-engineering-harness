@@ -1,0 +1,46 @@
+[
+  {
+    "query": "check Jira xem bug nào mới trong sprint này rồi fix luôn cho mình, mỗi cụm bug một PR nhé",
+    "should_trigger": true
+  },
+  {
+    "query": "cập nhật Jira theo mấy PR đã merge hôm nay giúp mình, batch 261110-0900-proj",
+    "should_trigger": true
+  },
+  {
+    "query": "đưa PROJ-77 vào batch đang chạy, fix chung với các bug kia nếu cùng root cause",
+    "should_trigger": true
+  },
+  {
+    "query": "resume batch 261109-1048-proj, status batch đang thế nào?",
+    "should_trigger": true
+  },
+  {
+    "query": "tôi vừa thấy lỗi này lỗi kia ở màn Home, ghi lại rồi tự fix và mở PR giúp, còn vài lỗi nữa tôi sẽ nhắn tiếp",
+    "should_trigger": true
+  },
+  {
+    "query": "/bug-note lỗi: bấm Share ở màn Player thì crash",
+    "should_trigger": true
+  },
+  {
+    "query": "/bug-fix PROJ-12 kéo ticket về rồi fix và mở PR",
+    "should_trigger": true
+  },
+  {
+    "query": "fix theo report ui-diff ở thư mục run-1, sửa hết lệch UI giúp mình",
+    "should_trigger": true
+  },
+  {
+    "query": "triage bug này giúp mình: không rõ lỗi do code hay do design",
+    "should_trigger": false
+  },
+  {
+    "query": "review PR 42 xem có vi phạm Clean Architecture không",
+    "should_trigger": false
+  },
+  {
+    "query": "viết unit test cho CheckoutViewModel",
+    "should_trigger": false
+  }
+]

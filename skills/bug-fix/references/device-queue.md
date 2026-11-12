@@ -1,6 +1,6 @@
-# Hàng chờ thiết bị (Phase 5)
+# Hàng chờ thiết bị (dùng chung mode batch + mode note)
 
-Bug tier `device` không chặn lane: lane fix + unit + build APK + xếp job, mở PR draft. Leader điều phối thiết bị riêng. `S` = state script, `B` = batch dir.
+Mode batch: bug tier `device` không chặn lane: lane fix + unit + build APK + xếp job, mở PR draft. Leader điều phối thiết bị riêng. `S` = state script, `B` = batch dir.
 
 ## Trạng thái
 
@@ -9,7 +9,7 @@ issue: fixed → pending_device → verifying_device → verified | failed
 job:   pending → running → done | failed        (release thủ công → pending)
 ```
 
-Một thiết bị giữ tối đa 1 job (`state.devices[serial].holder`). ARTEMIS cũng có mutex riêng theo thiết bị — hai lớp khóa, không chạy 2 job trên 1 emulator.
+Một thiết bị giữ tối đa 1 job. **Khoá chung** `scripts/devices.py` (`<git-common-dir>/bug-fix/devices.json`, holder `note:<BUG-ID>` hoặc `batch:<batch-id>:<JOB>`) là nguồn sự thật cho cả hai mode: `bfo device-dispatch/done/release` và `bug_queue.py device-lock/unlock/release` đều đi qua đó, nên note và batch không bao giờ giữ cùng 1 serial (xem khoá hiện tại: `python3 <SKILL_DIR>/scripts/bug_queue.py device-list`). `state.devices` của batch chỉ là bản sao để hiển thị. ARTEMIS cũng có mutex riêng theo thiết bị — hai lớp khóa, không chạy 2 job trên 1 emulator.
 
 ## Chuẩn bị APK (trước `device-request`)
 
@@ -29,7 +29,7 @@ Gọi `S device-dispatch B --exclude <serial…>` mỗi khi:
 - một device job xong (`device-done`),
 - user hỏi status.
 
-`--exclude` = thiết bị đang bận ngoài batch: task ARTEMIS khác (`mobile_diagnose` → `tasks.active`), session `bug-note` đang giữ (`bug_queue.py list`), hoặc user nói đang dùng. Không chắc → coi là bận.
+Máy mà mode note đang giữ nằm trong khoá chung: `device-dispatch` tự bỏ qua (in lý do trên stderr), leader **không** cần `--exclude` cho chúng. `--exclude` chỉ cho thiết bị bận ngoài hệ thống khoá này: task ARTEMIS khác (`mobile_diagnose` → `tasks.active`) hoặc user nói đang dùng. Không chắc → coi là bận.
 
 Kết quả:
 - In `DJ-001 emulator-5554 PROJ-48 verify` → spawn verifier cho từng dòng (cột cuối `repro` hoặc `verify`).
