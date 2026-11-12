@@ -91,6 +91,7 @@ Fix đúng cần đổi domain contract, migration DB, sửa file ngoài phạm 
 
 - Chỉ sửa trong worktree của lane; chỉ file thuộc `files` của lane. Cần file ngoài danh sách → dừng, báo `NEEDS_CONTEXT` kèm file + lý do (leader re-plan để tránh đụng lane khác).
 - Không `git stash` (stash dùng chung mọi worktree). Cần cất thay đổi → commit WIP trên branch lane.
+- Trước build APK, xếp device job và mỗi lần push: chạy gate "fresh with main" (lane-protocol §4) — merge base nếu lane `after` đã merge hoặc base có commit đụng file lane; trước push kiểm PR còn `OPEN`, đã `MERGED`/`CLOSED` → branch + PR mới, không push vào branch cũ.
 - Thiết bị/emulator: chỉ dùng khi protocol cho phép và đang giữ khóa thiết bị của protocol đó (`bug-note`: `bug_queue.py device-lock`). Lane của `bug-fix-orchestrator` không chạy thiết bị — xếp job bằng `bfo_state.py device-request`, leader điều phối.
 - Không fabricate test/evidence; build pass không chứng minh bug đã fix.
 - Không merge, không force-push, không push lên base branch, không đổi trạng thái Jira.

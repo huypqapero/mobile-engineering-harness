@@ -9,25 +9,39 @@ Mọi lệnh ghi đều lấy file lock riêng của batch, nên leader và nhi�
 
 Lệnh (batch_dir luôn là tham số đầu, đường dẫn tuyệt đối):
   init <dir> --base-commit SHA --base-branch BR --source TEXT [--max-lanes 3]
-  check-plan <plan.json> [--bugs bugs.json] [--repo WORKTREE]
-                                    chỉ kiểm, không ghi (--bugs: mọi bug phải có mặt; --repo: file phải tồn tại)
+  check-plan <plan.json> [--bugs bugs.json] [--repo WORKTREE] [--batch DIR]
+                                    chỉ kiểm, không ghi (--bugs: mọi bug phải có mặt; --repo: file phải tồn tại;
+                                    --batch: lane đã merge (status=done hoặc merged=base) không tính chồng file)
   load-plan <dir> <plan.json> [--bugs …] [--repo …]
                                     kiểm rồi nạp vào state (sau khi user duyệt); lane/issue không còn trong plan bị gỡ
   next-lanes <dir>                  in lane được phép chạy ngay (tôn trọng after + max_lanes)
-  lane <dir> <LANE> k=v ...         cập nhật lane (status, branch, worktree, agent, pr, note)
-  issue <dir> <KEY> k=v ...         cập nhật issue (status, pr, note, fix_commit)
+  lane <dir> <LANE> k=v ...         cập nhật lane: status (planned|running|waiting|blocked|pr_open|done|failed|
+                                    cancelled), branch, worktree, agent, pr, note, ready=yes|no (PR đã ready),
+                                    merged=no|base|other (base = đã merge và head là tổ tiên base)
+  lane-remove <dir> <LANE> [--plan plan.json] [--force]
+                                    gỡ lane khỏi state (và khỏi plan.json nếu có --plan), dọn after trỏ vào nó;
+                                    từ chối khi lane đang chạy / có device job running trừ khi --force
+  issue <dir> <KEY> k=v ...         cập nhật issue (status, pr, note, fix_commit, jira=<trạng thái Jira hiện tại>)
+  jira-sync <dir> [--all]           IN kế hoạch chuyển trạng thái Jira (hiện tại -> đích + lý do) từ state; không gọi Jira.
+                                    Leader tự jira_get_transitions + jira_transition_issue rồi ghi lại `issue … jira=`
   device-sync <dir> <serial> ...    khai báo pool thiết bị (từ `adb devices`)
-  device-request <dir> <KEY> --lane L [--purpose verify|repro]
-                                    xếp hàng 1 job thiết bị (idempotent theo issue + purpose).
-                                    repro = tái hiện + lấy logcat TRƯỚC khi fix (crash chưa có stack)
+  device-request <dir> <KEY> --lane L [--purpose verify|repro] [--apk PATH] [--head SHA] [--priority N]
+                                    xếp hàng 1 job thiết bị (idempotent theo issue + purpose; gọi lại để cập nhật
+                                    apk/head/priority). repro = tái hiện + lấy logcat TRƯỚC khi fix (crash chưa có stack).
+                                    apk/head = APK vừa build + commit head lúc build; priority lớn chạy trước
   device-dispatch <dir> [--exclude SERIAL ...] [--job JOB ...]
-                                    gán job pending cho thiết bị rảnh; in "JOB SERIAL" mỗi dòng.
-                                    exit 0 đã gán ≥1 · exit 3 còn job nhưng hết thiết bị · exit 0 không in gì = hết job
+                                    gán job pending SẴN SÀNG (APK tồn tại, head khớp worktree lane) cho thiết bị rảnh;
+                                    in "JOB SERIAL KEY PURPOSE" mỗi dòng, ưu tiên priority rồi thứ tự xếp hàng.
+                                    exit 0 đã gán ≥1 · exit 3 còn job sẵn sàng nhưng hết thiết bị ·
+                                    exit 4 chỉ còn job chưa sẵn sàng (thiếu APK / head lệch) · exit 0 không in gì = hết job
   device-done <dir> <JOB> --result pass|fail   trả thiết bị, ghi kết quả
   device-release <dir> <SERIAL>     nhả thiết bị bị giữ quá lâu (job quay về pending)
   board <dir>                       bảng trạng thái Markdown
 
-Exit code chung: 0 ok · 1 plan/state không hợp lệ · 2 dùng sai · 3 phải chờ.
+Exit code chung: 0 ok · 1 plan/state không hợp lệ · 2 dùng sai · 3 phải chờ · 4 job chưa sẵn sàng.
+
+Issue key: Jira (`PROJ-123`) hoặc việc không có Jira `TASK-<slug>` (slug chữ thường, có ít nhất 1 chữ cái);
+key TASK- vào state với tracker=none và bị `jira-sync` bỏ qua.
 """
 
 from __future__ import annotations
@@ -36,6 +50,7 @@ import argparse
 import fcntl
 import json
 import re
+import subprocess
 import sys
 import time
 from contextlib import contextmanager
@@ -50,7 +65,12 @@ SPEC_VERDICTS = {"confirmed"}
 VERIFY_TIERS = {"none", "unit", "preview", "device"}
 ISSUE_STATUSES = {"planned", "fixing", "fixed", "pending_device", "verifying_device", "verified",
                   "pr_open", "done", "blocked", "failed", "excluded"}
-LANE_STATUSES = {"planned", "running", "waiting", "pr_open", "done", "failed", "cancelled"}
+LANE_STATUSES = {"planned", "running", "waiting", "blocked", "pr_open", "done", "failed", "cancelled"}
+LANE_FIELD_VALUES = {"ready": {"yes", "no"}, "merged": {"no", "base", "other"}}
+LANE_RUNTIME_FIELDS = ("status", "branch", "worktree", "agent", "pr", "note", "updated", "ready", "merged")
+ISSUE_RUNTIME_FIELDS = ("status", "pr", "note", "fix_commit", "jira")
+JIRA_KEY_RE = re.compile(r"^[A-Z][A-Z0-9_]*-\d+$")
+TASK_KEY_RE = re.compile(r"^TASK-(?=[a-z0-9-]*[a-z])[a-z0-9]+(?:-[a-z0-9]+)*$")
 LANE_UNBLOCKS = {"pr_open", "done"}
 LANE_RUNNING = {"running"}
 MAX_ISSUES_PER_LANE = 8
@@ -58,12 +78,30 @@ DEVICE_STALE_SECONDS = 45 * 60
 
 
 def natural_key(text: str):
-    """L2 < L10, AAP884-2 < AAP884-10."""
+    """L2 < L10, PROJ-2 < PROJ-10."""
     return [int(part) if part.isdigit() else part for part in re.split(r"(\d+)", str(text))]
 
 
 def now() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%S")
+
+
+def is_task_key(key: str) -> bool:
+    """Việc không có Jira: TASK-<slug>."""
+    return bool(TASK_KEY_RE.match(str(key)))
+
+
+def lane_is_merged(lane: dict) -> bool:
+    """Lane đã xong hẳn trong base: status=done hoặc PR merged vào base."""
+    return lane.get("status") == "done" or lane.get("merged") == "base"
+
+
+def git_head(worktree: str):
+    try:
+        out = subprocess.run(["git", "-C", worktree, "rev-parse", "HEAD"], capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return out.stdout.strip() if out.returncode == 0 and out.stdout.strip() else None
 
 
 def die(msg: str, code: int = 2):
@@ -116,7 +154,7 @@ def group_files(group: dict) -> set:
     return set(group.get("files", [])) | set(group.get("shared_files", []))
 
 
-def validate_plan(plan: dict, bugs: dict = None, repo: Path = None) -> tuple:
+def validate_plan(plan: dict, bugs: dict = None, repo: Path = None, merged_lanes=frozenset()) -> tuple:
     errors, warnings = [], []
     issues = plan.get("issues") or {}
     if bugs is not None:
@@ -133,6 +171,9 @@ def validate_plan(plan: dict, bugs: dict = None, repo: Path = None) -> tuple:
 
     for key, issue in issues.items():
         kind, verify, group = issue.get("kind"), issue.get("verify"), issue.get("group")
+        if not (JIRA_KEY_RE.match(key) or is_task_key(key)):
+            errors.append(f"{key}: key không hợp lệ (Jira PROJ-123 hoặc việc không Jira TASK-<slug>, "
+                          f"slug chữ thường có ≥1 chữ cái)")
         if kind not in KINDS_FIXABLE | KINDS_EXCLUDED:
             errors.append(f"{key}: kind '{kind}' không hợp lệ")
         if kind in KINDS_FIXABLE:
@@ -206,6 +247,8 @@ def validate_plan(plan: dict, bugs: dict = None, repo: Path = None) -> tuple:
         for i, a in enumerate(lane_ids):
             for b in lane_ids[i + 1:]:
                 overlap = sorted(lane_files[a] & lane_files[b])
+                if a in merged_lanes or b in merged_lanes:
+                    continue  # lane đã merge vào base: lane sau tách từ base đã chứa thay đổi đó
                 if overlap and not _lane_order_ok(lanes, a, b):
                     errors.append(f"lane {a} và {b} cùng sửa {', '.join(overlap)} nhưng không có after → "
                                   f"gộp chung lane hoặc thêm after")
@@ -242,10 +285,18 @@ def cmd_init(a):
     print(f"batch ready: {batch_dir}")
 
 
+def _merged_lanes(batch_dir) -> set:
+    state_file = Path(batch_dir) / "state.json"
+    if not state_file.exists():
+        return set()
+    return {lid for lid, lane in read_json(state_file).get("lanes", {}).items() if lane_is_merged(lane)}
+
+
 def _validate_args(a, plan):
     bugs = read_json(Path(a.bugs)) if a.bugs else None
     repo = Path(a.repo) if a.repo else None
-    errors, warnings = validate_plan(plan, bugs, repo)
+    batch_dir = getattr(a, "batch", None) or getattr(a, "batch_dir", None)
+    errors, warnings = validate_plan(plan, bugs, repo, _merged_lanes(batch_dir) if batch_dir else frozenset())
     print_findings(errors, warnings)
     return errors
 
@@ -268,8 +319,10 @@ def cmd_load_plan(a):
             del state["issues"][key]
         for key, issue in plan["issues"].items():
             old = state["issues"].get(key, {})
-            merged = {**issue, **{k: old[k] for k in ("status", "pr", "note", "fix_commit") if k in old}}
+            merged = {**issue, **{k: old[k] for k in ISSUE_RUNTIME_FIELDS if k in old}}
             merged.setdefault("status", "excluded" if issue["kind"] in KINDS_EXCLUDED else "planned")
+            if is_task_key(key):
+                merged["tracker"] = "none"
             if issue.get("group"):
                 merged["lane"] = next(l for l, v in plan["lanes"].items() if issue["group"] in v["groups"])
             state["issues"][key] = merged
@@ -278,7 +331,7 @@ def cmd_load_plan(a):
             old = state["lanes"].get(lane_id, {})
             files = sorted(set().union(*[group_files(plan["groups"][g]) for g in lane["groups"]]))
             # Chỉ giữ field runtime của lane cũ; field plan (after, groups, slug) lấy từ plan mới.
-            runtime = {k: old[k] for k in ("status", "branch", "worktree", "agent", "pr", "note", "updated") if k in old}
+            runtime = {k: old[k] for k in LANE_RUNTIME_FIELDS if k in old}
             state["lanes"][lane_id] = {**runtime, **lane, "files": files, "status": old.get("status", "planned")}
     print("plan loaded")
 
@@ -298,13 +351,15 @@ def cmd_next_lanes(a):
                   file=sys.stderr)
 
 
-def _apply(target: dict, pairs, allowed_status, label):
+def _apply(target: dict, pairs, allowed_status, label, field_values=None):
     for pair in pairs:
         key, sep, value = pair.partition("=")
         if not sep:
             die(f"{label}: '{pair}' phải có dạng key=value")
         if key == "status" and value not in allowed_status:
             die(f"{label}: status '{value}' không hợp lệ ({', '.join(sorted(allowed_status))})")
+        if field_values and key in field_values and value not in field_values[key]:
+            die(f"{label}: {key} '{value}' không hợp lệ ({', '.join(sorted(field_values[key]))})")
         target[key] = value
     target["updated"] = now()
 
@@ -312,8 +367,47 @@ def _apply(target: dict, pairs, allowed_status, label):
 def cmd_lane(a):
     with locked(Path(a.batch_dir)) as state:
         lane = state["lanes"].get(a.lane) or die(f"không có lane {a.lane}")
-        _apply(lane, a.pairs, LANE_STATUSES, f"lane {a.lane}")
+        _apply(lane, a.pairs, LANE_STATUSES, f"lane {a.lane}", LANE_FIELD_VALUES)
     print("ok")
+
+
+def cmd_lane_remove(a):
+    with locked(Path(a.batch_dir)) as state:
+        lane = state["lanes"].get(a.lane) or die(f"không có lane {a.lane}")
+        running_jobs = [j for j, job in state["device_jobs"].items()
+                        if job.get("lane") == a.lane and job["status"] == "running"]
+        if not a.force and (lane.get("status") in LANE_RUNNING or running_jobs):
+            die(f"lane {a.lane} đang chạy" + (f" / device job {', '.join(running_jobs)} đang chạy" if running_jobs else "")
+                + " — dừng agent/job trước hoặc dùng --force", 1)
+        dropped = [j for j, job in state["device_jobs"].items() if job.get("lane") == a.lane and job["status"] == "pending"]
+        for job_id in dropped:
+            del state["device_jobs"][job_id]
+        del state["lanes"][a.lane]
+        for other in state["lanes"].values():
+            if a.lane in other.get("after", []):
+                other["after"] = [d for d in other["after"] if d != a.lane]
+                if not other["after"]:
+                    del other["after"]
+        orphan_groups = [g for g in lane.get("groups", []) if g in state["groups"]]
+        orphan_issues = sorted((k for k, i in state["issues"].items() if i.get("lane") == a.lane), key=natural_key)
+        for key in orphan_issues:
+            del state["issues"][key]["lane"]
+    if a.plan:
+        plan_path = Path(a.plan)
+        plan = read_json(plan_path)
+        plan.get("lanes", {}).pop(a.lane, None)
+        for other in plan.get("lanes", {}).values():
+            if a.lane in other.get("after", []):
+                other["after"] = [d for d in other["after"] if d != a.lane]
+                if not other["after"]:
+                    del other["after"]
+        write_json(plan_path, plan)
+    print(f"removed lane {a.lane}")
+    if dropped:
+        print(f"# bỏ device job pending: {', '.join(dropped)}")
+    if orphan_groups:
+        print(f"# group chưa thuộc lane nào: {', '.join(orphan_groups)} (issue: {', '.join(orphan_issues) or '-'}) "
+              f"— gán vào lane khác trong plan.json rồi load-plan, hoặc loại issue", file=sys.stderr)
 
 
 def cmd_issue(a):
@@ -338,17 +432,35 @@ def cmd_device_request(a):
     with locked(Path(a.batch_dir)) as state:
         if a.key not in state["issues"]:
             die(f"không có issue {a.key}")
+        extra = {k: v for k, v in (("apk", a.apk), ("head", a.head), ("priority", a.priority)) if v is not None}
         for job_id, job in state["device_jobs"].items():
             if (job["issue"] == a.key and job.get("purpose", "verify") == a.purpose
                     and job["status"] in {"pending", "running"}):
+                job.update(extra)  # gọi lại để cập nhật apk/head/priority (vd sau khi build lại)
                 print(job_id)
                 return
         job_id = f"DJ-{len(state['device_jobs']) + 1:03d}"
         state["device_jobs"][job_id] = {"issue": a.key, "lane": a.lane, "purpose": a.purpose,
-                                        "status": "pending", "serial": None, "created": now()}
+                                        "status": "pending", "serial": None, "created": now(), "priority": 0, **extra}
         if a.purpose == "verify":
             state["issues"][a.key]["status"] = "pending_device"
     print(job_id)
+
+
+def job_not_ready(state: dict, job: dict):
+    """Lý do job chưa giao được (None = sẵn sàng): phải có APK tồn tại và, với verify, APK build đúng head lane."""
+    apk = job.get("apk")
+    if not apk:
+        return "chưa có APK (build rồi device-request --apk … --head …)"
+    if not Path(apk).is_file():
+        return f"APK không tồn tại: {apk}"
+    worktree = state["lanes"].get(job.get("lane"), {}).get("worktree")
+    if job.get("purpose", "verify") == "verify" and job.get("head") and worktree and Path(worktree).is_dir():
+        current = git_head(worktree)
+        head = job["head"]
+        if current and not (current.startswith(head) or head.startswith(current)):
+            return f"APK build ở {head[:9]} nhưng lane đã ở {current[:9]} — build lại + device-request --apk --head"
+    return None
 
 
 def cmd_device_dispatch(a):
@@ -360,11 +472,18 @@ def cmd_device_dispatch(a):
                       f"— kiểm tra agent rồi dùng device-release nếu treo", file=sys.stderr)
         free = [s for s, d in sorted(devices.items()) if not d["holder"] and s not in (a.exclude or [])]
         pending = sorted((j for j in jobs.items() if j[1]["status"] == "pending"
-                          and (not a.job or j[0] in a.job)), key=lambda j: j[1]["created"])
-        dispatched = 0
+                          and (not a.job or j[0] in a.job)),
+                         key=lambda j: (-int(j[1].get("priority", 0)), j[1]["created"], natural_key(j[0])))
+        dispatched, not_ready, ready_waiting = 0, 0, 0
         for job_id, job in pending:
+            reason = job_not_ready(state, job)
+            if reason:
+                not_ready += 1
+                print(f"# {job_id} ({job['issue']}) chưa sẵn sàng: {reason}", file=sys.stderr)
+                continue
             if not free:
-                break
+                ready_waiting += 1
+                continue
             serial = free.pop(0)
             devices[serial] = {"holder": job_id, "since": time.time()}
             job.update(status="running", serial=serial, started=now())
@@ -373,10 +492,14 @@ def cmd_device_dispatch(a):
                 state["issues"][job["issue"]]["status"] = "verifying_device"
             print(f"{job_id} {serial} {job['issue']} {purpose}")
             dispatched += 1
-        waiting = sum(1 for j in jobs.values() if j["status"] == "pending")
-    if waiting and not dispatched:
-        print(f"# {waiting} job chờ thiết bị", file=sys.stderr)
+    if dispatched:
+        return
+    if ready_waiting:
+        print(f"# {ready_waiting} job chờ thiết bị", file=sys.stderr)
         sys.exit(3)
+    if not_ready:
+        print(f"# {not_ready} job chưa sẵn sàng (xem lý do ở trên)", file=sys.stderr)
+        sys.exit(4)
 
 
 def cmd_device_done(a):
@@ -401,6 +524,54 @@ def cmd_device_release(a):
             if job.get("purpose", "verify") == "verify":
                 state["issues"][job["issue"]]["status"] = "pending_device"
     print(f"released {a.serial}")
+
+
+JIRA_DONE_STATES = {"reviewing", "done", "closed"}
+
+
+def jira_target(issue: dict, lane: dict):
+    """(trạng thái đích | None, lý do, luôn in?) cho 1 issue, theo bảng Jira status của SKILL.md."""
+    status, lane_status = issue.get("status"), lane.get("status")
+    merged = lane.get("merged", "no")
+    if status in {"blocked", "excluded"}:
+        return None, "giữ nguyên (bug blocked/bị loại)", False
+    if merged == "base":
+        if status == "failed":
+            return "In Progress", "device job FAIL sau khi PR đã merge: mở lane/PR mới từ base (Reopened nếu workflow có)", False
+        return "Reviewing", "PR đã merge và head là tổ tiên base", False
+    if merged == "other":
+        return None, "PR merge vào branch ngoài base, code chưa vào base — đưa branch đó vào base trước", True
+    if lane_status in {"failed", "cancelled", "planned", None}:
+        return None, "giữ nguyên (lane chưa chạy/FAILED/huỷ)", False
+    if lane.get("ready") == "yes" and status in {"verified", "pr_open", "done"}:
+        return "Resolved", "reviewer APPROVE, PR ready, device job (nếu có) đã pass", False
+    return "In Progress", f"lane {lane_status}, issue {status}", False
+
+
+def cmd_jira_sync(a):
+    with locked(Path(a.batch_dir), write=False) as state:
+        rows = []
+        for key, issue in sorted(state["issues"].items(), key=lambda kv: natural_key(kv[0])):
+            if issue.get("tracker") == "none" or is_task_key(key) or issue.get("kind") in KINDS_EXCLUDED:
+                continue
+            lane_id = issue.get("lane")
+            target, reason, always = jira_target(issue, state["lanes"].get(lane_id, {}))
+            current = issue.get("jira", "?")
+            if target is None:
+                if a.all or always:
+                    rows.append(f"{key}: giữ nguyên {current} ({reason})")
+                continue
+            if current.lower() == target.lower():
+                if a.all:
+                    rows.append(f"{key}: {current} (đã đúng — {reason})")
+                continue
+            if target == "Resolved" and current.lower() in JIRA_DONE_STATES:
+                continue  # không lùi Reviewing/Done về Resolved
+            via = " [qua Resolved trước, 2 bước]" if target == "Reviewing" and current.lower() == "in progress" else ""
+            rows.append(f"{key}: {current} -> {target}{via} ({reason}; lane {lane_id})")
+    print("# KẾ HOẠCH jira-sync — script không gọi Jira. Với mỗi dòng: jira_get_transitions -> jira_transition_issue ->\n"
+          "# gán assignee -> `bfo issue <dir> <KEY> jira=<trạng thái mới>`. Hiện tại `?` = chưa ghi, đọc từ Jira trước.")
+    print("\n".join(rows) if rows else "# không có chuyển trạng thái nào cần làm")
 
 
 def cmd_board(a):
@@ -440,18 +611,27 @@ def main(argv=None):
     s.add_argument("--base-branch", required=True); s.add_argument("--source", required=True)
     s.add_argument("--max-lanes", type=int, default=3); s.set_defaults(fn=cmd_init)
     s = sub.add_parser("check-plan"); s.add_argument("plan")
-    s.add_argument("--bugs"); s.add_argument("--repo"); s.set_defaults(fn=cmd_check_plan)
+    s.add_argument("--bugs"); s.add_argument("--repo")
+    s.add_argument("--batch", help="batch dir: lane đã merge trong state không tính chồng file")
+    s.set_defaults(fn=cmd_check_plan)
     s = sub.add_parser("load-plan"); s.add_argument("batch_dir"); s.add_argument("plan")
     s.add_argument("--bugs"); s.add_argument("--repo"); s.set_defaults(fn=cmd_load_plan)
     s = sub.add_parser("next-lanes"); s.add_argument("batch_dir"); s.set_defaults(fn=cmd_next_lanes)
     s = sub.add_parser("lane"); s.add_argument("batch_dir"); s.add_argument("lane"); s.add_argument("pairs", nargs="+")
     s.set_defaults(fn=cmd_lane)
+    s = sub.add_parser("lane-remove"); s.add_argument("batch_dir"); s.add_argument("lane")
+    s.add_argument("--plan", help="plan.json: gỡ lane khỏi file này luôn"); s.add_argument("--force", action="store_true")
+    s.set_defaults(fn=cmd_lane_remove)
+    s = sub.add_parser("jira-sync"); s.add_argument("batch_dir")
+    s.add_argument("--all", action="store_true", help="in cả issue đã đúng / giữ nguyên"); s.set_defaults(fn=cmd_jira_sync)
     s = sub.add_parser("issue"); s.add_argument("batch_dir"); s.add_argument("key"); s.add_argument("pairs", nargs="+")
     s.set_defaults(fn=cmd_issue)
     s = sub.add_parser("device-sync"); s.add_argument("batch_dir"); s.add_argument("serials", nargs="*")
     s.set_defaults(fn=cmd_device_sync)
     s = sub.add_parser("device-request"); s.add_argument("batch_dir"); s.add_argument("key")
     s.add_argument("--lane", required=True); s.add_argument("--purpose", choices=["verify", "repro"], default="verify")
+    s.add_argument("--apk", help="đường dẫn APK vừa build"); s.add_argument("--head", help="commit head lúc build APK")
+    s.add_argument("--priority", type=int, help="số lớn chạy trước (mặc định 0)")
     s.set_defaults(fn=cmd_device_request)
     s = sub.add_parser("device-dispatch"); s.add_argument("batch_dir"); s.add_argument("--exclude", nargs="*")
     s.add_argument("--job", nargs="*", help="chỉ dispatch các job này (vd job verify của lane đã review xong)")

@@ -69,7 +69,7 @@ Fix **độc lập** (group riêng, lane riêng nếu có thể): crash Highest,
 ## Bước 4 — Xếp `lane` (= worktree = PR)
 
 1. Ghép group vào lane theo **feature package** (vd `features/player/`), mỗi lane ≤ 8 bug (script cảnh báo khi vượt).
-2. Hai lane sửa chung file → script báo lỗi; chọn: gộp chung lane (ưu tiên), hoặc `after: [<lane trước>]` (lane sau rebase lên branch lane trước, PR stack).
+2. Hai lane sửa chung file → script báo lỗi; chọn: gộp chung lane (ưu tiên), hoặc `after: [<lane trước>]` (lane sau rebase lên branch lane trước, PR stack). Lane đã merge vào base (`status=done` hoặc `merged=base`) không còn tính chồng file: chạy `check-plan --batch B` khi thêm lane mới sau khi batch đã có PR merge.
 3. Shared file (DI module, NavHost, `strings.xml`, Analytics, `build.gradle.kts`) chỉ nên nằm ở 1 lane; nhiều lane cần → lane đó chạy cuối bằng `after`.
 4. Lane chỉ có bug `none`/`unit`/`preview` xong sớm, PR ready ngay; lane có bug `device` mở PR **draft** tới khi job device pass. Muốn PR ready sớm → tách bug `device` ra lane riêng.
 5. Thứ tự ưu tiên chạy: lane có Highest/crash trước (đặt tên `L1`, `L2`… theo ưu tiên; `next-lanes` sắp tự nhiên, `L2` trước `L10`).
@@ -80,23 +80,23 @@ Fix **độc lập** (group riêng, lane riêng nếu có thể): crash Highest,
 ```json
 {
   "issues": {
-    "AAP884-50": {"title": "[Player] Bỏ nút Share", "kind": "ui", "verify": "preview",
+    "PROJ-50": {"title": "[Player] Bỏ nút Share", "kind": "ui", "verify": "preview",
                   "group": "player-actions", "screen": "3.5", "figma_node": "17:6324",
                   "spec_verdict": "confirmed", "spec_ref": "Figma 17:6324: cột action không có Share",
                   "reason": "PlayerScreen còn ShareButton"},
-    "AAP884-48": {"title": "Crash Watch ad", "kind": "code", "verify": "device",
+    "PROJ-48": {"title": "Crash Watch ad", "kind": "code", "verify": "device",
                   "group": "unlock-ad-crash", "spec_verdict": "confirmed",
                   "spec_ref": "Crash luôn là bug (không cần spec)", "reason": "Crash runtime khi load reward ad"},
-    "AAP884-23": {"title": "Quality hiện 360/480/720", "kind": "needs-confirm",
+    "PROJ-23": {"title": "Quality hiện 360/480/720", "kind": "needs-confirm",
                   "reason": "Spec 3.6 chỉ liệt kê Auto/HD, không nói ẩn mức thấp",
                   "question": "Có ẩn 360/480 không, hay tester kỳ vọng ngoài spec?"},
-    "AAP884-53": {"title": "Thiếu login demo", "kind": "spec-gap",
+    "PROJ-53": {"title": "Thiếu login demo", "kind": "spec-gap",
                   "reason": "Spec: tài khoản demo lấy từ remote config SDK — key nào? hỏi PO"}
   },
   "groups": {
-    "player-actions": {"issues": ["AAP884-50"], "files": ["app/src/main/java/.../player/PlayerScreen.kt"],
+    "player-actions": {"issues": ["PROJ-50"], "files": ["app/src/main/java/.../player/PlayerScreen.kt"],
                        "cause": "Cột action còn Share"},
-    "unlock-ad-crash": {"issues": ["AAP884-48"], "files": ["app/src/main/java/.../unlock/UnlockViewModel.kt"],
+    "unlock-ad-crash": {"issues": ["PROJ-48"], "files": ["app/src/main/java/.../unlock/UnlockViewModel.kt"],
                         "cause": "Reward ad gọi show khi chưa load xong"}
   },
   "lanes": {
@@ -106,14 +106,14 @@ Fix **độc lập** (group riêng, lane riêng nếu có thể): crash Highest,
 }
 ```
 
-Field bắt buộc: issue fixable → `kind, verify, group, reason, spec_verdict: "confirmed", spec_ref` (+ `repro_first` tuỳ chọn); issue loại → `kind, reason` (không `group`), `needs-confirm` thêm `question`; group → `issues, files, cause` (+ `shared_files`, `new_files_ok`); lane → `groups` (+ `after`, `slug`). Đường dẫn file repo-relative. Mọi key trong `bugs.json` phải có trong `issues` (`check-plan --bugs` bắt).
+Field bắt buộc: issue fixable → `kind, verify, group, reason, spec_verdict: "confirmed", spec_ref` (+ `repro_first` tuỳ chọn); issue loại → `kind, reason` (không `group`), `needs-confirm` thêm `question`; group → `issues, files, cause` (+ `shared_files`, `new_files_ok`); lane → `groups` (+ `after`, `slug`). Đường dẫn file repo-relative. Mọi key trong `bugs.json` phải có trong `issues` (`check-plan --bugs` bắt). Key issue: Jira `PROJ-123` hoặc `TASK-<slug>` cho việc không có Jira (slug chữ thường, ≥1 chữ cái; script bỏ qua khi `jira-sync`).
 
 ## `confirm-checklist.md` — câu hỏi không chặn tiến độ
 
 Mỗi bug `needs-confirm`/`spec-gap`/`conflict` một mục, đủ ngữ cảnh để user trả lời **không cần mở Jira/code**:
 
 ```
-### [ ] AAP884-23 — [Detail film][Quality] Đang hiển thị các option 360/480/720
+### [ ] PROJ-23 — [Detail film][Quality] Đang hiển thị các option 360/480/720
 - Tester báo: <actual> → mong đợi <expected>
 - Spec nói: "<trích nguyên văn>" (Confluence v<N>, mục <x>) · Figma: <node / không có>
 - App hiện tại: <hành vi + file:line>
@@ -134,16 +134,42 @@ Thứ tự: bug ưu tiên cao trước; gom câu hỏi trùng chủ đề (vd m�
   - **A (fix)** → issue thành `code`/`ui`/`content` + `spec_verdict: confirmed`, `spec_ref: "User xác nhận <ngày>: <tóm tắt>"`, tạo group + lane **mới** (`C1`, `C2`…; không nhét vào lane đang chạy); đụng file của lane đang chạy → `after: [<lane đó>]`. `check-plan` → `load-plan` (lane đang chạy giữ nguyên trạng thái) → `next-lanes`.
   - **B (không fix)** → `not-a-bug`, `reason` = câu trả lời; ghi vào báo cáo để gửi tester/BA.
   - Đánh dấu `[x]` + ghi câu trả lời trong `confirm-checklist.md`.
+- Lane chờ câu trả lời/quyết định ngoài (không phải lỗi agent) → `S lane B <L> status=blocked note=…`; trả lời xong `status=planned` (hoặc tiếp tục agent). Lane bị huỷ/gộp vào lane khác → `S lane-remove B <L> --plan B/plan.json`, gán lại group mồ côi vào lane còn lại rồi `check-plan` + `load-plan` (không sửa `plan.json` tay để gỡ lane).
 - Chưa trả lời khi đóng batch → liệt kê trong báo cáo cuối, batch vẫn đóng được.
+
+## Decision board — `B/decisions-pending.md`
+
+Mỗi quyết định cần PO/BA/user có **một ID** (`D1`, `D2`… tăng dần, không tái dùng). Gom câu hỏi trùng chủ đề (nhiều bug cùng hỏi "tắt remote key X") vào một ID. Chi tiết từng bug vẫn ở `confirm-checklist.md`; board chỉ là chỉ mục:
+
+```
+| ID | Câu hỏi (1 dòng) | Bug | Lựa chọn | Đề xuất | Trạng thái |
+| D1 | Ẩn hay disable nút Retry khi offline? | PROJ-12, -13 | A. ẩn / B. disable | A | open |
+| D2 | Quality có ẩn 360/480? | PROJ-23 | A. ẩn / B. giữ | B | answered A · 261110 · PO (ảnh sheet) |
+```
+
+- Mỗi tin gửi user chỉ liệt kê dòng `open` **mới hoặc đổi** (ID + câu hỏi + lựa chọn + đề xuất), không nhắc lại dòng đã gửi trừ khi user hỏi; user trả lời theo ID ("D1=A, D2=B"). Quyết định nằm trong ảnh/sheet → chép nguyên văn nguồn vào cột Trạng thái.
+- Có câu trả lời → cập nhật `answered <lựa chọn> · <ngày> · <nguồn>`, áp dụng như §Không chặn tiến độ (mục `[x]` trong checklist, bug vào lane `C<n>` hoặc `not-a-bug`), sửa `spec_ref` thành `D<id>`.
+- Quyết định `answered` đổi hành vi so với spec → giao `general-purpose` ghi DEC vào file decisions-outside-spec của repo (id DEC kế tiếp theo quy ước repo; ghi ID board, ngày, nguồn, bug liên quan) trong **một PR docs của batch** (draft, không chặn lane). Repo không có file đó → ghi trong báo cáo cuối.
+
+## Quyết định đổi sau khi PR đã ready
+
+PO/BA đổi quyết định cho bug mà PR đã `gh pr ready` (hoặc Jira đã Resolved). Chưa merge:
+1. `gh pr ready <pr> --undo` (về draft); `S lane B <L> status=running ready=no`; `S jira-sync B` rồi đưa các issue bị ảnh hưởng về **In Progress**.
+2. Ghi quyết định vào board (ID mới hoặc `answered` đổi), cập nhật `spec_ref`/`verify` trong plan, `check-plan` + `load-plan`.
+3. SendMessage `bug-fixer` của lane (agent đã kết thúc → spawn mới kèm brief + diff hiện tại): quyết định mới, issue ảnh hưởng, cập nhật `fix-design.md`; lane chạy lại gate fresh-with-main.
+4. Evidence cũ của issue thành stale: device job đã pass không còn giá trị — `device-request` lại với APK mới nếu tier `device`.
+5. `bug-reviewer` review vòng mới (đếm lại từ vòng 1 cho thay đổi do quyết định) → APPROVE → `gh pr ready` + Resolved.
+
+PR đã merge rồi → không hạ draft: lane mới (`C<n>`, PR mới từ base), issue về **Reopened/In Progress**.
 
 ## Trình user (trước Phase 4) — ghi `B/plan-summary.md`
 
 ```
-Batch 261107-1904-aap884 — 52 bug: 41 vào batch / 11 loại
+Batch 261107-1904-proj — 52 bug: 41 vào batch / 11 loại
 | Lane | PR dự kiến | Bug | Verify | Ghi chú |
-| L1 | fix/aap884-unlock-ad-crash | AAP884-48, -10 | device | crash Highest, PR riêng |
-| L2 | fix/aap884-player-ui | -50, -23 | preview, unit | |
-Bị loại: AAP884-53 spec-gap (câu hỏi PO), ...
+| L1 | fix/proj-unlock-ad-crash | PROJ-48, -10 | device | crash Highest, PR riêng |
+| L2 | fix/proj-player-ui | -50, -23 | preview, unit | |
+Bị loại: PROJ-53 spec-gap (câu hỏi PO), ...
 Device: 9 bug cần thiết bị → hàng chờ trên emulator-5554
 ```
 
