@@ -6,6 +6,21 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 
 ## [Unreleased]
 
+### Changed — `bug-note` + `bug-fix-orchestrator` gộp thành `bug-fix`
+
+- **Một skill `bug-fix`, hai mode**: `note` (mặc định: bug gõ trong chat hoặc đúng 1 key/link Jira, mỗi bug 1 worker → 1 PR) và `batch` (JQL / board / sprint / ≥ 2 key Jira / report `ui-diff`, nhiều đợt, lane worktree song song). `SKILL.md` mỏng, procedure ở `references/` (`mode-note.md`, `note-worker-protocol.md`, `mode-batch.md`, các reference batch và `device-queue.md` giữ nội dung của #13). `bug-note` và `bug-fix-orchestrator` còn lại là stub alias (giữ `/bug-note`, `/bug-fix-orchestrator`); `bug --mode fix --parallel` chuyển sang `bug-fix` mode batch. `CLAUDE.md`, `AGENTS.md`, agent `bug-fixer` / `bug-reviewer` / `bug-scout` cập nhật theo.
+- **Mức verify chung** `none/unit/preview/device` cho cả hai mode (`references/verify-tiers.md`), bỏ T1–T4 của bug-note. Mức `preview` ở mode note theo đúng quy tắc của batch: board với Figma + `ui-diff-review` (ngưỡng 95), còn lệch thì `ui-fix-loop` ≤ 3 vòng, tra `docs/design-refs/figma-refs.json` trước; quy tắc viết một lần, hai mode tham chiếu.
+- **Evidence chung**: mode note cũng ghi `evidence.json` theo `evidence.schema.json`; `validate_evidence.py` thêm `--evidence-dir <dir> [--base-commit <sha>]` (có test).
+- **Khoá thiết bị chung** `scripts/devices.py` (`<git-common-dir>/bug-fix/devices.json`, `fcntl` + ghi nguyên tử, holder `note:<BUG-ID>` / `batch:<batch-id>:<JOB>`): `bug_queue.py device-*` và `bfo device-dispatch/done/release` đều qua đây, hai mode không bao giờ giữ cùng một serial; leader không còn phải `--exclude` thiết bị của note. Bug note xong (không còn `queued/investigating/waiting/fixing`) tự nhả khoá; thêm `bug_queue.py device-list`.
+- **Script chỉ stdlib, chạy `python3` hệ thống ≥ 3.9** (bỏ mọi tham chiếu venv của `~/.claude/skills` trong skill, kể cả bước validate evidence ở đóng batch): `bug_queue.py`, `bfo_state.py`, `bfo`, `devices.py` ở `skills/bug-fix/scripts/`.
+- **Chuyển state note**: `<git-common-dir>/bug-note/queue.json` → `<git-common-dir>/bug-fix/queue.json`; lần chạy đầu `bug_queue.py` đọc file cũ một lần (kể cả khoá thiết bị của bug chưa xong) và không xoá nó.
+
+### Added — bug-fix
+
+- **Nhiều đợt (wave)**: `bfo next-wave <batch> [--start]` liệt kê ticket chưa có `evidence.json` verdict `PASS` (thiếu / `FAIL` / `NEEDS_VERIFICATION`) và ticket `needs-confirm` đã có `answer`; `manifest.json` ghi `wave` + `issue_wave`; `bfo board` thêm cột Wave và Verdict.
+- **Nguồn bug từ report `ui-diff`**: `bfo import-ui-diff <batch> <summary.json | run dir>` biến mỗi mục `fix_priority[]` thành bug `kind=ui` `verify=preview` key `UI-<screen-slug>-<n>` (không Jira, `jira-sync` bỏ qua), ghi `bugs.json` đúng format hiện có và chép ảnh actual/design của màn vào `context/ui-diff/`. Chạy lại giữ key của finding trùng; thêm trigger "fix theo report ui-diff".
+- Eval `bug-fix`: case chọn mode (chat → note, 1 key → note, JQL/board/≥ 2 key → batch), wave, `preview` ở note mode, khoá thiết bị liên mode, report ui-diff.
+
 ### Changed — bug-fix-orchestrator (retro improvements)
 
 - **Lane gate "fresh with main"** trước build APK / dispatch device / push (merge base khi lane `after` đã merge hoặc base có commit đụng file lane); PR đã `MERGED`/`CLOSED` thì mở branch + PR mới thay vì push vào branch cũ.

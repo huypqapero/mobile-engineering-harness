@@ -3,11 +3,13 @@
 
 import io
 import json
+import os
 import sys
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).parent))
 import bfo_state  # noqa: E402
@@ -41,7 +43,10 @@ def make_apk(directory, name="app.apk"):
 def run(*argv):
     out, err = io.StringIO(), io.StringIO()
     code = 0
-    with redirect_stdout(out), redirect_stderr(err):
+    # Khoá thiết bị chung (devices.py) cần một thư mục state: mặc định riêng cho từng thư mục tạm của test,
+    # test nào cần chia sẻ với bug_queue thì đặt sẵn BUG_FIX_STATE_DIR.
+    env = {} if os.environ.get("BUG_FIX_STATE_DIR") else {"BUG_FIX_STATE_DIR": str(Path(argv[1]).parent / "bug-fix-state")}
+    with mock.patch.dict(os.environ, env), redirect_stdout(out), redirect_stderr(err):
         try:
             bfo_state.main(list(argv))
         except SystemExit as exc:
@@ -579,6 +584,239 @@ class JiraSyncTest(unittest.TestCase):
         st = json.loads((Path(self.dir) / "state.json").read_text())
         self.assertEqual(st["issues"]["A-1"]["jira"], "In Progress")
         self.assertEqual((st["lanes"]["L1"]["ready"], st["lanes"]["L1"]["merged"]), ("yes", "base"))
+
+
+class WaveTest(unittest.TestCase):
+    """next-wave: ticket chưa có evidence PASS + needs-confirm đã trả lời; manifest ghi wave; board hiện wave + verdict."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = str(Path(self.tmp.name) / "bugfix-batch-w1")
+        run("init", self.dir, "--base-commit", "abc", "--base-branch", "main", "--source", "t")
+        p = plan()
+        p["issues"]["A-4"] = {"title": "d", "kind": "needs-confirm", "reason": "tester hiểu nhầm?",
+                              "question": "Spec 3.2 không nói X — có cần fix?"}
+        f = Path(self.tmp.name) / "plan.json"; f.write_text(json.dumps(p))
+        self.assertEqual(run("load-plan", self.dir, str(f))[0], 0)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def manifest(self):
+        return json.loads((Path(self.dir) / "manifest.json").read_text())
+
+    def evidence(self, key, verdict):
+        d = Path(self.dir) / "evidence" / key
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "evidence.json").write_text(json.dumps({"issue": key, "verdict": verdict}))
+
+    def test_load_plan_stamps_wave_one_for_every_issue(self):
+        m = self.manifest()
+        self.assertEqual(m["wave"], 1)
+        self.assertEqual(m["issue_wave"], {"A-1": 1, "A-2": 1, "A-3": 1, "A-4": 1})
+
+    def test_lists_missing_fail_and_needs_verification_but_not_pass(self):
+        self.evidence("A-1", "PASS")
+        self.evidence("A-2", "NEEDS_VERIFICATION")
+        code, out, _ = run("next-wave", self.dir)
+        self.assertEqual(code, 0)
+        self.assertNotIn("A-1:", out)
+        self.assertIn("A-2: evidence verdict NEEDS_VERIFICATION", out)
+        self.evidence("A-1", "FAIL")
+        self.assertIn("A-1: evidence verdict FAIL", run("next-wave", self.dir)[1])
+        (Path(self.dir) / "evidence" / "A-1" / "evidence.json").unlink()
+        self.assertIn("A-1: thiếu evidence.json", run("next-wave", self.dir)[1])
+
+    def test_excluded_kinds_never_listed_and_needs_confirm_only_after_answer(self):
+        _, out, _ = run("next-wave", self.dir)
+        self.assertNotIn("A-3", out)
+        self.assertNotIn("A-4", out)
+        run("issue", self.dir, "A-4", "answer=Có, fix theo Figma 1:2")
+        _, out, _ = run("next-wave", self.dir)
+        self.assertIn("A-4: needs-confirm đã trả lời: Có, fix theo Figma 1:2", out)
+
+    def test_answer_survives_plan_reload(self):
+        run("issue", self.dir, "A-4", "answer=ok")
+        run("load-plan", self.dir, str(Path(self.tmp.name) / "plan.json"))
+        st = json.loads((Path(self.dir) / "state.json").read_text())
+        self.assertEqual(st["issues"]["A-4"]["answer"], "ok")
+
+    def test_nothing_left_when_all_pass(self):
+        self.evidence("A-1", "PASS")
+        self.evidence("A-2", "PASS")
+        code, out, _ = run("next-wave", self.dir)
+        self.assertEqual(code, 0)
+        self.assertIn("không còn ticket nào", out)
+
+    def test_listing_does_not_change_manifest_but_start_does(self):
+        self.evidence("A-1", "PASS")
+        run("next-wave", self.dir)
+        self.assertEqual(self.manifest()["wave"], 1)
+        run("next-wave", self.dir, "--start")
+        m = self.manifest()
+        self.assertEqual(m["wave"], 2)
+        self.assertEqual(m["issue_wave"]["A-2"], 2)
+        self.assertEqual(m["issue_wave"]["A-1"], 1)  # PASS ở wave 1: giữ nguyên
+        # load-plan lại không kéo ticket đã có wave về wave mới
+        run("load-plan", self.dir, str(Path(self.tmp.name) / "plan.json"))
+        self.assertEqual(self.manifest()["issue_wave"]["A-1"], 1)
+
+    def test_board_shows_wave_and_verdict_columns(self):
+        self.evidence("A-1", "PASS")
+        _, out, _ = run("board", self.dir)
+        self.assertIn("| Wave | Verdict |", out)
+        self.assertIn("| A-1 | ui | preview | L1 | planned | 1 | PASS |", out)
+        self.assertIn("| A-2 | code | device | L2 | planned | 1 | - |", out)
+
+
+class SharedDeviceLockTest(unittest.TestCase):
+    """bfo đi qua devices.py: dispatch giữ khoá chung, device-done / device-release nhả."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = str(Path(self.tmp.name) / "bugfix-batch-261112-1800-proj")
+        self.apk = make_apk(self.tmp.name)
+        run("init", self.dir, "--base-commit", "abc", "--base-branch", "main", "--source", "t")
+        f = Path(self.tmp.name) / "plan.json"; f.write_text(json.dumps(plan()))
+        run("load-plan", self.dir, str(f))
+        run("device-sync", self.dir, "s1")
+        run("device-request", self.dir, "A-1", "--lane", "L1", "--apk", self.apk)
+        self.env = mock.patch.dict(os.environ, {"BUG_FIX_STATE_DIR": str(Path(self.tmp.name) / "shared")})
+        self.env.start()
+        import devices
+        self.devices = devices
+
+    def tearDown(self):
+        self.env.stop()
+        self.tmp.cleanup()
+
+    def test_dispatch_registers_batch_holder_and_done_releases(self):
+        self.assertEqual(run("device-dispatch", self.dir)[0], 0)
+        self.assertEqual(self.devices.holder_of("s1"), "batch:261112-1800-proj:DJ-001")
+        run("device-done", self.dir, "DJ-001", "--result", "pass")
+        self.assertIsNone(self.devices.holder_of("s1"))
+
+    def test_device_release_frees_shared_lock_and_requeues_job(self):
+        run("device-dispatch", self.dir)
+        run("device-release", self.dir, "s1")
+        self.assertIsNone(self.devices.holder_of("s1"))
+        self.assertEqual(run("device-dispatch", self.dir)[0], 0)
+
+    def test_serial_held_outside_batch_is_not_dispatched(self):
+        self.devices.acquire("s1", "note:BUG-001")
+        code, out, err = run("device-dispatch", self.dir)
+        self.assertEqual(code, 3)
+        self.assertEqual(out, "")
+        self.assertIn("note:BUG-001", err)
+
+    def test_dispatch_falls_through_to_next_free_serial(self):
+        run("device-sync", self.dir, "s1", "s2")
+        self.devices.acquire("s1", "note:BUG-001")
+        code, out, _ = run("device-dispatch", self.dir)
+        self.assertEqual(code, 0)
+        self.assertIn("DJ-001 s2 A-1 verify", out)
+
+
+def ui_diff_run(root, extra=()):
+    """Thư mục run ui-diff mẫu: summary.json (định dạng skills/ui-diff/scripts/aggregate.py) + ảnh theo màn."""
+    run_dir = Path(root) / "run-1"
+    for screen_dir in ("home", "level-2"):
+        d = run_dir / "screens" / screen_dir
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "actual.png").write_bytes(b"A" + screen_dir.encode())
+        (d / "design.png").write_bytes(b"D" + screen_dir.encode())
+    fixes = [
+        {"screen": "home", "region": "banner", "severity": "high", "type": "spacing", "actual": "padding 8dp",
+         "expected": "padding 16dp", "source_hint": "HomeScreen.kt", "confidence": "high"},
+        {"screen": "home", "region": "title", "severity": "low", "type": "color", "actual": "#000",
+         "expected": "#111", "source_hint": None, "confidence": "medium"},
+        {"screen": "Level 2", "region": "icon bar", "severity": "medium", "type": "missing", "actual": "thiếu icon",
+         "expected": "có icon bar-chart", "source_hint": "LevelRow.kt", "confidence": "low"},
+        *extra,
+    ]
+    summary = {"run": str(run_dir), "pass_score": 95, "n_screens": 2, "n_fixes": len(fixes),
+               "screens": [{"screen": "home", "dir": "home", "match_score": 80, "pass": False},
+                           {"screen": "Level 2", "dir": "level-2", "match_score": 70, "pass": False}],
+               "fix_priority": fixes}
+    (run_dir / "summary.json").write_text(json.dumps(summary, ensure_ascii=False))
+    return run_dir
+
+
+class ImportUiDiffTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = str(Path(self.tmp.name) / "bugfix-batch-ui")
+        run("init", self.dir, "--base-commit", "abc", "--base-branch", "main", "--source", "ui-diff")
+        self.run_dir = ui_diff_run(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def bugs(self):
+        return json.loads((Path(self.dir) / "bugs.json").read_text())
+
+    def test_each_finding_becomes_ui_preview_bug_with_screen_images(self):
+        code, out, _ = run("import-ui-diff", self.dir, str(self.run_dir / "summary.json"))
+        self.assertEqual(code, 0, out)
+        bugs = self.bugs()
+        self.assertEqual(sorted(bugs), ["UI-home-1", "UI-home-2", "UI-level-2-1"])
+        b = bugs["UI-home-1"]
+        self.assertEqual((b["kind_hint"], b["verify_hint"], b["url"], b["screen_hint"]), ("ui", "preview", None, "home"))
+        self.assertEqual((b["actual"], b["expected"], b["priority"]), ("padding 8dp", "padding 16dp", "High"))
+        self.assertEqual(b["attachments"], ["context/ui-diff/home/actual.png", "context/ui-diff/home/design.png"])
+        self.assertEqual((Path(self.dir) / "context/ui-diff/level-2/design.png").read_bytes(), b"Dlevel-2")
+        self.assertTrue(bugs["UI-level-2-1"]["attachments"][0].endswith("level-2/actual.png"))
+
+    def test_accepts_run_dir_and_rerun_keeps_keys_and_appends_new(self):
+        run("import-ui-diff", self.dir, str(self.run_dir))
+        before = self.bugs()
+        extra = {"screen": "home", "region": "footer", "severity": "low", "type": "text", "actual": "a",
+                 "expected": "b", "source_hint": None, "confidence": "high"}
+        ui_diff_run(self.tmp.name, extra=[extra])
+        run("import-ui-diff", self.dir, str(self.run_dir))
+        after = self.bugs()
+        self.assertEqual({k: after[k] for k in before}, before)
+        self.assertEqual(sorted(set(after) - set(before)), ["UI-home-3"])
+
+    def test_keeps_existing_bugs_in_file(self):
+        (Path(self.dir) / "bugs.json").write_text(json.dumps({"PROJ-1": {"title": "x"}}))
+        run("import-ui-diff", self.dir, str(self.run_dir))
+        self.assertIn("PROJ-1", self.bugs())
+
+    def test_missing_fix_priority_is_error(self):
+        (self.run_dir / "summary.json").write_text("{}")
+        self.assertEqual(run("import-ui-diff", self.dir, str(self.run_dir))[0], 1)
+
+    def test_imported_bugs_flow_through_plan_state_and_next_wave(self):
+        run("import-ui-diff", self.dir, str(self.run_dir))
+        bugs = self.bugs()
+        issues = {k: {"title": b["title"], "kind": "ui", "verify": "preview", "group": "g1", "reason": "ui-diff",
+                      "spec_verdict": "confirmed", "spec_ref": b["spec_ref_hint"]} for k, b in bugs.items()}
+        plan_file = Path(self.tmp.name) / "plan.json"
+        plan_file.write_text(json.dumps({"issues": issues,
+                                         "groups": {"g1": {"issues": sorted(issues), "files": ["ui/Home.kt"], "cause": "x"}},
+                                         "lanes": {"L1": {"groups": ["g1"]}}}))
+        code, out, _ = run("check-plan", str(plan_file), "--bugs", str(Path(self.dir) / "bugs.json"))
+        self.assertEqual(code, 0, out)
+        self.assertEqual(run("load-plan", self.dir, str(plan_file))[0], 0)
+        st = json.loads((Path(self.dir) / "state.json").read_text())
+        self.assertEqual(st["issues"]["UI-home-1"]["tracker"], "none")
+        self.assertNotIn("UI-home-1", run("jira-sync", self.dir)[1].replace("# ", ""))
+        ev = Path(self.dir) / "evidence" / "UI-home-1"
+        ev.mkdir(parents=True)
+        (ev / "evidence.json").write_text(json.dumps({"verdict": "PASS"}))
+        _, out, _ = run("next-wave", self.dir)
+        self.assertNotIn("UI-home-1:", out)
+        self.assertIn("UI-home-2: thiếu evidence.json", out)
+        self.assertIn("UI-level-2-1: thiếu evidence.json", out)
+
+    def test_ui_key_rules_and_slugify(self):
+        self.assertTrue(bfo_state.is_ui_key("UI-home-1"))
+        self.assertTrue(bfo_state.is_ui_key("UI-level-2-10"))
+        self.assertFalse(bfo_state.is_ui_key("UI-home"))
+        self.assertFalse(bfo_state.is_ui_key("UI-Home-1"))
+        self.assertEqual(bfo_state.slugify("Màn Đăng nhập / OTP"), "man-dang-nhap-otp")
+        self.assertEqual(bfo_state.slugify("???"), "screen")
 
 
 if __name__ == "__main__":

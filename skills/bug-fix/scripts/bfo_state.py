@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Batch state cho skill bug-fix-orchestrator.
+"""Batch state cho skill bug-fix (mode batch).
 
 Một batch = thư mục plans/bugfix-batch-<id>/ trong repo app. File:
-  manifest.json  batch_id, base_commit, base_branch, source, created
+  manifest.json  batch_id, base_commit, base_branch, source, created, wave, issue_wave
   state.json     issues / groups / lanes / devices / device_jobs (leader + lane cùng đọc)
 Mọi lệnh ghi đều lấy file lock riêng của batch, nên leader và nhiều lane gọi song song an toàn.
+Khoá thiết bị đi qua devices.py (<git-common-dir>/bug-fix/devices.json), dùng chung với mode note
+(bug_queue.py): `state.devices` chỉ là bản sao để hiển thị, nguồn sự thật là khoá chung, holder
+`batch:<batch-id>:<JOB>`.
 Định dạng state.json["issues"] (dict theo issue key) tương thích skills/bug/scripts/validate_evidence.py.
 
 Lệnh (batch_dir luôn là tham số đầu, đường dẫn tuyệt đối):
@@ -30,18 +33,26 @@ Lệnh (batch_dir luôn là tham số đầu, đường dẫn tuyệt đối):
                                     apk/head/priority). repro = tái hiện + lấy logcat TRƯỚC khi fix (crash chưa có stack).
                                     apk/head = APK vừa build + commit head lúc build; priority lớn chạy trước
   device-dispatch <dir> [--exclude SERIAL ...] [--job JOB ...]
-                                    gán job pending SẴN SÀNG (APK tồn tại, head khớp worktree lane) cho thiết bị rảnh;
+                                    gán job pending SẴN SÀNG (APK tồn tại, head khớp worktree lane) cho thiết bị rảnh
+                                    (rảnh = cả trong batch lẫn khoá chung: máy note đang giữ không bao giờ được cấp);
                                     in "JOB SERIAL KEY PURPOSE" mỗi dòng, ưu tiên priority rồi thứ tự xếp hàng.
                                     exit 0 đã gán ≥1 · exit 3 còn job sẵn sàng nhưng hết thiết bị ·
                                     exit 4 chỉ còn job chưa sẵn sàng (thiếu APK / head lệch) · exit 0 không in gì = hết job
   device-done <dir> <JOB> --result pass|fail   trả thiết bị, ghi kết quả
   device-release <dir> <SERIAL>     nhả thiết bị bị giữ quá lâu (job quay về pending)
-  board <dir>                       bảng trạng thái Markdown
+  import-ui-diff <dir> <summary.json | run dir> [--bugs bugs.json]
+                                    mỗi mục fix_priority[] của report ui-diff -> 1 bug kind=ui verify=preview key
+                                    `UI-<screen-slug>-<n>` (không Jira) ghi vào bugs.json (gộp với file có sẵn, chạy lại
+                                    không đổi key), chép ảnh actual/design của màn vào <dir>/context/ui-diff/<screen-slug>/
+  next-wave <dir> [--start]         liệt kê ticket cần đợt (wave) tiếp theo: chưa có evidence.json verdict PASS
+                                    (thiếu / FAIL / NEEDS_VERIFICATION) và ticket needs-confirm đã có `answer`.
+                                    --start: tăng manifest.wave và ghi wave mới cho các ticket đó
+  board <dir>                       bảng trạng thái Markdown (kèm cột wave + verdict)
 
 Exit code chung: 0 ok · 1 plan/state không hợp lệ · 2 dùng sai · 3 phải chờ · 4 job chưa sẵn sàng.
 
-Issue key: Jira (`PROJ-123`) hoặc việc không có Jira `TASK-<slug>` (slug chữ thường, có ít nhất 1 chữ cái);
-key TASK- vào state với tracker=none và bị `jira-sync` bỏ qua.
+Issue key: Jira (`PROJ-123`), việc không có Jira `TASK-<slug>` (slug chữ thường, có ít nhất 1 chữ cái), hoặc
+finding ui-diff `UI-<screen-slug>-<n>`; key TASK-/UI- vào state với tracker=none và bị `jira-sync` bỏ qua.
 """
 
 from __future__ import annotations
@@ -50,11 +61,15 @@ import argparse
 import fcntl
 import json
 import re
+import shutil
 import subprocess
 import sys
 import time
+import unicodedata
 from contextlib import contextmanager
 from pathlib import Path
+
+import devices as device_locks
 
 KINDS_FIXABLE = {"code", "ui", "content"}
 KINDS_EXCLUDED = {"spec-gap", "needs-info", "needs-confirm", "duplicate", "not-a-bug", "external",
@@ -68,9 +83,10 @@ ISSUE_STATUSES = {"planned", "fixing", "fixed", "pending_device", "verifying_dev
 LANE_STATUSES = {"planned", "running", "waiting", "blocked", "pr_open", "done", "failed", "cancelled"}
 LANE_FIELD_VALUES = {"ready": {"yes", "no"}, "merged": {"no", "base", "other"}}
 LANE_RUNTIME_FIELDS = ("status", "branch", "worktree", "agent", "pr", "note", "updated", "ready", "merged")
-ISSUE_RUNTIME_FIELDS = ("status", "pr", "note", "fix_commit", "jira")
+ISSUE_RUNTIME_FIELDS = ("status", "pr", "note", "fix_commit", "jira", "answer")
 JIRA_KEY_RE = re.compile(r"^[A-Z][A-Z0-9_]*-\d+$")
 TASK_KEY_RE = re.compile(r"^TASK-(?=[a-z0-9-]*[a-z])[a-z0-9]+(?:-[a-z0-9]+)*$")
+UI_KEY_RE = re.compile(r"^UI-[a-z0-9]+(?:-[a-z0-9]+)*-\d+$")
 LANE_UNBLOCKS = {"pr_open", "done"}
 LANE_RUNNING = {"running"}
 MAX_ISSUES_PER_LANE = 8
@@ -91,6 +107,16 @@ def is_task_key(key: str) -> bool:
     return bool(TASK_KEY_RE.match(str(key)))
 
 
+def is_ui_key(key: str) -> bool:
+    """Finding từ report ui-diff: UI-<screen-slug>-<n>."""
+    return bool(UI_KEY_RE.match(str(key)))
+
+
+def is_untracked_key(key: str) -> bool:
+    """Key không có Jira: bị bỏ qua khi jira-sync, không bao giờ transition."""
+    return is_task_key(key) or is_ui_key(key)
+
+
 def lane_is_merged(lane: dict) -> bool:
     """Lane đã xong hẳn trong base: status=done hoặc PR merged vào base."""
     return lane.get("status") == "done" or lane.get("merged") == "base"
@@ -102,6 +128,27 @@ def git_head(worktree: str):
     except (OSError, subprocess.SubprocessError):
         return None
     return out.stdout.strip() if out.returncode == 0 and out.stdout.strip() else None
+
+
+def batch_id_of(batch_dir: Path) -> str:
+    return batch_dir.name.removeprefix("bugfix-batch-")
+
+
+def device_holder(batch_dir: Path, job_id: str) -> str:
+    """Holder trong khoá thiết bị chung (devices.py)."""
+    return f"batch:{batch_id_of(batch_dir)}:{job_id}"
+
+
+def evidence_verdict(batch_dir: Path, key: str):
+    """verdict trong evidence/<KEY>/evidence.json: PASS|FAIL|NEEDS_VERIFICATION, None nếu thiếu, 'INVALID' nếu hỏng."""
+    path = batch_dir / "evidence" / key / "evidence.json"
+    if not path.is_file():
+        return None
+    try:
+        verdict = json.loads(path.read_text(encoding="utf-8")).get("verdict")
+    except (OSError, ValueError, AttributeError):
+        return "INVALID"
+    return verdict if isinstance(verdict, str) and verdict else "INVALID"
 
 
 def die(msg: str, code: int = 2):
@@ -171,9 +218,9 @@ def validate_plan(plan: dict, bugs: dict = None, repo: Path = None, merged_lanes
 
     for key, issue in issues.items():
         kind, verify, group = issue.get("kind"), issue.get("verify"), issue.get("group")
-        if not (JIRA_KEY_RE.match(key) or is_task_key(key)):
-            errors.append(f"{key}: key không hợp lệ (Jira PROJ-123 hoặc việc không Jira TASK-<slug>, "
-                          f"slug chữ thường có ≥1 chữ cái)")
+        if not (JIRA_KEY_RE.match(key) or is_untracked_key(key)):
+            errors.append(f"{key}: key không hợp lệ (Jira PROJ-123, việc không Jira TASK-<slug> "
+                          f"(slug chữ thường có ≥1 chữ cái) hoặc finding ui-diff UI-<screen-slug>-<n>)")
         if kind not in KINDS_FIXABLE | KINDS_EXCLUDED:
             errors.append(f"{key}: kind '{kind}' không hợp lệ")
         if kind in KINDS_FIXABLE:
@@ -277,7 +324,8 @@ def cmd_init(a):
     if not manifest.exists():
         write_json(manifest, {"batch_id": batch_dir.name.removeprefix("bugfix-batch-"),
                               "base_commit": a.base_commit, "base_branch": a.base_branch,
-                              "source": a.source, "created": now(), "status": "open"})
+                              "source": a.source, "created": now(), "status": "open",
+                              "wave": 1, "issue_wave": {}})
     state = batch_dir / "state.json"
     if not state.exists():
         write_json(state, {"max_lanes": a.max_lanes, "issues": {}, "groups": {}, "lanes": {},
@@ -321,7 +369,7 @@ def cmd_load_plan(a):
             old = state["issues"].get(key, {})
             merged = {**issue, **{k: old[k] for k in ISSUE_RUNTIME_FIELDS if k in old}}
             merged.setdefault("status", "excluded" if issue["kind"] in KINDS_EXCLUDED else "planned")
-            if is_task_key(key):
+            if is_untracked_key(key):
                 merged["tracker"] = "none"
             if issue.get("group"):
                 merged["lane"] = next(l for l, v in plan["lanes"].items() if issue["group"] in v["groups"])
@@ -333,7 +381,22 @@ def cmd_load_plan(a):
             # Chỉ giữ field runtime của lane cũ; field plan (after, groups, slug) lấy từ plan mới.
             runtime = {k: old[k] for k in LANE_RUNTIME_FIELDS if k in old}
             state["lanes"][lane_id] = {**runtime, **lane, "files": files, "status": old.get("status", "planned")}
+    stamp_wave(Path(a.batch_dir), plan["issues"])
     print("plan loaded")
+
+
+def stamp_wave(batch_dir: Path, keys, restamp: bool = False, wave=None) -> int:
+    """Ghi manifest.issue_wave[KEY] = wave hiện tại cho ticket chưa có wave (restamp=True: ghi đè)."""
+    manifest_file = batch_dir / "manifest.json"
+    manifest = read_json(manifest_file)
+    wave = wave or int(manifest.get("wave", 1))
+    issue_wave = manifest.setdefault("issue_wave", {})
+    for key in keys:
+        if restamp or key not in issue_wave:
+            issue_wave[key] = wave
+    manifest["wave"] = wave
+    write_json(manifest_file, manifest)
+    return wave
 
 
 def cmd_next_lanes(a):
@@ -466,6 +529,7 @@ def job_not_ready(state: dict, job: dict):
 def cmd_device_dispatch(a):
     with locked(Path(a.batch_dir)) as state:
         devices, jobs = state["devices"], state["device_jobs"]
+        batch_dir = Path(a.batch_dir)
         for serial, dev in devices.items():
             if dev["holder"] and time.time() - (dev["since"] or 0) > DEVICE_STALE_SECONDS:
                 print(f"# {serial} giữ bởi {dev['holder']} quá {DEVICE_STALE_SECONDS // 60} phút "
@@ -481,10 +545,17 @@ def cmd_device_dispatch(a):
                 not_ready += 1
                 print(f"# {job_id} ({job['issue']}) chưa sẵn sàng: {reason}", file=sys.stderr)
                 continue
-            if not free:
+            serial = None
+            while free and serial is None:
+                candidate = free.pop(0)
+                ok, other, _ = device_locks.acquire(candidate, device_holder(batch_dir, job_id), start=batch_dir)
+                if ok:
+                    serial = candidate
+                else:
+                    print(f"# {candidate} đang bị {other} giữ (ngoài batch) — bỏ qua", file=sys.stderr)
+            if serial is None:
                 ready_waiting += 1
                 continue
-            serial = free.pop(0)
             devices[serial] = {"holder": job_id, "since": time.time()}
             job.update(status="running", serial=serial, started=now())
             purpose = job.get("purpose", "verify")
@@ -507,6 +578,7 @@ def cmd_device_done(a):
         job = state["device_jobs"].get(a.job) or die(f"không có job {a.job}")
         if job.get("serial") and state["devices"].get(job["serial"], {}).get("holder") == a.job:
             state["devices"][job["serial"]] = {"holder": None, "since": None}
+            device_locks.release(job["serial"], device_holder(Path(a.batch_dir), a.job), start=a.batch_dir)
         job.update(status="done" if a.result == "pass" else "failed", finished=now(), result=a.result)
         if job.get("purpose", "verify") == "verify":
             state["issues"][job["issue"]]["status"] = "verified" if a.result == "pass" else "failed"
@@ -518,12 +590,130 @@ def cmd_device_release(a):
         dev = state["devices"].get(a.serial) or die(f"không có device {a.serial}")
         holder = dev["holder"]
         state["devices"][a.serial] = {"holder": None, "since": None}
+        if holder:
+            device_locks.release(a.serial, device_holder(Path(a.batch_dir), holder), start=a.batch_dir)
         if holder and holder in state["device_jobs"]:
             job = state["device_jobs"][holder]
             job.update(status="pending", serial=None)
             if job.get("purpose", "verify") == "verify":
                 state["issues"][job["issue"]]["status"] = "pending_device"
     print(f"released {a.serial}")
+
+
+def slugify(text: str) -> str:
+    """Screen -> slug chữ thường ASCII (bỏ dấu, đ->d); rỗng -> 'screen'."""
+    folded = unicodedata.normalize("NFKD", str(text).replace("đ", "d").replace("Đ", "D"))
+    ascii_text = "".join(c for c in folded if not unicodedata.combining(c))
+    return re.sub(r"[^a-z0-9]+", "-", ascii_text.lower()).strip("-") or "screen"
+
+
+def finding_fingerprint(fx: dict) -> str:
+    return "|".join(str(fx.get(k) or "").strip() for k in ("screen", "region", "type", "actual", "expected"))
+
+
+def cmd_import_ui_diff(a):
+    source = Path(a.summary)
+    summary_file = source / "summary.json" if source.is_dir() else source
+    summary = read_json(summary_file)
+    run_dir = summary_file.parent
+    findings = summary.get("fix_priority")
+    if not isinstance(findings, list):
+        die(f"{summary_file}: thiếu mảng fix_priority", 1)
+    batch_dir = Path(a.batch_dir)
+    if not batch_dir.is_dir():
+        die(f"batch dir không tồn tại: {batch_dir}")
+    bugs_file = Path(a.bugs) if a.bugs else batch_dir / "bugs.json"
+    bugs = read_json(bugs_file) if bugs_file.exists() else {}
+    known = {b.get("fingerprint"): k for k, b in bugs.items() if b.get("fingerprint")}
+    next_n: dict[str, int] = {}
+    for key in bugs:
+        match = re.match(r"^(UI-.+)-(\d+)$", key)
+        if match:
+            next_n[match.group(1)] = max(next_n.get(match.group(1), 0), int(match.group(2)))
+    dir_of = {s.get("screen"): s.get("dir") for s in summary.get("screens", []) if s.get("screen")}
+    imported, copied = [], set()
+    for fx in findings:
+        screen = fx.get("screen") or "screen"
+        slug = slugify(screen)
+        fingerprint = finding_fingerprint(fx)
+        key = known.pop(fingerprint, None)  # pop: 2 finding y hệt nhau trong 1 run vẫn ra 2 key
+        if key is None:
+            next_n[f"UI-{slug}"] = next_n.get(f"UI-{slug}", 0) + 1
+            key = f"UI-{slug}-{next_n[f'UI-{slug}']}"
+        attachments = []
+        src_dir = run_dir / "screens" / (dir_of.get(screen) or screen)
+        for kind in ("actual", "design"):
+            image = src_dir / f"{kind}.png"
+            if not image.is_file():
+                print(f"WARN  {key}: không có ảnh {image}", file=sys.stderr)
+                continue
+            target = batch_dir / "context" / "ui-diff" / slug / f"{kind}.png"
+            if (slug, kind) not in copied:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(image, target)
+                copied.add((slug, kind))
+            attachments.append(f"context/ui-diff/{slug}/{kind}.png")
+        severity = str(fx.get("severity") or "low")
+        bugs[key] = {
+            "title": f"[{screen}] {fx.get('region') or '?'} — {fx.get('type') or 'lệch UI'}",
+            "priority": severity.capitalize(), "screen_hint": screen,
+            "actual": fx.get("actual") or "", "expected": fx.get("expected") or "", "repro": "",
+            "frequency": "Always", "attachments": attachments, "comments": [], "url": None,
+            "source": "ui-diff", "source_run": str(run_dir), "region": fx.get("region"), "type": fx.get("type"),
+            "source_hint": fx.get("source_hint"), "confidence": fx.get("confidence"),
+            "kind_hint": "ui", "verify_hint": "preview", "spec_verdict_hint": "confirmed",
+            "spec_ref_hint": f"ui-diff {run_dir.name}: {screen} / {fx.get('region') or '?'} (design.png của màn)",
+            "fingerprint": fingerprint,
+        }
+        imported.append((key, severity, screen, fx.get("region")))
+    write_json(bugs_file, bugs)
+    for key, severity, screen, region in imported:
+        print(f"{key}  {severity}  {screen} / {region}")
+    print(f"# imported {len(imported)} finding vào {bugs_file}", file=sys.stderr)
+
+
+def wave_candidates(batch_dir: Path, state: dict) -> list:
+    """[(KEY, lý do)] ticket cần đợt kế tiếp: bug sửa được chưa có evidence verdict PASS, và needs-confirm đã
+    được trả lời (issue có `answer`). Ticket bị loại khác (spec-gap, needs-info, duplicate…) không vào."""
+    rows = []
+    for key, issue in sorted(state["issues"].items(), key=lambda kv: natural_key(kv[0])):
+        kind = issue.get("kind")
+        if kind == "needs-confirm":
+            if issue.get("answer"):
+                rows.append((key, f"needs-confirm đã trả lời: {issue['answer']}"))
+            continue
+        if kind not in KINDS_FIXABLE:
+            continue
+        verdict = evidence_verdict(batch_dir, key)
+        lane = state["lanes"].get(issue.get("lane"), {})
+        where = f" (lane {issue.get('lane')} {lane.get('status')}, issue {issue.get('status')})" if lane else ""
+        if verdict == "PASS":
+            continue
+        if verdict is None:
+            rows.append((key, "thiếu evidence.json" + where))
+        elif verdict == "INVALID":
+            rows.append((key, "evidence.json hỏng hoặc không có verdict" + where))
+        else:
+            rows.append((key, f"evidence verdict {verdict}" + where))
+    return rows
+
+
+def cmd_next_wave(a):
+    batch_dir = Path(a.batch_dir)
+    manifest = read_json(batch_dir / "manifest.json")
+    with locked(batch_dir, write=False) as state:
+        rows = wave_candidates(batch_dir, state)
+    current = int(manifest.get("wave", 1))
+    if not rows:
+        print(f"# không còn ticket nào cần đợt mới (wave hiện tại {current})")
+        return
+    for key, reason in rows:
+        print(f"{key}: {reason}")
+    if a.start:
+        stamp_wave(batch_dir, [k for k, _ in rows], restamp=True, wave=current + 1)
+        print(f"# wave {current + 1} bắt đầu: {len(rows)} ticket", file=sys.stderr)
+    else:
+        print(f"# {len(rows)} ticket cho wave {current + 1} (thêm --start để ghi wave vào manifest)", file=sys.stderr)
 
 
 JIRA_DONE_STATES = {"reviewing", "done", "closed"}
@@ -552,7 +742,7 @@ def cmd_jira_sync(a):
     with locked(Path(a.batch_dir), write=False) as state:
         rows = []
         for key, issue in sorted(state["issues"].items(), key=lambda kv: natural_key(kv[0])):
-            if issue.get("tracker") == "none" or is_task_key(key) or issue.get("kind") in KINDS_EXCLUDED:
+            if issue.get("tracker") == "none" or is_untracked_key(key) or issue.get("kind") in KINDS_EXCLUDED:
                 continue
             lane_id = issue.get("lane")
             target, reason, always = jira_target(issue, state["lanes"].get(lane_id, {}))
@@ -579,16 +769,17 @@ def cmd_board(a):
     manifest = read_json(batch_dir / "manifest.json")
     with locked(batch_dir, write=False) as state:
         print(f"## Batch {manifest.get('batch_id')} — base `{manifest.get('base_branch')}` @ "
-              f"`{str(manifest.get('base_commit'))[:9]}`\n")
+              f"`{str(manifest.get('base_commit'))[:9]}` — wave {manifest.get('wave', 1)}\n")
         print("| Lane | Status | Issues | PR | After |\n|---|---|---|---|---|")
         for lid, lane in sorted(state["lanes"].items(), key=lambda kv: natural_key(kv[0])):
             keys = [k for g in lane.get("groups", []) for k in state["groups"].get(g, {}).get("issues", [])]
             print(f"| {lid} | {lane.get('status')} | {', '.join(keys)} | {lane.get('pr', '-')} | "
                   f"{', '.join(lane.get('after', [])) or '-'} |")
-        print("\n| Issue | Kind | Verify | Lane | Status |\n|---|---|---|---|---|")
+        waves = manifest.get("issue_wave", {})
+        print("\n| Issue | Kind | Verify | Lane | Status | Wave | Verdict |\n|---|---|---|---|---|---|---|")
         for key, issue in sorted(state["issues"].items(), key=lambda kv: natural_key(kv[0])):
             print(f"| {key} | {issue.get('kind')} | {issue.get('verify', '-')} | {issue.get('lane', '-')} | "
-                  f"{issue.get('status')} |")
+                  f"{issue.get('status')} | {waves.get(key, '-')} | {evidence_verdict(batch_dir, key) or '-'} |")
         pending = [k for k, i in sorted(state["issues"].items(), key=lambda kv: natural_key(kv[0]))
                    if i.get("kind") == "needs-confirm"]
         if pending:
@@ -640,6 +831,11 @@ def main(argv=None):
     s.add_argument("--result", choices=["pass", "fail"], required=True); s.set_defaults(fn=cmd_device_done)
     s = sub.add_parser("device-release"); s.add_argument("batch_dir"); s.add_argument("serial")
     s.set_defaults(fn=cmd_device_release)
+    s = sub.add_parser("import-ui-diff"); s.add_argument("batch_dir"); s.add_argument("summary")
+    s.add_argument("--bugs", help="bugs.json đích (mặc định <batch>/bugs.json)"); s.set_defaults(fn=cmd_import_ui_diff)
+    s = sub.add_parser("next-wave"); s.add_argument("batch_dir")
+    s.add_argument("--start", action="store_true", help="tăng manifest.wave và ghi wave mới cho các ticket liệt kê")
+    s.set_defaults(fn=cmd_next_wave)
     s = sub.add_parser("board"); s.add_argument("batch_dir"); s.set_defaults(fn=cmd_board)
 
     args = p.parse_args(argv)

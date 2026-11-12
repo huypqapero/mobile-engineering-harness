@@ -1,6 +1,7 @@
 # Worker protocol (one bug → one PR)
 
-Run every step in order. `Q` = `python3 ~/.claude/skills/bug-note/scripts/bug_queue.py`.
+Run every step in order. `Q` = `python3 <SKILL_DIR>/scripts/bug_queue.py` (absolute path from your prompt).
+Verify levels (`none` / `unit` / `preview` / `device`) and the `preview` rule: `verify-tiers.md`.
 `WT` = your worktree path. Run `Q` from inside the repo or `WT` (it finds the shared queue).
 Never touch the main checkout's files or branch. Never merge or force-push.
 
@@ -23,21 +24,22 @@ first; touch the device only when the code alone cannot prove the cause.
 
 - Scout the code for the screen/feature named in the report; read project rules first.
 - Prove the root cause as **file:line + why** (quote the wrong line). This is mandatory for every bug.
-- Classify the bug into **one verify tier** (record it in report.md and the PR):
+- Pick **one verify level** from `verify-tiers.md` (record it in report.md, evidence.json and the PR):
 
-| Tier | When | Before/after evidence | Device |
+| Level | When | Before/after evidence | Device |
 |---|---|---|---|
-| `T1-code` | Obvious code bug (wrong value/condition/missing call, visible in code) | file:line before → after; compile + the narrowest unit test if one exists | **No** e2e |
-| `T2-ui` | Bug visible on a screen that has (or can get) an `@Preview` | Render the preview (`android preview render ":app@appDevDebug" --fqn=…`) before/after, put it next to the Figma image with skill `compare-ui-board`, then score with skill `ui-diff-review` (threshold 95). Do not use `ui-diff`: it only compares a screen recording with Figma | **No** e2e |
-| `T3-flow` | Navigation/flow/logic sequence wrong | Point the exact wrong line(s) and the call chain (A.kt:12 → B.kt:40); unit test the ViewModel/effect if cheap | **No** e2e |
-| `T4-device` | Needs real conditions (player/SDK, ads, billing, permissions, lifecycle, timing, network) | Fix by code reasoning + unit tests where possible | **Deferred**: add to the device-test queue (step 7), do not run now |
+| `none` | Obvious code/resource bug whose wrong → right is visible in the diff (wrong value/condition/missing call, text, dimen) | file:line before → after; compile (+ resource lint) | **No** e2e |
+| `unit` | Logic in ViewModel/UseCase/repository/mapper, or a navigation/flow sequence that is wrong | The exact wrong line(s) and, for flows, the call chain (A.kt:12 → B.kt:40); regression unit test (happy + ≥ 1 edge) | **No** e2e |
+| `preview` | Bug visible on a screen that has (or can get) an `@Preview` | The `preview` rule in `verify-tiers.md`: Figma ref from `docs/design-refs/figma-refs.json`, render before/after, `compare-ui-board` board, `ui-diff-review` threshold 95, still differs → `ui-fix-loop` ≤ 3 rounds | **No** e2e |
+| `device` | Needs real conditions (player/SDK, ads, billing, permissions, lifecycle, timing, network) | Fix by code reasoning + unit tests where possible | **Deferred**: add to the device-test queue (step 7), do not run now |
 
 - Device repro is allowed only if the cause cannot be proven from code (then take the lock as below,
   one short repro, then `Q device-unlock <serial> <id>`). Device lock: run `Q device-lock <serial> <id>`
   as a **standalone command** and read its exit code before any adb/gradle-install call. Never chain it
   with `&&`/`;`. Exit 3 → the device is busy (the script marks you `waiting` on the holder): touch
-  nothing on the device, do not poll, report `WAITING` with `Blocked by: <holder id> (device <serial>)`.
-  You are resumed when the holder finishes; then run the lock command again.
+  nothing on the device, do not poll, report `WAITING` with `Blocked by: <holder> (device <serial>)`
+  (`<holder>` is a bug id, or `batch:<id>:<JOB>` when a batch job holds the serial; the lock is shared with
+  batch mode). You are resumed when the holder finishes; then run the lock command again.
 - If the cause cannot be proven from code or a short repro, stop with `NEEDS_INPUT` and the exact
   question.
 
@@ -71,38 +73,53 @@ right layer. If the root fix needs a contract change, a migration or a large ref
   (before the reset, note the sha with `git -C "$WT" rev-parse HEAD`); squash the WIP commit into the
   real fix commit before pushing.
 
-## 6. Verify — one round only
+## 6. Verify — one round only (`preview` excepted)
 
-Budget: once the cause is found and fixed, verify **once** and move on.
+Budget: once the cause is found and fixed, verify **once** and move on. The exception is `preview`: it keeps
+going through `ui-fix-loop` (≤ 3 fix rounds per bug, `verify-tiers.md`) while the score is under the threshold.
 
 - Always: compile with the repo's command + the narrowest relevant unit test (new or existing).
   Run the full module test suite only if the change touched shared code (DI, base classes,
   navigation, repositories).
-- `T2-ui`: one preview render after the fix + one `compare-ui-board` board scored by `ui-diff-review`.
-- `T1-code` / `T3-flow`: no device. `T4-device`: no device now (deferred, step 7).
+- `preview`: the `preview` rule in `verify-tiers.md` (render after the fix, board, `ui-diff-review`; score under
+  the threshold → `ui-fix-loop`, max 3 rounds; still under after round 3 → `NEEDS_INPUT` with the board and the
+  remaining findings, do not open the PR as passing).
+- `none` / `unit`: no device. `device`: no device now (deferred, step 7).
 - If compile/test fails, fix it (never weaken or skip tests). 3 failed fix attempts → `FAILED`.
-- Do not loop on polish, extra screenshots or repeated runs.
+- Outside `preview`, do not loop on polish, extra screenshots or repeated runs.
 
 ## 7. Evidence
 
 Write `<evidence dir>/report.md` (Vietnamese, short):
-- Bug id, title, reported text, **verify tier** (`T1-code` / `T2-ui` / `T3-flow` / `T4-device`)
-- Root cause: file:line + the wrong line quoted + why (for `T3-flow` also the call chain)
+- Bug id (+ Jira key if any), title, reported text, **verify level** (`none` / `unit` / `preview` / `device`)
+- Root cause: file:line + the wrong line quoted + why (for a flow bug also the call chain)
 - Fix (files, what changed)
-- Verification actually run (commands + results; preview, board and `ui-diff-review` result paths for `T2-ui`)
-- **Chưa test trên thiết bị** + the manual test steps the user should run later (every tier)
+- Verification actually run (commands + results; preview, board and `ui-diff-review` result paths and rounds for `preview`)
+- **Chưa test trên thiết bị** + the manual test steps the user should run later (every level)
 - PR link (fill after step 8)
 Redact tokens, emails, phone numbers before writing.
+
+Then write `<evidence dir>/evidence.json` per `skills/bug/schemas/evidence.schema.json` (same schema batch mode
+uses): `issue` = bug id, `commit` = the base commit your branch started from (`git -C "$WT" merge-base HEAD
+<base>` / the stack base tip), `fix_commit` = the fix sha (fill after the commit), `verdict` (`PASS` when the
+level's evidence ran and passed; `device` level stays `NEEDS_VERIFICATION` until the manual device pass),
+`bug_type`, `verification` (`compile`, `unit`, `preview`, `device`: PASS/FAIL/SKIP), `artifacts` (paths relative
+to the evidence dir: `report.md`, `fix-design.md`, `self-review.md`, plus `preview-before.png`,
+`preview-after.png`, `board.png` for `preview`; the call chain lives in `report.md`), and
+`acceptance_criteria` (each expected behaviour → `result` + an `evidence` artifact that exists). No artifact, no
+`PASS`. Check it before the commit:
+`python3 <harness>/skills/bug/scripts/validate_evidence.py --evidence-dir <evidence dir>` (`<harness>` = absolute
+path in your prompt; `NEEDS_VERIFICATION` for `device` is expected, anything else must pass).
 
 **Device-test queue** (every bug, append-only, one block per bug) at
 `<repo root>/plans/reports/bugs/DEVICE-TEST-QUEUE.md` (create with a `# Hàng chờ test thiết bị`
 title if missing; append with `>>`, never rewrite other blocks):
 
 ```
-## <BUG-ID> — <title>   (PR: <url>)   Tier: <tier>
+## <BUG-ID> — <title>   (PR: <url>)   Level: <level>
 - [ ] <manual step 1 → expected result>
 - [ ] <manual step 2 → expected result>
-Điều kiện đặc biệt: <for T4-device: device/ads/billing/permission/network conditions; else "-">
+Điều kiện đặc biệt: <for `device`: device/ads/billing/permission/network conditions; else "-">
 ```
 
 ## 8. Commit, push, PR
@@ -116,9 +133,9 @@ git push -u <remote> "$BRANCH"
 gh pr create --base <main or stacked base> --head "$BRANCH" --draft \
   --title "fix(<scope>): <summary>" --body-file <tmp body file>
 ```
-PR body (Vietnamese): bug report quote · **Verify tier** · root cause (file:line, wrong line quoted)
+PR body (Vietnamese): bug report quote · **Verify level** · root cause (file:line, wrong line quoted)
 · fix · verification actually run · a section **"⚠️ Chưa test trên thiết bị — cần test tay"** with
-the manual checklist (same as the device-test queue block; for `T4-device` also the special
+the manual checklist (same as the device-test queue block; for `device` also the special
 conditions) · "Evidence (local): <evidence dir>" · if stacked: "Stacked on #<pr> — merge that first".
 Add the GitHub label `needs-device-test` (`gh pr edit --add-label`; if the label does not exist,
 create it once with `gh label create needs-device-test`; if that fails, skip the label — the PR
@@ -139,7 +156,7 @@ removes it after the PR merges). Stop only processes you started (emulator stays
 ```
 Status: DONE | WAITING | NEEDS_INPUT | FAILED
 Bug: <id> — <title>
-Tier: <T1-code | T2-ui | T3-flow | T4-device>   Device test: deferred (DEVICE-TEST-QUEUE.md)
+Level: <none | unit | preview | device>   Device test: deferred (DEVICE-TEST-QUEUE.md)
 PR: <url or ->            Base: <main | stacked branch>
 Blocked by: <id or ->     Root cause: <one sentence>
 Evidence: <evidence dir>

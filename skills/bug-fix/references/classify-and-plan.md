@@ -75,6 +75,10 @@ Fix **độc lập** (group riêng, lane riêng nếu có thể): crash Highest,
 5. Thứ tự ưu tiên chạy: lane có Highest/crash trước (đặt tên `L1`, `L2`… theo ưu tiên; `next-lanes` sắp tự nhiên, `L2` trước `L10`).
 6. Bug cần migration DB, tính năng lớn (vd cả một màn mới) hoặc đụng contract dùng chung → lane riêng và nêu trong "điểm cần user quyết" của `plan-summary.md`.
 
+## UI-diff — finding từ report `ui-diff`
+
+Bug `UI-<screen-slug>-<n>` (`intake-and-context.md` §1b) đã được `ui-diff` so ảnh actual với `design.png` của màn nên **bước 0 so spec đã có căn cứ**: `kind: ui`, `verify: preview`, `spec_verdict: confirmed`, `spec_ref` = `spec_ref_hint` trong `bugs.json`. Finding `confidence: low` hoặc `design.png` không rõ (nghi ảnh sai trạng thái) → `needs-confirm` + `question`. Gom group theo màn / component (cùng `source_hint`, cùng file); mỗi finding vẫn có `evidence.json` riêng. Không có Jira: không vào `jira-sync`.
+
 ## `plan.json`
 
 ```json
@@ -106,7 +110,7 @@ Fix **độc lập** (group riêng, lane riêng nếu có thể): crash Highest,
 }
 ```
 
-Field bắt buộc: issue fixable → `kind, verify, group, reason, spec_verdict: "confirmed", spec_ref` (+ `repro_first` tuỳ chọn); issue loại → `kind, reason` (không `group`), `needs-confirm` thêm `question`; group → `issues, files, cause` (+ `shared_files`, `new_files_ok`); lane → `groups` (+ `after`, `slug`). Đường dẫn file repo-relative. Mọi key trong `bugs.json` phải có trong `issues` (`check-plan --bugs` bắt). Key issue: Jira `PROJ-123` hoặc `TASK-<slug>` cho việc không có Jira (slug chữ thường, ≥1 chữ cái; script bỏ qua khi `jira-sync`).
+Field bắt buộc: issue fixable → `kind, verify, group, reason, spec_verdict: "confirmed", spec_ref` (+ `repro_first` tuỳ chọn); issue loại → `kind, reason` (không `group`), `needs-confirm` thêm `question`; group → `issues, files, cause` (+ `shared_files`, `new_files_ok`); lane → `groups` (+ `after`, `slug`). Đường dẫn file repo-relative. Mọi key trong `bugs.json` phải có trong `issues` (`check-plan --bugs` bắt). Key issue: Jira `PROJ-123`, `TASK-<slug>` cho việc không có Jira (slug chữ thường, ≥1 chữ cái), hoặc `UI-<screen-slug>-<n>` cho finding ui-diff (script bỏ qua cả hai khi `jira-sync`).
 
 ## `confirm-checklist.md` — câu hỏi không chặn tiến độ
 
@@ -133,7 +137,7 @@ Thứ tự: bug ưu tiên cao trước; gom câu hỏi trùng chủ đề (vd m�
 - User trả lời 1 mục (bất kỳ lúc nào, có thể trong session sau qua `resume <batch>`):
   - **A (fix)** → issue thành `code`/`ui`/`content` + `spec_verdict: confirmed`, `spec_ref: "User xác nhận <ngày>: <tóm tắt>"`, tạo group + lane **mới** (`C1`, `C2`…; không nhét vào lane đang chạy); đụng file của lane đang chạy → `after: [<lane đó>]`. `check-plan` → `load-plan` (lane đang chạy giữ nguyên trạng thái) → `next-lanes`.
   - **B (không fix)** → `not-a-bug`, `reason` = câu trả lời; ghi vào báo cáo để gửi tester/BA.
-  - Đánh dấu `[x]` + ghi câu trả lời trong `confirm-checklist.md`.
+  - Đánh dấu `[x]` + ghi câu trả lời trong `confirm-checklist.md`; ghi `S issue B <KEY> answer="<tóm tắt>"` để `next-wave` nhận ra ticket đã trả lời.
 - Lane chờ câu trả lời/quyết định ngoài (không phải lỗi agent) → `S lane B <L> status=blocked note=…`; trả lời xong `status=planned` (hoặc tiếp tục agent). Lane bị huỷ/gộp vào lane khác → `S lane-remove B <L> --plan B/plan.json`, gán lại group mồ côi vào lane còn lại rồi `check-plan` + `load-plan` (không sửa `plan.json` tay để gỡ lane).
 - Chưa trả lời khi đóng batch → liệt kê trong báo cáo cuối, batch vẫn đóng được.
 

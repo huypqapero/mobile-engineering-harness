@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Bugfix batch — per-issue evidence",
-  "description": "Một file evidence.json cho mỗi Jira issue tại plans/bugfix-batch-<id>/evidence/<ISSUE>/evidence.json. Validator skills/bug/scripts/validate_evidence.py kiểm cơ học: artifact tồn tại thật, verdict set, mỗi AC có evidence file có thật, commit khớp manifest.base_commit.",
+  "title": "Bugfix — per-issue evidence",
+  "description": "Một file evidence.json cho mỗi issue: batch tại plans/bugfix-batch-<id>/evidence/<ISSUE>/evidence.json, mode note tại plans/reports/bugs/<BUG-ID>-<slug>/evidence.json. Validator skills/bug/scripts/validate_evidence.py kiểm cơ học: artifact tồn tại thật, verdict set, mỗi AC có evidence file có thật, commit khớp manifest.base_commit.",
   "type": "object",
   "required": ["issue", "commit", "verdict", "verification", "artifacts", "acceptance_criteria"],
   "additionalProperties": true,

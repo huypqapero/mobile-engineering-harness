@@ -14,6 +14,7 @@ B/ (= <repo>/plans/bugfix-batch-<id>/)
 │   └── main-health.md               # kết quả health check origin/main
 ├── scout.json, scout-report.md      # bug-scout
 ├── plan.json, confirm-checklist.md  # Phase 3 (+ decisions-pending.md: bảng ID quyết định)
+├── context/ui-diff/<screen-slug>/   # actual.png + design.png chép từ run ui-diff (§1b)
 └── evidence/<KEY>/                  # evidence.json (lane + device verifier), jira/ (đính kèm Jira)
 ```
 
@@ -45,6 +46,18 @@ Normalize → `bugs.json`:
 - Bỏ field rác (`customfield_*` null, devSummary). Không chép email/tên reporter vào file.
 - **Video chỉ có link ngoài** (streamable, drive… agent không xem được) và description không đủ bước/kỳ vọng → `needs-info` + câu hỏi cho QA: mô tả bước, build, logcat. Không để scout suy đoán từ video.
 - **Bug reopen** (QA test lại, status Reopened hoặc comment "vẫn lỗi") → hỏi QA build/commit SHA đã test trước khi xếp job repro; build cũ hơn fix đã merge → `already-fixed`, đề nghị test lại bản mới.
+
+## 1b. Report `ui-diff` (không Jira)
+
+Input: `<run>/summary.json` (hoặc thư mục run) do skill `ui-diff` sinh (`fix_priority[]`: `screen`, `region`, `severity`, `type`, `actual`, `expected`, `source_hint`, `confidence`; ảnh `<run>/screens/<screen>/{actual,design}.png`).
+
+```bash
+S import-ui-diff B <run>/summary.json        # ghi/gộp B/bugs.json, chép ảnh vào B/context/ui-diff/<screen-slug>/
+```
+
+- Mỗi finding = 1 bug key `UI-<screen-slug>-<n>` (`n` đếm theo màn; chạy lại với run mới giữ key của finding trùng `screen|region|type|actual|expected`, finding mới nối số tiếp). `bugs.json` mang `kind_hint: ui`, `verify_hint: preview`, `spec_verdict_hint: confirmed`, `spec_ref_hint` (ảnh `design.png` của màn là căn cứ), `attachments` trỏ ảnh actual/design, `source_hint` (file nghi vấn từ ui-diff), `url: null`.
+- Không có Jira: bỏ qua bước Jira (§1) và mọi transition ở `mode-batch.md` §Jira status. Spec Confluence chỉ đọc khi finding cần (hành vi); UI lấy theo Figma/`design.png`.
+- Các bước sau như batch thường: scout 1 lần (đưa `source_hint` + `screen` cho `bug-scout`), phân loại (`classify-and-plan.md` §UI-diff), lane, `evidence/<KEY>/evidence.json` riêng cho từng finding, `next-wave` lấy finding chưa PASS.
 
 ## 2. Spec (Confluence)
 

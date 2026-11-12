@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Bug queue shared by the bug-note orchestrator and its worker agents.
+"""Bug queue shared by the bug-fix note-mode orchestrator and its worker agents.
 
-State lives in <git-common-dir>/bug-note/queue.json, so every worktree of the repo sees the
+State lives in <git-common-dir>/bug-fix/queue.json, so every worktree of the repo sees the
 same queue and nothing is ever committed. Every command takes an exclusive file lock.
+If queue.json does not exist yet, the legacy <git-common-dir>/bug-note/queue.json is read once and
+migrated (the old file is left untouched). Device locks live in the shared devices.py state
+(<git-common-dir>/bug-fix/devices.json), the same one batch mode (bfo_state.py) uses, so a serial never
+has two holders; this script's holder name is `note:<BUG-ID>`.
 
 Commands (run from anywhere inside the repo or one of its worktrees):
   new "<title>"                      -> prints new id (BUG-001), status queued
@@ -12,14 +16,17 @@ Commands (run from anywhere inside the repo or one of its worktrees):
   next-queued                        -> oldest queued bug id (empty if none)
   active-count                       -> number of bugs being worked on
   list | show <id>                   -> print state (json for show)
-  device-lock <serial> <id>          -> take the device lock. Exit 3 if another unfinished bug holds it;
-                                        the caller is then marked waiting with blocked_by = holder
+  device-lock <serial> <id>          -> take the device lock. Exit 3 if another holder (an unfinished note bug,
+                                        or a batch job `batch:<batch-id>:<JOB>`) has it; the caller is then
+                                        marked waiting with blocked_by = holder
   device-unlock <serial> <id>        -> release it (holder only)
   device-release <serial>            -> force-release a stuck lock (orchestrator, after checking the holder)
+  device-list                        -> every device lock (note and batch) with its holder
   sync-merged                        -> ask gh for every bug with a PR; MERGED -> status merged and
                                         its worktree removed (kept if it holds tracked changes)
 
-Statuses: queued, investigating, waiting, fixing, pr_open, merged, failed, cancelled.
+Statuses: queued, investigating, waiting, fixing, pr_open, merged, failed, cancelled. A bug that leaves the
+unfinished statuses (queued/investigating/waiting/fixing) releases its device locks.
 claim sets status fixing, or waiting + blocked_by. Exit codes: 0 no conflict, 3 must wait (overlap
 with a bug still fixing), 4 stack (overlap only with bugs whose PR is open; prints stack_on=<branch>).
 Waiting bugs never block, so two bugs cannot wait on each other.
@@ -27,23 +34,33 @@ Waiting bugs never block, so two bugs cannot wait on each other.
 
 import fcntl
 import json
+import os
 import subprocess
 import sys
 import time
 from contextlib import contextmanager
 from pathlib import Path
 
+import devices
+
 UNFINISHED = {"queued", "investigating", "waiting", "fixing"}
 
 
 def state_dir() -> Path:
-    common = subprocess.run(
-        ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
-        capture_output=True, text=True, check=True,
-    ).stdout.strip()
-    path = Path(common) / "bug-note"
-    path.mkdir(parents=True, exist_ok=True)
-    return path
+    return devices.state_dir()
+
+
+def load_legacy(directory: Path):
+    """First run after the bug-note -> bug-fix rename: read the old queue once. Its device locks move
+    to the shared devices state (only for bugs still unfinished). The old file is never removed."""
+    legacy = directory.parent / "bug-note" / "queue.json"
+    if not legacy.exists():
+        return None
+    data = json.loads(legacy.read_text())
+    for serial, held in (data.pop("devices", None) or {}).items():
+        if data.get("bugs", {}).get(held.get("bug"), {}).get("status") in UNFINISHED:
+            devices.acquire(serial, f"note:{held['bug']}")
+    return data
 
 
 @contextmanager
@@ -52,11 +69,17 @@ def locked_state():
     with open(directory / "queue.lock", "w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         queue_file = directory / "queue.json"
-        data = json.loads(queue_file.read_text()) if queue_file.exists() else {"seq": 0, "bugs": {}, "devices": {}}
+        if queue_file.exists():
+            data = json.loads(queue_file.read_text())
+        else:
+            data = load_legacy(directory) or {}
+        data.setdefault("seq", 0)
+        data.setdefault("bugs", {})
+        data.pop("devices", None)
         yield data
         tmp = queue_file.with_suffix(".tmp")
         tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False))
-        tmp.replace(queue_file)
+        os.replace(tmp, queue_file)
 
 
 def now() -> str:
@@ -89,6 +112,8 @@ def cmd_set(args):
             key, _, value = pair.partition("=")
             bug[key] = value
         bug["updated"] = now()
+        if bug["status"] not in UNFINISHED:
+            devices.release_holder(f"note:{args[0]}")
     print("ok")
 
 
@@ -170,25 +195,27 @@ def cmd_device_lock(args):
     busy = False
     with locked_state() as data:
         bug = require(data, bug_id)
-        holder = data["devices"].get(serial)
-        if holder and holder["bug"] != bug_id:
-            holder_bug = data["bugs"].get(holder["bug"], {})
-            # A lock is released only by its holder, by the holder finishing, or by device-release.
-            # Age alone never frees it: a long repro must not be interrupted by a second worker.
-            if holder_bug.get("status") in UNFINISHED:
-                age = int(time.time() - holder["since"])
-                bug["status"], bug["blocked_by"] = "waiting", holder["bug"]
-                bug["updated"] = now()
-                print(f"busy: {holder['bug']} for {age}s")
-                busy = True  # exit after the with block so the waiting state is saved
-        if not busy:
-            data["devices"][serial] = {"bug": bug_id, "since": time.time()}
-            # Device locks are taken before file claims (worker step 2 < step 4), so a waiting bug
-            # that gets the lock was waiting for the device and is active again.
-            if bug["status"] == "waiting":
-                bug["status"] = "investigating"
-                bug.pop("blocked_by", None)
-                bug["updated"] = now()
+
+        def live(holder):
+            # A note holder is live while its bug is unfinished. Batch holders are always live: they are
+            # released by device-done / device-release, never by age.
+            if not holder.startswith("note:"):
+                return True
+            return data["bugs"].get(holder[len("note:"):], {}).get("status") in UNFINISHED
+
+        ok, holder, age = devices.acquire(serial, f"note:{bug_id}", is_live=live)
+        if not ok:
+            bug["status"] = "waiting"
+            bug["blocked_by"] = holder[len("note:"):] if holder.startswith("note:") else holder
+            bug["updated"] = now()
+            print(f"busy: {holder} for {age}s")
+            busy = True  # exit after the with block so the waiting state is saved
+        # Device locks are taken before file claims (worker step 2 < step 4), so a waiting bug
+        # that gets the lock was waiting for the device and is active again.
+        elif bug["status"] == "waiting":
+            bug["status"] = "investigating"
+            bug.pop("blocked_by", None)
+            bug["updated"] = now()
     if busy:
         sys.exit(3)
     print("locked")
@@ -196,17 +223,21 @@ def cmd_device_lock(args):
 
 def cmd_device_unlock(args):
     serial, bug_id = args
-    with locked_state() as data:
-        if data["devices"].get(serial, {}).get("bug") == bug_id:
-            del data["devices"][serial]
+    devices.release(serial, f"note:{bug_id}")
     print("unlocked")
 
 
 def cmd_device_release(args):
-    serial = args[0]
-    with locked_state() as data:
-        holder = data["devices"].pop(serial, None)
-    print(f"released {serial}" + (f" (was {holder['bug']})" if holder else " (was free)"))
+    old = devices.force_release(args[0])
+    print(f"released {args[0]}" + (f" (was {old})" if old else " (was free)"))
+
+
+def cmd_device_list(_):
+    held = devices.snapshot()
+    for serial, entry in sorted(held.items()):
+        print(f"{serial}  {entry['holder']}  {int(time.time() - entry['since'])}s")
+    if not held:
+        print("no device locks")
 
 
 def remove_worktree(path: str) -> str:
@@ -258,7 +289,7 @@ COMMANDS = {
     "new": cmd_new, "set": cmd_set, "claim": cmd_claim, "waiters": cmd_waiters,
     "next-queued": cmd_next_queued, "active-count": cmd_active_count, "list": cmd_list,
     "show": cmd_show, "device-lock": cmd_device_lock, "device-unlock": cmd_device_unlock,
-    "device-release": cmd_device_release,
+    "device-release": cmd_device_release, "device-list": cmd_device_list,
     "sync-merged": cmd_sync_merged,
 }
 

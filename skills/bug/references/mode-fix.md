@@ -102,7 +102,7 @@ Verdict:
 
 ### Verify matrix (route theo loại bug)
 
-Dùng chung cho single `fix` và `bug-fix-orchestrator` (bên đó gom thành 4 tier none/unit/preview/device). QA chọn verification + evidence **theo bản chất bug** (Tech Lead gán `bug_type` ở Step 1), không dùng 1 cách verify cho mọi loại:
+Dùng chung cho single `fix` và `bug-fix` (cả mode batch lẫn note; bên đó gom thành 4 tier none/unit/preview/device). QA chọn verification + evidence **theo bản chất bug** (Tech Lead gán `bug_type` ở Step 1), không dùng 1 cách verify cho mọi loại:
 
 | `bug_type` | Verification bắt buộc | Evidence | Công cụ |
 |---|---|---|---|
