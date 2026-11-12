@@ -9,11 +9,13 @@ B/ (= <repo>/plans/bugfix-batch-<id>/)
 ├── context/
 │   ├── spec.md                      # Confluence snapshot (markdown) + header version
 │   ├── figma-index.json             # màn → node id → preview FQN → screenshot
-│   └── references.md                # tóm tắt docs tham chiếu của repo + đường dẫn
-├── input/<KEY>/                     # ảnh/video đính kèm Jira
+│   ├── references.md                # tóm tắt docs tham chiếu của repo + đường dẫn
+│   ├── spec-delta.md                # mục spec đổi giữa version repo ghi và version live
+│   └── main-health.md               # kết quả health check origin/main
 ├── scout.json, scout-report.md      # bug-scout
-├── plan.json, questions-for-po.md   # Phase 3
-└── evidence/<KEY>/evidence.json     # lane + device verifier
+├── plan.json, confirm-checklist.md  # Phase 3 (+ decisions-pending.md: bảng ID quyết định)
+├── context/ui-diff/<screen-slug>/   # actual.png + design.png chép từ run ui-diff (§1b)
+└── evidence/<KEY>/                  # evidence.json (lane + device verifier), jira/ (đính kèm Jira)
 ```
 
 ## 1. Jira
@@ -27,27 +29,41 @@ Input chấp nhận:
 | `selectedIssue=<KEY>` trong URL | Đó là 1 issue ví dụ — hỏi user muốn cả board/sprint hay chỉ issue đó nếu không rõ |
 | Danh sách key | `jira_get_issue` từng key (song song) |
 
-`jira_search` có `description` đã đủ cho phần lớn bug — **không** gọi `jira_get_issue` cho từng issue. Chỉ gọi (`fields="description,attachment", include="comments", comment_limit=10, update_history=false`) cho bug thiếu expected/repro hoặc cần comment/ảnh. Không đưa `attachment` vào `jira_search` (kèm email + avatar người báo, phình output). Ảnh/video: `jira_download_attachments` vào `B/input/<KEY>/`, chỉ khi bug UI/flow/crash cần nhìn.
+`jira_search` có `description` đã đủ cho phần lớn bug — **không** gọi `jira_get_issue` cho từng issue. Chỉ gọi (`fields="description,attachment", include="comments", comment_limit=10, update_history=false`) cho bug thiếu expected/repro hoặc cần comment/ảnh. Không đưa `attachment` vào `jira_search` (kèm email + avatar người báo, phình output). Đính kèm: bug có attachment (ảnh/video/log) → `jira_download_attachments` vào `B/evidence/<KEY>/jira/` và ghi đường dẫn vào `attachments`; scout/lane đọc từ đó, không tự tải lại.
 
 Normalize → `bugs.json`:
 
 ```json
-{"AAP884-50": {"title": "[Player] Bỏ nút Share trong màn xem phim", "priority": "Medium",
+{"PROJ-50": {"title": "[Player] Bỏ nút Share trong màn xem phim", "priority": "Medium",
   "screen_hint": "Player", "actual": "...", "expected": "...", "repro": "...",
-  "frequency": "Always", "attachments": ["input/AAP884-50/a.png"], "comments": ["..."],
-  "url": "https://jira.../browse/AAP884-50"}}
+  "frequency": "Always", "attachments": ["evidence/PROJ-50/jira/a.png"], "comments": ["..."],
+  "url": "https://jira.../browse/PROJ-50"}}
 ```
 
 - `screen_hint` lấy từ tiền tố `[...]` của title (`[For you][Ad native full]` → For You / Ad native full).
 - Description thường có "Kết quả thực tế / Kết quả mong đợi" → tách `actual`/`expected`.
 - Thiếu cả `expected` lẫn tham chiếu spec/Figma, hoặc không biết màn nào → `needs-info` ở Phase 3.
 - Bỏ field rác (`customfield_*` null, devSummary). Không chép email/tên reporter vào file.
+- **Video chỉ có link ngoài** (streamable, drive… agent không xem được) và description không đủ bước/kỳ vọng → `needs-info` + câu hỏi cho QA: mô tả bước, build, logcat. Không để scout suy đoán từ video.
+- **Bug reopen** (QA test lại, status Reopened hoặc comment "vẫn lỗi") → hỏi QA build/commit SHA đã test trước khi xếp job repro; build cũ hơn fix đã merge → `already-fixed`, đề nghị test lại bản mới.
+
+## 1b. Report `ui-diff` (không Jira)
+
+Input: `<run>/summary.json` (hoặc thư mục run) do skill `ui-diff` sinh (`fix_priority[]`: `screen`, `region`, `severity`, `type`, `actual`, `expected`, `source_hint`, `confidence`; ảnh `<run>/screens/<screen>/{actual,design}.png`).
+
+```bash
+S import-ui-diff B <run>/summary.json        # ghi/gộp B/bugs.json, chép ảnh vào B/context/ui-diff/<screen-slug>/
+```
+
+- Mỗi finding = 1 bug key `UI-<screen-slug>-<n>` (`n` đếm theo màn; chạy lại với run mới giữ key của finding trùng `screen|region|type|actual|expected`, finding mới nối số tiếp). `bugs.json` mang `kind_hint: ui`, `verify_hint: preview`, `spec_verdict_hint: confirmed`, `spec_ref_hint` (ảnh `design.png` của màn là căn cứ), `attachments` trỏ ảnh actual/design, `source_hint` (file nghi vấn từ ui-diff), `url: null`.
+- Không có Jira: bỏ qua bước Jira (§1) và mọi transition ở `mode-batch.md` §Jira status. Spec Confluence chỉ đọc khi finding cần (hành vi); UI lấy theo Figma/`design.png`.
+- Các bước sau như batch thường: scout 1 lần (đưa `source_hint` + `screen` cho `bug-scout`), phân loại (`classify-and-plan.md` §UI-diff), lane, `evidence/<KEY>/evidence.json` riêng cho từng finding, `next-wave` lấy finding chưa PASS.
 
 ## 2. Spec (Confluence)
 
 - Ưu tiên `page_id` (URL `display/<SPACE>/<Title>` → `confluence_get_page(title, space_key)` 1 lần để lấy id; về sau dùng id). Docs của repo có thể ghi sẵn page id.
 - MCP không ghi file, nên **không chép lại cả trang**. `B/context/spec.md` = header (`pageId`, `version` lấy từ metadata, `fetched_at`) + các mục spec liên quan tới bug trong batch (trích nguyên văn, theo `screen_hint`). Cache `plans/bugfix-cache/spec-<pageId>.md` giữ cùng header; so field `version`: bằng nhau → dùng lại, không fetch.
-- Docs của repo có ghi version spec đã đối chiếu (vd "v25") khác version live → ghi cảnh báo vào `spec.md` và `plan-summary.md`: map spec↔code có thể cũ ở các mục đổi; bug trích spec cũ → kiểm lại với bản live.
+- **Preflight spec drift (luôn làm ở Phase 1, trước khi chốt bug "chờ BA")**: lấy `version` live của trang rồi so với version ghi trong docs của repo (`docs/references/*spec*summary*`, header map spec↔code, decisions). Bằng nhau → xong. Lệch → ghi cảnh báo vào `spec.md` + `plan-summary.md` và giao `general-purpose` dùng `confluence_get_page_diff` giữa hai version (hoặc đọc lại trang) → `B/context/spec-delta.md`: chỉ các mục đổi liên quan bug đang `needs-confirm` / `spec-gap` / `not-a-bug` / `already-fixed`, mỗi mục trích nguyên văn + số version. Bug "chờ BA" đã có câu trả lời trong delta → chuyển lại `confirmed` + `spec_ref` version mới; bug trích spec cũ → kiểm lại với bản live. Map spec↔code của repo có thể cũ ở các mục đổi.
 - Spec link tới trang con / sheet ads / sheet tracking: chỉ fetch khi bug cần (vd bug ads → sheet kịch bản ads). Google Sheet không đọc được qua MCP → ghi link vào context, không đoán nội dung.
 - Thứ tự ưu tiên khi lệch: lấy theo quy ước của repo (vd `docs/references/README.md`). Mặc định: **UI theo Figma live, hành vi theo Confluence**.
 
@@ -63,7 +79,14 @@ Normalize → `bugs.json`:
 
 Nếu repo có quy định "dev tự quyết hành vi ngoài spec phải ghi vào file decisions trong cùng PR" → đưa vào brief lane.
 
-## 5. Scout cache (dùng lại giữa các batch)
+## 5. Main health (Phase 0, và sau mỗi PR của batch được merge)
+
+Main hỏng thì mọi lane không chạy được gate chung. Giao `general-purpose` (không phải leader) chạy trong `R` (hoặc worktree detached tại `<remote>/<base>` mới nhất):
+1. Compile test source của module chính (vd `./gradlew :app:compile<Variant>UnitTestKotlin`) + test wiring DI/smoke nếu repo có (vd `DiWiringTest`). Lệnh cụ thể lấy từ `context/references.md`.
+2. Ghi `B/context/main-health.md`: commit, lệnh, PASS/FAIL, 10 dòng lỗi đầu, commit nghi ngờ (`git log` các PR vừa merge, ngoài batch cũng tính).
+3. FAIL → báo user ngay + đề xuất lane `main-fix` (`kind: code`, `verify: unit`, chạy đầu; các lane cần gate `after` nó). Lane không bị ảnh hưởng vẫn chạy; lane bị chặn gate ghi rõ gate nào hỏng do main trong PR.
+
+## 6. Scout cache (dùng lại giữa các batch)
 
 Vị trí: `<repo>/plans/bugfix-cache/scout-<project>.json` + `.md` (không commit nếu repo ignore `plans/`).
 
@@ -91,6 +114,8 @@ Figma index: B/context/figma-index.json   References: B/context/references.md
 Cache dùng lại (không scout lại các area này): <dán area + notes>
 Area cần scout: <list>   Bug giao cho agent này: <tất cả | danh sách khi chia theo area>
 Việc đang làm (tránh trùng): B/context/in-flight.md (PR mở, worktree khác)
+Mỗi bug thêm so 1-1 spec: spec_quote (trích nguyên văn + mục/node, hoặc "spec không nói"), code_behavior (file:line),
+  spec_verdict_hint: confirmed | not-a-bug | suspect + 1 câu lý do (leader chốt ở Phase 3)
 Output: B/scout.json (hoặc B/scout-<area>.json khi chia) + B/scout-report.md theo agents/bug-scout.md
 Ngôn ngữ báo cáo: tiếng Việt. Timezone Asia/Saigon.
 ```

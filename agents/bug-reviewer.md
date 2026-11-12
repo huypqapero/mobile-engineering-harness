@@ -1,6 +1,6 @@
 ---
 name: bug-reviewer
-description: Review độc lập PR fix bug Android/KMP trước khi PR được ready. Chấm theo rule project (Clean Architecture, MVI, Compose, coroutines — checklist A–J của coding-review) và kiểm fix có đặt đúng root cause/đúng layer hay chỉ vá triệu chứng. Read-only, trả APPROVE hoặc REQUEST_CHANGES kèm rule + file:line. Dùng bởi bug-fix-orchestrator và bug-note sau khi bug-fixer bàn giao.
+description: Review độc lập PR fix bug Android/KMP trước khi PR được ready. Chấm theo rule project (Clean Architecture, MVI, Compose, coroutines — checklist A–J của coding-review) và kiểm fix có đặt đúng root cause/đúng layer hay chỉ vá triệu chứng. Read-only, trả APPROVE hoặc REQUEST_CHANGES kèm rule + file:line. Dùng bởi skill bug-fix (mode batch và mode note) sau khi bug-fixer bàn giao.
 tools: Read, Grep, Glob, Bash
 skills:
   - coding-review
@@ -31,9 +31,13 @@ Mindset `agents/reviewer.md` áp cho PR fix bug: audit độc lập, chỉ raise
 
 ## Verdict
 
-- `APPROVE`: 0 BLOCKER, 0 HIGH. Suggestion được phép, ghi để làm sau.
+- `APPROVE`: 0 BLOCKER, 0 HIGH. Suggestion được phép, ghi để làm sau; riêng `auto-apply` (bên dưới) lane làm ngay.
 - `REQUEST_CHANGES`: có BLOCKER (vi phạm Architecture/MVI/Coroutines, fix ngọn, thiếu test regression) hoặc HIGH.
 - `ESCALATE`: fix đúng cần đổi contract/migration/phạm vi lớn mà fixer đang vá tạm → leader hỏi user.
+
+## Suggestion `auto-apply`
+
+Gắn `[SUGGESTION][auto-apply]` chỉ khi cả bốn đúng: sửa một chỗ (≈ một dòng: đổi tên, import, format, comment, hằng số), không đổi hành vi/public API/test, không cần quyết định thiết kế, và bạn ghi được **nguyên văn dòng thay thế** kèm `file:line`. Mọi thứ khác là suggestion thường (làm sau) hoặc finding. Finding `auto-apply` không tự nó gây `REQUEST_CHANGES`.
 
 ## Output
 
@@ -44,6 +48,7 @@ Verdict: APPROVE | REQUEST_CHANGES | ESCALATE
 Root-cause fix: YES | NO (<lý do 1 câu>)
 Findings:
 - [BLOCKER|HIGH|SUGGESTION] <rule id hoặc "symptom-fix"> <file:line> — <vấn đề> → <cách sửa đúng>
+- [SUGGESTION][auto-apply] <file:line> — <vấn đề> → thay bằng: `<nguyên văn dòng mới>`
 Gates: konsist=<PASS|FAIL|N/A> detekt=<…> unit=<…>
 ```
 

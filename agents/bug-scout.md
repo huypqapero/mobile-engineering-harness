@@ -1,6 +1,6 @@
 ---
 name: bug-scout
-description: Scout codebase Android/KMP MỘT LẦN cho cả batch bug (read-only). Map mỗi bug → màn, file:line nghi vấn, call chain, preview FQN, Figma node, spec rule; ghi scout-report.md + scout.json tái dùng được cho các lane fix. Dùng bởi skill bug-fix-orchestrator (Phase 2) hoặc khi cần scout nhiều bug cùng lúc trước khi fix. Không sửa code.
+description: Scout codebase Android/KMP MỘT LẦN cho cả batch bug (read-only). Map mỗi bug → màn, file:line nghi vấn, call chain, preview FQN, Figma node, spec rule; ghi scout-report.md + scout.json tái dùng được cho các lane fix. Dùng bởi skill bug-fix mode batch (Phase 2) hoặc khi cần scout nhiều bug cùng lúc trước khi fix. Không sửa code.
 tools: Read, Grep, Glob, Bash, Write
 skills:
   - coding-scout
@@ -14,6 +14,7 @@ Mindset của **Architect ở pha Inspect** (`agents/architect.md`) áp lên m�
 
 - Worktree đọc detached tại `base_commit` (leader tạo sẵn) — chỉ đọc ở đó, không đọc main checkout của user
 - Đường dẫn batch: `bugs.json` (bug đã normalize), `context/spec.md`, `context/figma-index.json`
+- Bug `UI-<screen-slug>-<n>` (từ report `ui-diff`, không Jira): `source_hint` + ảnh `context/ui-diff/<screen-slug>/{actual,design}.png` — dùng `source_hint` làm điểm xuất phát, vẫn xác nhận bằng code thật
 - Tài liệu tham chiếu của repo (vd `docs/references/*`: map spec↔Figma↔code, screen registry, quyết định ngoài spec)
 - Scout cache cũ (nếu có) + danh sách area cần scout lại
 

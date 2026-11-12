@@ -1,0 +1,181 @@
+{
+  "skill_name": "bug-fix",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Đang chạy batch bug-fix (mode batch) (batch 261110-0900-proj). Device job DJ-003 cho PROJ-48 (lane L1) vừa FAIL: artemis-android trả result.md nói app crash ngay khi bấm 'Watch ad', kèm evidence/PROJ-48/device/logcat.txt. Bạn là leader. Mô tả chính xác bạn làm gì tiếp theo, theo thứ tự (lệnh/tool/agent cụ thể).",
+      "expected_output": "Leader ghi kết quả job vào state rồi chuyển nguyên result.md + đường dẫn logcat cho bug-fixer của lane L1 (SendMessage hoặc spawn mới kèm brief đủ ngữ cảnh); không tự đọc log, dexdump hay grep tìm nguyên nhân.",
+      "files": [],
+      "assertions": [
+        {"id": "a-1", "text": "Có chạy hoặc nêu lệnh `bfo device-done <batch> DJ-003 --result fail`"},
+        {"id": "a-2", "text": "Giao việc truy root cause cho agent bug-fixer của lane L1 (SendMessage hoặc spawn mới) kèm đường dẫn result.md/logcat"},
+        {"id": "a-3", "text": "KHÔNG có bước leader tự đọc logcat.txt, chạy dexdump/apktool hoặc grep source để tìm nguyên nhân crash"},
+        {"id": "a-4", "text": "Nêu rằng sau khi lane push code mới thì bug-reviewer review lại rồi xếp device job mới"}
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Đang resume batch bug-fix (mode batch). `gh pr list --state merged` cho thấy PR #70 (lane L4, issue PROJ-31, PROJ-32) đã merged, nhưng nó có base là branch `fix/proj-player-ui` (PR #68 của L3, chưa merge), không phải `main`. `git merge-base --is-ancestor <head PR #70> origin/main` trả exit 1. PROJ-31/32 đang In Progress trên Jira. Bạn là leader. Làm gì với Jira và PR?",
+      "expected_output": "Không chuyển PROJ-31/32 sang Reviewing vì code chưa vào main; giữ nguyên trạng thái Jira và mở PR đưa branch fix/proj-player-ui vào main (hoặc yêu cầu user merge #68).",
+      "files": [],
+      "assertions": [
+        {"id": "b-1", "text": "Kết luận KHÔNG chuyển PROJ-31 và PROJ-32 sang Reviewing"},
+        {"id": "b-2", "text": "Lý do nêu rõ: head PR không phải tổ tiên của origin/main (merge vào branch stack, code chưa vào base)"},
+        {"id": "b-3", "text": "Đề xuất mở PR (hoặc nhờ user merge #68) để đưa branch fix/proj-player-ui vào main trước"},
+        {"id": "b-4", "text": "Nêu dùng `git merge-base --is-ancestor` để kiểm lại sau khi đã vào main, rồi mới chuyển Reviewing"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Batch bug-fix (mode batch), lane L5 (bug-fixer đang chạy) báo NEEDS_CONTEXT: cần sửa thêm app/src/main/java/com/example/home/HomeViewModel.kt, nằm ngoài `files` của lane. `gh pr list --state open` có PR #72 (draft) của một lane khác ngoài batch đang sửa chính file HomeViewModel.kt. Bạn là leader. Xử lý thế nào?",
+      "expected_output": "Leader kiểm overlap bằng gh pr diff --name-only; thấy đụng PR #72 nên không mở rộng files thẳng; thêm `after` cho lane L5 (stack lên PR #72) hoặc chuyển bug sang lane kia, rồi load-plan.",
+      "files": [],
+      "assertions": [
+        {"id": "c-1", "text": "Kiểm overlap trước (vd `gh pr diff 72 --name-only` hoặc tương đương) thay vì cho lane sửa ngay"},
+        {"id": "c-2", "text": "Vì đụng PR #72 nên KHÔNG mở rộng `files` của L5 để sửa song song; chọn thêm `after` (stack) hoặc chuyển bug sang lane/PR sở hữu file"},
+        {"id": "c-3", "text": "Nếu sửa plan thì chạy `bfo check-plan` rồi `bfo load-plan` và SendMessage cho lane tiếp tục khi được phép"},
+        {"id": "c-4", "text": "Không tự sửa code hay tự đọc HomeViewModel.kt để tìm cách"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Batch bug-fix (mode batch). PR #80 của lane L2 (bug PROJ-12, PROJ-13) đã bug-reviewer APPROVE, đã `gh pr ready`, Jira đang Resolved. PO vừa nhắn: 'Quyết định đổi: nút Retry phải ẩn khi offline, không phải disable như spec cũ'. Quyết định này đổi hành vi của PROJ-12. Bạn là leader. Làm gì?",
+      "expected_output": "Hạ PR về draft, Jira về In Progress, chuyển quyết định mới cho bug-fixer của lane sửa, bug-reviewer review lại, rồi mới ready/Resolved lại.",
+      "files": [],
+      "assertions": [
+        {"id": "d-1", "text": "Hạ PR #80 về draft (vd `gh pr ready 80 --undo`)"},
+        {"id": "d-2", "text": "Chuyển Jira PROJ-12 (và issue bị ảnh hưởng) về In Progress qua jira_get_transitions rồi jira_transition_issue"},
+        {"id": "d-3", "text": "Gửi quyết định mới (kèm spec_ref cập nhật) cho bug-fixer của L2 sửa; leader không tự sửa code"},
+        {"id": "d-4", "text": "Sau khi lane push, spawn bug-reviewer review lại trước khi ready lại và chuyển Resolved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Batch bug-fix (mode batch). Lane L3 đã xong, bug-reviewer APPROVE, issue PROJ-20 có verify=device. Bạn chuẩn bị giao device job lên emulator-5554. Trong worktree lane có app/build/outputs/apk/appDev/debug/app-appDev-debug.apk, mtime 2 giờ trước, còn commit cuối của lane tạo 20 phút trước. Bạn là leader. Làm gì trước khi giao job?",
+      "expected_output": "Luôn chạy ./gradlew assemble<Variant> trong worktree lane trước khi giao job (Gradle up-to-date nên rẻ), rồi dùng path APK; không so mtime APK với giờ commit.",
+      "files": [],
+      "assertions": [
+        {"id": "e-1", "text": "Chạy (hoặc giao agent chạy) `./gradlew assemble<Variant>` trong worktree lane trước khi giao job"},
+        {"id": "e-2", "text": "KHÔNG dùng so sánh mtime APK với giờ commit để quyết định build lại"},
+        {"id": "e-3", "text": "Ghi path APK và head commit vào device-request (--apk, --head)"},
+        {"id": "e-4", "text": "Sau đó chạy `bfo device-dispatch --exclude ...` và spawn artemis-android với device_serial được gán"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Batch bug-fix (mode batch). User vừa merge PR #90 (lane L6, bug PROJ-40, verify=device) trong khi device job DJ-007 của PROJ-40 vẫn đang chạy (chưa pass). Head PR #90 là tổ tiên của origin/main. Jira PROJ-40 đang Resolved. Bạn là leader. Làm gì? Và nếu DJ-007 sau đó FAIL thì làm gì?",
+      "expected_output": "Chuyển PROJ-40 sang Reviewing ngay, để job DJ-007 chạy tiếp. Nếu fail: mở lane/PR mới từ main sửa tiếp, đưa Jira về Reopened/In Progress và báo user.",
+      "files": [],
+      "assertions": [
+        {"id": "f-1", "text": "Chuyển PROJ-40 sang Reviewing ngay (không chờ device job xong)"},
+        {"id": "f-2", "text": "Không hủy DJ-007; để job tiếp tục chạy"},
+        {"id": "f-3", "text": "Khi DJ-007 FAIL: tạo lane mới / PR mới từ main (không push vào PR #90 đã merge) cho bug-fixer truy root cause"},
+        {"id": "f-4", "text": "Khi DJ-007 FAIL: đưa Jira PROJ-40 về Reopened hoặc In Progress (qua jira_get_transitions) và báo user"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Đang chạy batch bug-fix (mode batch), lane L7 (bug-fixer) sắp push thêm commit sửa review vào PR #95 từ branch `fix/proj-search`. Bạn là bug-fixer của lane. Trước khi build APK để xếp device job và trước khi push, bạn phải kiểm những gì? `gh pr view 95 --json state` trả MERGED.",
+      "expected_output": "Chạy gate fresh-with-main; vì PR #95 đã MERGED nên không push vào branch cũ: tạo branch mới từ origin/base, cherry-pick commit, mở PR mới và báo leader.",
+      "files": [],
+      "assertions": [
+        {"id": "g-1", "text": "Nêu gate fresh-with-main: git fetch và kiểm base có commit mới đụng file lane / PR liên quan đã merge, merge base vào lane nếu có"},
+        {"id": "g-2", "text": "Kiểm trạng thái PR bằng `gh pr view <pr> --json state` trước khi push"},
+        {"id": "g-3", "text": "Vì PR đã MERGED: KHÔNG push vào branch fix/proj-search; tạo branch mới từ origin/<base>, cherry-pick commit mới, mở PR mới"},
+        {"id": "g-4", "text": "Cập nhật lane pr=<url mới> trong state (bfo lane) và báo leader"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "User gõ trong chat: 'lỗi: ở màn Home bấm nút Retry khi offline thì app đứng luôn, ghi lại rồi fix và mở PR giúp, còn vài lỗi nữa tôi nhắn tiếp'. Bạn dùng skill bug-fix. Mô tả bước đầu tiên và mode bạn chọn.",
+      "expected_output": "Chọn mode note; đăng ký bug bằng bug_queue.py new, giao worker bug-fixer nền, trả lời ngay một dòng.",
+      "files": [],
+      "assertions": [
+        {"id": "a-1", "text": "Chọn mode `note` (không phải batch)"},
+        {"id": "a-2", "text": "Chạy hoặc nêu `bug_queue.py new` để lấy BUG-ID và spawn `bug-fixer` chạy nền"},
+        {"id": "a-3", "text": "Trả lời user ngay một dòng `BUG-NNN đã nhận`, không chờ worker"},
+        {"id": "a-4", "text": "KHÔNG tự đọc code hay sửa code ở session chính"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "User nhắn: '/bug-fix PROJ-123'. Bạn dùng skill bug-fix. Chọn mode nào và lấy nội dung bug từ đâu?",
+      "expected_output": "Đúng 1 key Jira → mode note; kéo nội dung ticket bằng jira_get_issue làm mô tả bug.",
+      "files": [],
+      "assertions": [
+        {"id": "a-1", "text": "Chọn mode `note` vì chỉ có đúng 1 key"},
+        {"id": "a-2", "text": "Lấy summary + description của PROJ-123 qua Jira (jira_get_issue) làm mô tả bug; không chép email/tên reporter"},
+        {"id": "a-3", "text": "KHÔNG khởi tạo batch dir `plans/bugfix-batch-*` hay `bfo init`"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "User nhắn: 'fix các bug sprint này: https://jira.example.com/secure/RapidBoard.jspa?rapidView=12&projectKey=PROJ'. Bạn dùng skill bug-fix. Chọn mode nào và bước đầu là gì?",
+      "expected_output": "Link board → mode batch; Phase 0 preflight rồi init batch.",
+      "files": [],
+      "assertions": [
+        {"id": "a-1", "text": "Chọn mode `batch`"},
+        {"id": "a-2", "text": "Làm Phase 0 preflight (remote/base, batch id, `bfo init`) trước khi scout"},
+        {"id": "a-3", "text": "Lấy issue từ sprint đang chạy qua Jira (JQL hoặc jira_get_sprint_issues), không gọi từng issue một khi description đã đủ"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "User nhắn: 'sửa PROJ-10 PROJ-11 PROJ-12 cùng lúc'. Bạn dùng skill bug-fix. Chọn mode nào?",
+      "expected_output": "≥ 2 key Jira → mode batch.",
+      "files": [],
+      "assertions": [
+        {"id": "a-1", "text": "Chọn mode `batch` vì có ≥ 2 key"},
+        {"id": "a-2", "text": "KHÔNG spawn 3 worker note rời nhau"},
+        {"id": "a-3", "text": "Nêu đọc `references/mode-batch.md` hoặc chạy preflight batch"}
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Batch 261112-1800-proj: lane L1 và L2 đã xong, đã validate_evidence. PROJ-1 PASS, PROJ-2 NEEDS_VERIFICATION, PROJ-3 chưa có evidence.json, PROJ-4 needs-confirm user vừa trả lời 'fix theo Figma'. Bạn là leader. Làm gì tiếp?",
+      "expected_output": "Chạy bfo next-wave, thấy PROJ-2/3/4, --start để mở wave 2, tái dùng scout cache, phân loại lại, check-plan + load-plan, lane mới.",
+      "files": [],
+      "assertions": [
+        {"id": "a-1", "text": "Chạy `bfo next-wave <batch>` để liệt kê ticket cần đợt sau (PROJ-2, PROJ-3, PROJ-4; không có PROJ-1)"},
+        {"id": "a-2", "text": "Ghi câu trả lời bằng `bfo issue <batch> PROJ-4 answer=...` để next-wave nhận ra"},
+        {"id": "a-3", "text": "Mở wave mới bằng `next-wave --start` và nêu tái dùng scout cache, không scout lại toàn repo"},
+        {"id": "a-4", "text": "Lane mới qua `check-plan` rồi `load-plan`, không tái dùng id lane cũ"}
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Mode note, bug BUG-004 là lệch màu nút ở màn Level (verify preview). Worker đã fix, render preview, board với Figma, ui-diff-review chấm 88 (ngưỡng 95). Worker làm gì tiếp?",
+      "expected_output": "Chuyển ui-fix-loop tối đa 3 vòng thay vì dừng; tra registry figma-refs.json; hết 3 vòng chưa đạt thì NEEDS_INPUT.",
+      "files": [],
+      "assertions": [
+        {"id": "a-1", "text": "Chuyển sang `ui-fix-loop` (fix → render → compare lại), tối đa 3 vòng, không dừng sau 1 vòng"},
+        {"id": "a-2", "text": "Tra Figma của màn trong `docs/design-refs/figma-refs.json` (ref-get) trước khi tự tìm"},
+        {"id": "a-3", "text": "Sau vòng 3 vẫn dưới ngưỡng → báo `NEEDS_INPUT` kèm board + finding còn lại, không mở PR như đã pass"},
+        {"id": "a-4", "text": "Ghi preview-before/after + board vào evidence.json"}
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "Mode note, worker BUG-005 cần chụp màn hình trên emulator-5554 để chứng minh repro, nhưng batch 261112-1800-proj đang có device job DJ-002 chạy trên emulator-5554. Worker làm gì?",
+      "expected_output": "device-lock bị từ chối (exit 3, holder batch), không đụng thiết bị, báo WAITING Blocked by batch:...:DJ-002.",
+      "files": [],
+      "assertions": [
+        {"id": "a-1", "text": "Chạy `bug_queue.py device-lock emulator-5554 BUG-005` như lệnh riêng và đọc exit code trước khi dùng adb"},
+        {"id": "a-2", "text": "Exit 3 → không đụng thiết bị, không poll, báo `WAITING` với `Blocked by: batch:261112-1800-proj:DJ-002`"},
+        {"id": "a-3", "text": "KHÔNG tự `device-release` khoá của batch"}
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "User đưa thư mục run của ui-diff (/tmp/run-1 có summary.json với 5 mục fix_priority ở 2 màn Home và Level). Nói: 'fix theo report ui-diff'. Bạn dùng skill bug-fix. Làm gì?",
+      "expected_output": "Mode batch, import-ui-diff sinh bug UI-<screen>-<n> không Jira, phân loại ui/preview, lane theo màn, không đụng Jira.",
+      "files": [],
+      "assertions": [
+        {"id": "a-1", "text": "Chọn mode `batch` và chạy `bfo import-ui-diff <batch> /tmp/run-1/summary.json`"},
+        {"id": "a-2", "text": "Mỗi finding thành một bug key `UI-<screen-slug>-<n>` kind ui, verify preview"},
+        {"id": "a-3", "text": "Không gọi Jira / jira-sync / transition cho các bug này"},
+        {"id": "a-4", "text": "Gom group theo màn hoặc component, mỗi finding có evidence.json riêng"}
+      ]
+    }
+  ]
+}

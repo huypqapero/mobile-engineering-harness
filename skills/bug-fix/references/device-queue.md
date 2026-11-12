@@ -1,0 +1,68 @@
+# Hàng chờ thiết bị (dùng chung mode batch + mode note)
+
+Mode batch: bug tier `device` không chặn lane: lane fix + unit + build APK + xếp job, mở PR draft. Leader điều phối thiết bị riêng. `S` = state script, `B` = batch dir.
+
+## Trạng thái
+
+```
+issue: fixed → pending_device → verifying_device → verified | failed
+job:   pending → running → done | failed        (release thủ công → pending)
+```
+
+Một thiết bị giữ tối đa 1 job. **Khoá chung** `scripts/devices.py` (`<git-common-dir>/bug-fix/devices.json`, holder `note:<BUG-ID>` hoặc `batch:<batch-id>:<JOB>`) là nguồn sự thật cho cả hai mode: `bfo device-dispatch/done/release` và `bug_queue.py device-lock/unlock/release` đều đi qua đó, nên note và batch không bao giờ giữ cùng 1 serial (xem khoá hiện tại: `python3 <SKILL_DIR>/scripts/bug_queue.py device-list`). `state.devices` của batch chỉ là bản sao để hiển thị. ARTEMIS cũng có mutex riêng theo thiết bị — hai lớp khóa, không chạy 2 job trên 1 emulator.
+
+## Chuẩn bị APK (trước `device-request`)
+
+Không so mtime APK với giờ commit (Gradle up-to-date làm mtime cũ dù APK đúng). Luôn chạy trong worktree lane, sau gate fresh-with-main (`lane-protocol.md` §4):
+
+```bash
+./gradlew assemble<Variant>      # up-to-date thì gần như tức thì; không cần đoán APK cũ hay mới
+S device-request B <KEY> --lane <L> --apk <abs path APK> --head $(git -C <WT> rev-parse HEAD) [--priority N]
+```
+
+Lane push commit mới sau đó → APK cũ vô hiệu: build lại và gọi lại `device-request` cùng tham số (cập nhật job pending). `--priority` lớn chạy trước (crash Highest, job chặn PR ready); mặc định 0. Job không có APK, APK không tồn tại hoặc `head` lệch HEAD worktree lane thì `device-dispatch` bỏ qua và in lý do.
+
+## Khi nào leader dispatch
+
+Gọi `S device-dispatch B --exclude <serial…>` mỗi khi:
+- một lane báo `DONE` có device job,
+- một device job xong (`device-done`),
+- user hỏi status.
+
+Máy mà mode note đang giữ nằm trong khoá chung: `device-dispatch` tự bỏ qua (in lý do trên stderr), leader **không** cần `--exclude` cho chúng. `--exclude` chỉ cho thiết bị bận ngoài hệ thống khoá này: task ARTEMIS khác (`mobile_diagnose` → `tasks.active`) hoặc user nói đang dùng. Không chắc → coi là bận.
+
+Kết quả:
+- In `DJ-001 emulator-5554 PROJ-48 verify` → spawn verifier cho từng dòng (cột cuối `repro` hoặc `verify`).
+- Exit 4 → chỉ còn job chưa sẵn sàng (stderr nêu job + lý do): bổ sung APK/head như trên rồi dispatch lại.
+- Exit 3 → còn job sẵn sàng nhưng không có thiết bị rảnh: báo user "N bug đang chờ thiết bị", **không** chiếm thiết bị đang bận, không poll vòng lặp — chờ sự kiện kế tiếp ở trên.
+- Không in gì, exit 0 → hết job.
+
+Không có thiết bị nào (`adb devices` rỗng) → job giữ `pending`; báo user cắm máy / bật emulator (`mobile_diagnose(launch_avd=…)`), batch vẫn đóng được với bug `pending_device` + checklist test tay.
+
+## Brief cho `artemis-android`
+
+```
+Verify fix <KEY> trên device_serial=<SERIAL> (chỉ thiết bị này).
+APK: <path APK của lane>  (cài: adb -s <SERIAL> install -r <apk>)   Package: <applicationId>
+Checklist: <B>/evidence/<KEY>/device-checklist.md
+Bug gốc: actual=<…> expected=<…>  Điều kiện: <remote key, mạng, quyền, ads test…>
+Chụp evidence vào <B>/evidence/<KEY>/device/ (screenshot mỗi bước, logcat khi crash: adb -s <SERIAL> logcat -d > logcat.txt).
+Không sửa code. Trả: PASS/FAIL từng bước + đường dẫn ảnh + log.
+Đọc trước: <SKILL_DIR>/references/device-playbook.md
+Đặc thù máy <SERIAL>: <dán mục khớp từ <repo app>/.harness-overlay/devices.md nếu có | không có>
+```
+
+Model ARTEMIS: thao tác ngắn/đơn giản → Flash; flow dài, cần log/ADB/report → Pro (xem rule ARTEMIS của user). Chờ thời gian (vd hộp quà 30s) → trừ độ trễ bước của model.
+
+## Job `repro` (crash chưa có stack, trước khi fix)
+
+Cài APK build từ base (`<remote>/<base>`, `assemble` trong `R` hoặc một worktree tạm; `device-request --purpose repro --apk …`), làm theo repro của Jira, lưu `logcat.txt` + screenshot vào `B/evidence/<KEY>/device/`. Xong → `S device-done B <JOB> --result pass` (tái hiện được) hoặc `fail` (không tái hiện → hỏi reporter thêm thông tin), rồi `S lane B <L> status=planned` để lane chạy với log đó.
+
+## Khi job verify xong
+
+1. `S device-done B <JOB> --result pass|fail`.
+2. Cập nhật `evidence/<KEY>/evidence.json`: thêm artifact device, AC runtime → `PASS`/`FAIL`, `verdict`.
+3. PASS: khi mọi issue của lane `verified` → `gh pr ready <pr>`, tick checklist trong PR body. FAIL: SendMessage cho lane `bug-fixer` (cùng agent; agent đã kết thúc → spawn mới với brief đủ ngữ cảnh) kèm bước fail + đường dẫn evidence/log; **lane tự truy root cause** (leader không tự đọc log/dexdump/grep), fix lại (cap 2 vòng). Lane push code mới → `bug-reviewer` review lại → job mới xếp lại.
+4. `S device-dispatch B …` để lấy job tiếp.
+
+Agent device treo > 45 phút (`device-dispatch` cảnh báo trên stderr) → kiểm agent; treo thật → `TaskStop`, `S device-release B <SERIAL>` (job quay về pending).

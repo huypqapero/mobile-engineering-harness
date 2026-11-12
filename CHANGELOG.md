@@ -10,6 +10,34 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 
 - **`product-spec-creator`** (chuyển từ `~/.claude/skills/` vào harness): viết, chuẩn hoá và validate spec màn hình dạng Screen + Description (khung AAP884: Mô tả / Flow / Logic / Logic click button / Remote config) đủ để dev code không phải hỏi lại. Chế độ CAPTURE dựng spec từ video quay app mẫu: cắt frame + board có nhãn bằng script của `ui-diff`, chọn frame sạch mỗi màn, ghi chép [thấy]/[suy luận], brainstorm giữ/đổi/bỏ/thêm rồi Q&A theo lô. Hỏi nền tảng đích trước (Android/iOS/KMP → bảng Khác biệt nền tảng, Sign in with Apple, ATT), khối Motion (token + asset Lottie), giới hạn 40–80 event. Validator `scripts/check_spec.py` (kiểm cấu trúc, đối chiếu key remote / event, liệt kê PO confirm; có test). Spec ra là đầu vào `local` cho `business-prepare-feature`. Kiểm chứng trên spec Phase 1 dựng từ 3 video app mẫu (59 màn, READY 0 ERROR).
 
+### Changed — `bug-note` + `bug-fix-orchestrator` gộp thành `bug-fix`
+
+- **Một skill `bug-fix`, hai mode**: `note` (mặc định: bug gõ trong chat hoặc đúng 1 key/link Jira, mỗi bug 1 worker → 1 PR) và `batch` (JQL / board / sprint / ≥ 2 key Jira / report `ui-diff`, nhiều đợt, lane worktree song song). `SKILL.md` mỏng, procedure ở `references/` (`mode-note.md`, `note-worker-protocol.md`, `mode-batch.md`, các reference batch và `device-queue.md` giữ nội dung của #13). `bug-note` và `bug-fix-orchestrator` còn lại là stub alias (giữ `/bug-note`, `/bug-fix-orchestrator`); `bug --mode fix --parallel` chuyển sang `bug-fix` mode batch. `CLAUDE.md`, `AGENTS.md`, agent `bug-fixer` / `bug-reviewer` / `bug-scout` cập nhật theo.
+- **Mức verify chung** `none/unit/preview/device` cho cả hai mode (`references/verify-tiers.md`), bỏ T1–T4 của bug-note. Mức `preview` ở mode note theo đúng quy tắc của batch: board với Figma + `ui-diff-review` (ngưỡng 95), còn lệch thì `ui-fix-loop` ≤ 3 vòng, tra `docs/design-refs/figma-refs.json` trước; quy tắc viết một lần, hai mode tham chiếu.
+- **Evidence chung**: mode note cũng ghi `evidence.json` theo `evidence.schema.json`; `validate_evidence.py` thêm `--evidence-dir <dir> [--base-commit <sha>]` (có test).
+- **Khoá thiết bị chung** `scripts/devices.py` (`<git-common-dir>/bug-fix/devices.json`, `fcntl` + ghi nguyên tử, holder `note:<BUG-ID>` / `batch:<batch-id>:<JOB>`): `bug_queue.py device-*` và `bfo device-dispatch/done/release` đều qua đây, hai mode không bao giờ giữ cùng một serial; leader không còn phải `--exclude` thiết bị của note. Bug note xong (không còn `queued/investigating/waiting/fixing`) tự nhả khoá; thêm `bug_queue.py device-list`.
+- **Script chỉ stdlib, chạy `python3` hệ thống ≥ 3.9** (bỏ mọi tham chiếu venv của `~/.claude/skills` trong skill, kể cả bước validate evidence ở đóng batch): `bug_queue.py`, `bfo_state.py`, `bfo`, `devices.py` ở `skills/bug-fix/scripts/`.
+- **Chuyển state note**: `<git-common-dir>/bug-note/queue.json` → `<git-common-dir>/bug-fix/queue.json`; lần chạy đầu `bug_queue.py` đọc file cũ một lần (kể cả khoá thiết bị của bug chưa xong) và không xoá nó.
+
+### Added — bug-fix
+
+- **Nhiều đợt (wave)**: `bfo next-wave <batch> [--start]` liệt kê ticket chưa có `evidence.json` verdict `PASS` (thiếu / `FAIL` / `NEEDS_VERIFICATION`) và ticket `needs-confirm` đã có `answer`; `manifest.json` ghi `wave` + `issue_wave`; `bfo board` thêm cột Wave và Verdict.
+- **Nguồn bug từ report `ui-diff`**: `bfo import-ui-diff <batch> <summary.json | run dir>` biến mỗi mục `fix_priority[]` thành bug `kind=ui` `verify=preview` key `UI-<screen-slug>-<n>` (không Jira, `jira-sync` bỏ qua), ghi `bugs.json` đúng format hiện có và chép ảnh actual/design của màn vào `context/ui-diff/`. Chạy lại giữ key của finding trùng; thêm trigger "fix theo report ui-diff".
+- Eval `bug-fix`: case chọn mode (chat → note, 1 key → note, JQL/board/≥ 2 key → batch), wave, `preview` ở note mode, khoá thiết bị liên mode, report ui-diff.
+
+### Changed — bug-fix-orchestrator (retro improvements)
+
+- **Lane gate "fresh with main"** trước build APK / dispatch device / push (merge base khi lane `after` đã merge hoặc base có commit đụng file lane); PR đã `MERGED`/`CLOSED` thì mở branch + PR mới thay vì push vào branch cũ.
+- **`bfo` mới**: `device-request --apk --head --priority` + `device-dispatch` chỉ giao job sẵn sàng (APK tồn tại, head khớp worktree lane; exit 4 khi chưa sẵn sàng); `jira-sync` in kế hoạch chuyển trạng thái Jira từ state (không gọi Jira); key `TASK-<slug>` cho việc không có Jira; `check-plan --batch` bỏ qua chồng file với lane đã merge; lane `blocked` và `lane-remove`. APK luôn build bằng `assemble` trước khi giao job (bỏ so mtime).
+- **Jira**: đồng bộ sau mỗi sự kiện; merge trước verify → Reviewing ngay, job vẫn chạy, fail thì lane/PR mới + reopen. **Quyết định**: bảng `decisions-pending.md` theo ID, DEC vào một PR docs, quy trình chuẩn khi quyết định đổi sau khi PR ready. **Intake**: preflight spec drift, main health check, đính kèm Jira, video ngoài/reopen. Mới `references/device-playbook.md` (đặc thù từng máy ở `.harness-overlay/devices.md` của repo app), log đo lường cho bug thời gian/đếm, suggestion `auto-apply` của `bug-reviewer`, bộ `evals/`.
+
+### Added — Feature Store: mức override UI U2S (Scoped Composition)
+
+- **`feature-store`** và agent **`feature-store-architect`**: thêm mức **U2S** giữa slot (U2) và expose VM (U3). App tự sắp layout của một màn từ các khối kit đã nối sẵn state + intent (`XxxScope.SearchBar()`, `XxxScope.Body()`…), nên đổi bố cục không mất tính năng. Mức U chốt theo từng màn. Rule: scope `sealed`, khối chỉ nhận `modifier`, có `state` + `dispatch`, việc bắt buộc nằm ngoài `content`, layout mặc định dựng chỉ từ khối của scope, test 4 case + 1 preview layout tùy biến.
+- KB: note mới "Scoped Composition — mức U2S" (`develop/feature-store/structure`); cập nhật "Capability Contract" (trục U, cây quyết định theo màn, `override_points.ui_scope` / `screens`) và "Feature Store Mindset" (FS-002 4 cấp override, FS-006 breaking cho scope). Kiểm chứng trên `kit/fs/search` của AIP699-ShortDrama.
+
+## [0.23.0] — 2026-11-09
+
 ### Added — Batch bugfix orchestrator
 
 - **`bug-fix-orchestrator`**: leader điều phối batch bug từ Jira (JQL, board, sprint, danh sách key). Lấy spec Confluence, Figma node và docs tham chiếu của repo một lần; scout codebase một lần và lưu cache dùng lại giữa các batch; phân loại `kind` (code/ui/content/spec-gap/needs-info/…) và mức verify (`none`/`unit`/`preview`/`device`); gom group theo root cause, xếp lane worktree song song (mỗi lane 1 PR gom nhiều bug); bug cần thiết bị vào hàng chờ, chỉ chạy khi thiết bị rảnh. State `plans/bugfix-batch-<id>/` qua `scripts/bfo_state.py` (kiểm plan cơ học, giới hạn số lane, hàng chờ thiết bị), resume được.
@@ -21,6 +49,14 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 ### Changed
 
 - `bug --mode fix --parallel` chuyển sang `bug-fix-orchestrator`; xoá `skills/bug/references/mode-fix-parallel.md`. Evidence validator + schema vẫn ở `skills/bug/`.
+- **`bug-fix-orchestrator` — leader chỉ điều phối**: đọc code, tìm root cause, fix, review, chạy thiết bị và phân tích log/APK đều giao cho `bug-scout`, `bug-fixer`, `bug-reviewer`, `artemis-android`; job thiết bị fail trả về `bug-fixer` của lane thay vì leader tự điều tra.
+- **`bug-fix-orchestrator` — spec verdict gate**: Phase 3 so từng bug 1-1 với spec/Figma; chỉ fix bug có `spec_verdict=confirmed` kèm `spec_ref` trích dẫn, bug còn nghi ngờ vào `confirm-checklist.md` dạng `needs-confirm` mà không chặn lane khác. `check-plan` kiểm cơ học các trường này.
+- **`bug-fix-orchestrator` — Jira status flow**: In Progress khi lane bắt đầu, Resolved sau khi reviewer APPROVE và device pass, Reviewing khi PR head đã vào base branch; set assignee ở mọi transition.
+- **16 agent role có frontmatter** (`architect`, `coder`, `orchestrator`, `tech-lead`, `qa`, `reviewer`, `ui-judge`, …): trước đây file mở đầu bằng `# Agent Role` nên Claude Code không đăng ký, `subagent_type: architect` lỗi. Giờ spawn trực tiếp được; `reviewer`, `ui-judge`, `architect` có allowlist tool (read-only/không sửa code, vẫn tra KB).
+
+### Fixed
+
+- `coding-orchestrator` spawn agent không tồn tại (`architect-mindset`, `implementer-mindset`, `qa-mindset`, `reviewer-mindset`) → đổi thành `architect`, `coder`, `qa`, `reviewer`.
 
 ## [0.22.0] — 2026-11-06
 

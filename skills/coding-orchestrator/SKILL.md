@@ -49,19 +49,19 @@ Threshold từ `orchestration.auto_threshold.*`. Report chosen mode + rationale.
 
 ```
 Phase A — Architect subagent:
-  Spawn Task(subagent_type: "architect-mindset", prompt: "...") 
+  Spawn Task(subagent_type: "architect", prompt: "...") 
   → plans/<date>/plan.md
   
 Phase B — Coder subagent:
-  Spawn Task(subagent_type: "implementer-mindset", prompt: "Read plan.md + implement")
+  Spawn Task(subagent_type: "coder", prompt: "Read plan.md + implement")
   → code changes + handoff/coder.md
   
 Phase C — QA subagent:
-  Spawn Task(subagent_type: "qa-mindset", prompt: "...")
+  Spawn Task(subagent_type: "qa", prompt: "...")
   → test files
   
 Phase D — Reviewer subagent:
-  Spawn Task(subagent_type: "reviewer-mindset", prompt: "Review diff...")
+  Spawn Task(subagent_type: "reviewer", prompt: "Review diff...")
   → review-report.md
   
 Phase E — Final aggregate:
@@ -75,7 +75,7 @@ Phase E — Final aggregate:
 Spawn **1 architect subagent** đọc toàn spec → produce N feature plans:
 
 ```
-Task(subagent_type: "architect-mindset", prompt: """
+Task(subagent_type: "architect", prompt: """
   Read spec at docs/specs/<feature-set>.md
   Decompose into N independent feature plans.
   
@@ -182,7 +182,7 @@ Sau khi tất cả parallel subagents done, main agent (orchestrator role):
 Spawn `Task(reviewer)` với full diff (owned + aggregated):
 
 ```
-Task(subagent_type: "reviewer-mindset", prompt: """
+Task(subagent_type: "reviewer", prompt: """
   Review parallel feature build:
   - Features: {feature-list}
   - Diff: git diff <base>..HEAD

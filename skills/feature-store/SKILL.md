@@ -43,6 +43,7 @@ FS knowledge set, bắt buộc đầy đủ, không skim. Skip → bias feature-
 3. `knowledge/coding-feature-store/module-topology.md [KB → develop/feature-store, kb_search "coding feature store module topology"]` — 2-module template
 4. `knowledge/coding-feature-store/data-port-runtime-config.md [KB → develop/feature-store, kb_search "coding feature store data port runtime config"]` — Runtime Config pattern + compileOnly + classpath guard
 5. `knowledge/coding-feature-store/theme-adapter.md [KB → develop/feature-store, kb_search "coding feature store theme adapter"]` — Theme Contract (nếu U ≥ U1)
+5b. `knowledge/coding-feature-store/scoped-composition.md [KB → develop/feature-store, kb_search "coding feature store scoped composition"]` — Scoped Composition U2S: app tự sắp layout màn từ khối đã nối state + intent (nếu U ≥ U2S)
 6. `knowledge/coding-feature-store/testing-kit.md [KB → develop/feature-store, kb_search "coding feature store testing kit"]` — testFixtures mandatory
 7. `knowledge/coding-feature-store/essentials.md [KB → develop/feature-store, kb_search "coding feature store essentials"]` — checklist rule cứng
 8. `knowledge/coding-sdk/sdk-mindset.md [KB → develop/sdk, kb_search "coding sdk sdk mindset"]` — rule BCV/deprecation chung
@@ -56,6 +57,7 @@ FS knowledge set, bắt buộc đầy đủ, không skim. Skip → bias feature-
 - Responsibility 1 câu (không "và")
 - Platform scope: KMP common / androidMain / cần iosMain?
 - **Design system diversity**: consumer chung Material 3 hay mỗi app brand khác? (ảnh hưởng Theme Contract scope)
+- **Layout diversity theo từng màn**: các app chỉ đổi màu/chữ (U1), đổi 1-3 chỗ (U2), đổi bố cục nhưng giữ hành vi (U2S), hay UI khác hẳn (U3)?
 - **Backend diversity**: consumer chung backend hay mix (Firebase, REST, GraphQL)? (ảnh hưởng D1/D2/D3)
 - (Optional) Deadline, Steward (owner FS dài hạn)
 
@@ -68,6 +70,7 @@ Input riêng từng mode: xem đầu file reference tương ứng.
 - 2-module topology mandatory, không chấp nhận 3+ module trừ RFC đặc biệt.
 - `compileOnly` adapter deps mandatory nếu có adapter built-in.
 - Theme Contract mandatory nếu U ≥ U1 (dù lift-and-shift chỉ map Material3 1:1).
+- Mức U chốt **theo từng màn**. Màn có U2S: `sealed interface XxxScope` + `XxxHost(content = { DefaultXxxLayout() })`, việc bắt buộc nằm ngoài `content` (`scoped-composition.md §FS-SCOPE-002`).
 - testFixtures mandatory trước release 1.0.
 - Breaking change `:core` yêu cầu RFC + sign-off ≥ 3/5.
 - Quality gate, report format, failure/recovery, overlay gate, agent-spawn prompt: **chi tiết trong file reference từng mode**.

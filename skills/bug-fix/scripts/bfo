@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Wrapper cho bfo_state.py: chạy bằng python3 hệ thống (yêu cầu >= 3.9, chỉ stdlib) để lệnh gọi luôn là
+# một đường dẫn duy nhất, không phụ thuộc cách shell tách từ hay hook chặn đường dẫn venv.
+set -euo pipefail
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if command -v python3 >/dev/null 2>&1 && python3 -c 'import sys; sys.exit(sys.version_info < (3, 9))' 2>/dev/null; then
+  exec python3 "$DIR/bfo_state.py" "$@"
+fi
+echo "bfo: cần python3 >= 3.9" >&2
+exit 2
