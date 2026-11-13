@@ -6,6 +6,19 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 
 ## [Unreleased]
 
+### Added — ui-board-judge (Opus) cho chấm board UI
+
+- **Agent `ui-board-judge`** (`agents/ui-board-judge.md`, `model: opus`, read-only + ghi file kết quả): chấm MỘT board so sánh UI (actual/preview vs Figma) theo quy trình `ui-diff-review` (§2 đọc board + checklist trục, §2b crop/zoom + `sample_region.py`, §3 `verdict.py`), ghi `findings.json` + `result.json`, trả một dòng `Score / Verdict / Critical`. 1 agent / board, nhiều board chạy song song.
+- **`ui-judge`** thêm `model: opus` (nội dung giữ nguyên).
+- **Các skill chấm board qua judge**: `ui-diff-review` có mục "Người chấm" (nguồn duy nhất của quy tắc: bước đọc board / chấm điểm / verdict luôn giao `ui-board-judge`; người dựng board tự spawn judge, kể cả agent con (spawn được agent con, tối đa 3 tầng), không tự chấm; không spawn được thì dừng và báo người gọi; thiếu agent thì `activate-claude-agents.sh`, tạm tự chấm chỉ khi phiên là Opus). `ui-diff` bước ⑥ spawn 1 judge / board song song rồi mới ⑦ `aggregate.py`; `ui-fix-loop` bước "Board + chấm" chấm qua judge; `compare-ui-board` trỏ về quy tắc khi kết quả dùng để chấm điểm / pass-fail. Việc sửa code giữ model mặc định.
+- **`bug-fix`: lane / worker tự spawn judge**. Với bug `preview`, lane (hoặc worker note) dựng board xong tự spawn `ui-board-judge` (agent con spawn được agent con, tối đa 3 tầng), đọc `result.json` + `findings.json` rồi tự đi tiếp: `ui-fix-loop` (≤ 3 vòng, mỗi vòng spawn judge lại) hoặc kết thúc. Người sửa code vẫn không tự chấm board. Không có trạng thái chờ điểm; `bug-fixer` chỉ được spawn `ui-board-judge`. Không tính là vòng `bug-reviewer`. Cập nhật `verify-tiers.md` §`preview`, `mode-batch.md` / `mode-note.md`, `lane-protocol.md`, `note-worker-protocol.md` và status block `bug-fixer` (dòng `Judge:` chỉ tóm điểm cuối).
+- **Model theo agent** (frontmatter `model:` / `effort:`):
+  - `opus`: `architect`, `coder`, `bug-fixer`, `ui-board-judge`, `ui-judge`, `tech-lead`, `reviewer`, `bug-reviewer`, `design-analyst`, `feature-store-architect`, `library-architect`.
+  - `sonnet`: `bug-scout`, `orchestrator`, `product-analyst`, `qa`, `designer`, `harness-guardian`.
+  - `sonnet` + `effort: medium`: `e2e-author`, `lesson-miner`, `project-manager`.
+  - Skill `model: sonnet` + `effort: medium`: `business-fetch`, `business-validate-brief`, `harness-init`, `harness-handoff`, `harness-maintenance`.
+  - Skill dispatcher và skill được agent Opus gọi (`coding-*`, `testing-*`, `ui-*`, `compare-ui-board`) cố ý KHÔNG khai `model:` (override của skill kéo tới hết lượt, sẽ hạ agent Opus xuống).
+
 ### Added — Product spec creator
 
 - **`product-spec-creator`** (chuyển từ `~/.claude/skills/` vào harness): viết, chuẩn hoá và validate spec màn hình dạng Screen + Description (khung AAP884: Mô tả / Flow / Logic / Logic click button / Remote config) đủ để dev code không phải hỏi lại. Chế độ CAPTURE dựng spec từ video quay app mẫu: cắt frame + board có nhãn bằng script của `ui-diff`, chọn frame sạch mỗi màn, ghi chép [thấy]/[suy luận], brainstorm giữ/đổi/bỏ/thêm rồi Q&A theo lô. Hỏi nền tảng đích trước (Android/iOS/KMP → bảng Khác biệt nền tảng, Sign in with Apple, ATT), khối Motion (token + asset Lottie), giới hạn 40–80 event. Validator `scripts/check_spec.py` (kiểm cấu trúc, đối chiếu key remote / event, liệt kê PO confirm; có test). Spec ra là đầu vào `local` cho `business-prepare-feature`. Kiểm chứng trên spec Phase 1 dựng từ 3 video app mẫu (59 màn, READY 0 ERROR).

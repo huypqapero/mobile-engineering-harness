@@ -2,6 +2,8 @@
 name: harness-maintenance
 description: Audit + improve + evolve chính harness (rule/skill/knowledge/blueprint/eval). Dùng bởi Harness Guardian agent, không bởi product coding agents. Trigger khi scheduled routine, user invoke audit, hoặc coding agent feedback accumulate.
 priority: P1
+model: sonnet
+effort: medium
 ---
 
 # Skill: harness-maintenance

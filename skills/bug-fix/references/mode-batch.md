@@ -30,6 +30,7 @@ Leader nhận task rồi giao cho agent bên dưới thực thi; luồng chính 
 | Scout | agent `bug-scout` (harness, read-only) | 1 lần/batch, Phase 2 |
 | Lane worker | agent `bug-fixer` (harness: Architect + Coder, chuẩn fix gốc) | 1 agent / lane / worktree / PR |
 | Reviewer | agent `bug-reviewer` (harness, read-only) | review độc lập mỗi PR trước khi ready |
+| UI judge | agent `ui-board-judge` (harness, Opus, read-only) | 1 agent / board, do lane tự spawn (bug `preview`; không qua leader) |
 | Device verifier | agent `artemis-android` (ARTEMIS) | 1 agent / job / thiết bị |
 
 Không có PR nào ready khi chưa có `bug-reviewer` APPROVE. Không dùng agent của ak kit (tiền tố `ak-`, `backend-developer`, `fullstack-developer`, `code-reviewer`…). Nếu `bug-scout`/`bug-fixer`/`bug-reviewer` chưa có trong danh sách agent → chạy `scripts/activate-claude-agents.sh` của harness, báo user reload session; tạm thời spawn `general-purpose` với prompt "Đọc và nhập vai `agents/bug-fixer.md` (hoặc bug-scout.md / bug-reviewer.md) của harness".

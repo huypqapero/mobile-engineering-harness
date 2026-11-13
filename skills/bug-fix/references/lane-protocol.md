@@ -20,6 +20,7 @@ Preview: <vd android preview render ":app@appDevDebug" --fqn=…>
 Quy định repo: <CLAUDE.md, decisions-outside-spec phải cập nhật trong PR nếu tự quyết hành vi>
 Ngôn ngữ PR/báo cáo: tiếng Việt. Timezone Asia/Saigon.
 Làm theo <SKILL_DIR>/references/lane-protocol.md từng bước; kết thúc bằng status block của agents/bug-fixer.md.
+Bug `preview`: không tự chấm board, tự spawn `ui-board-judge` theo `verify-tiers.md` §`preview` rồi đọc điểm.
 ```
 
 ## 1. Worktree
@@ -74,7 +75,7 @@ git log --oneline HEAD..<remote>/<base> | head                              # PR
 |---|---|
 | `none` | compile; strings → kiểm đủ mọi `values-*` liên quan; ghi diff tóm tắt vào evidence; UI tĩnh không preview → checklist test tay vào PR + `B/device-test-queue.md` (không chặn PR) |
 | `unit` | viết/sửa unit test regression (happy + ≥1 edge) cho ViewModel/UseCase; chạy test module bị đụng |
-| `preview` | theo `verify-tiers.md` §preview (dùng chung với mode note: render trước/sau, board Figma, `ui-diff-review` ngưỡng 95, còn lệch → `ui-fix-loop` ≤ 3 vòng, registry Figma) |
+| `preview` | theo `verify-tiers.md` §preview (dùng chung với mode note: render trước/sau, board Figma, registry Figma). Lane **không tự chấm**: dựng board xong tự spawn `ui-board-judge` (board / actual / expected, màn, ngưỡng 95, `Out dir`) rồi đọc điểm + `findings.json`; còn lệch → `ui-fix-loop` ≤ 3 vòng (mỗi vòng lại spawn judge) |
 | `device` | chạy phần `unit` nếu có logic; build APK lane (`assemble<Variant>`) sau gate §4, ghi path; `S device-request B <KEY> --lane <L> --apk <path> --head <sha>`; viết checklist device (bước → kết quả mong đợi, điều kiện: remote key, mạng, quyền, ads test) vào `evidence/<KEY>/device-checklist.md`. **Không tự chạy thiết bị.** |
 
 Gate chung trước push (sau gate fresh-with-main): compile variant chính + unit test module bị đụng PASS; detekt/konsist nếu repo cấu hình (`./gradlew tasks --all | grep -E "detekt|konsist"`). Không tắt/skip test để qua gate. Tự kiểm diff theo checklist A–J của `coding-review`, ghi `self-review.md` vào evidence mỗi bug.

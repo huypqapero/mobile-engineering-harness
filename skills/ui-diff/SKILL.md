@@ -12,7 +12,8 @@ description: So UI theo nhiều MODE và báo cáo độ khớp + diff + hướn
 > **Tái dùng (DRY), không copy lại:**
 > - `compare-ui-board/scripts/create_board.py` — dựng mọi board (classify, match, compare).
 > - `ui-diff-review` — compare + chấm điểm + verdict CHO TỪNG MÀN (checklist trục,
->   §2b zoom + `sample_region.py`, `verdict.py`).
+>   §2b zoom + `sample_region.py`, `verdict.py`); người chấm là agent `ui-board-judge`
+>   (Opus) theo mục "Người chấm" của skill đó.
 > - Script riêng của skill này chỉ lo: cắt frame (`extract_frames.py`) và gộp thống
 >   kê nhiều màn (`aggregate.py`).
 
@@ -60,10 +61,10 @@ download_figma_images           extract_frames + contact_sheet (label)
             ⑤ TÁCH riêng từng cặp -> 1 board [actual|expected] RIÊNG mỗi màn
                pair_board --per 1  (board 1-cặp to, rõ)
                                        ▼
-            ⑥ ĐÁNH GIÁ TỪNG BOARD RIÊNG (focus 1 màn/lượt → chính xác hơn)
-               checklist trục; §2b zoom nếu nghi -> screens/<man>/{findings,result}.json
+            ⑥ ĐÁNH GIÁ TỪNG BOARD RIÊNG — 1 agent ui-board-judge (Opus) / board, song song
+               (focus 1 màn/lượt → chính xác hơn) -> screens/<man>/{findings,result}.json
                                        ▼
-            ⑦ aggregate.py -> summary.json + report.md (fix ưu tiên)
+            ⑦ (sau khi MỌI judge xong) aggregate.py -> summary.json + report.md (fix ưu tiên)
 ```
 
 **Run dir** (trace): `<run>/` gồm `frames/`, `figma_frames/`, `sheets/`,
@@ -111,12 +112,16 @@ python3 ~/.claude/skills/ui-diff/scripts/pair_board.py \
   --out <run>/screens/<man>/pair.png --per 1
 ```
 
-**⑥ ĐÁNH GIÁ TỪNG BOARD RIÊNG** — đọc **từng board 1-cặp một lượt** (focus 1 màn, không
-bị nhiễu bởi các cặp khác) bằng flow `ui-diff-review`: checklist trục; nghi lệch
-màu/structure/component → **§2b** (crop + zoom + `sample_region.py`). Ghi
-`screens/<man>/findings.json` + `verdict.py` → `screens/<man>/result.json` mỗi màn.
+**⑥ ĐÁNH GIÁ TỪNG BOARD RIÊNG** — mỗi board 1-cặp spawn **1 agent `ui-board-judge`**
+(Opus) theo quy tắc **"Người chấm"** của `ui-diff-review` (nguồn duy nhất; phiên chính
+spawn song song, `run_in_background`, chờ xong hết). Prompt mỗi judge: `Board:`
+`<run>/screens/<man>/pair.png` (hoặc `Actual:`/`Expected:`), `Screen:` `<man>`, `Threshold:`
+95, `Out dir:` `<run>/screens/<man>/`. Judge đọc board 1 lượt (focus 1 màn, không bị nhiễu
+bởi các cặp khác) bằng flow `ui-diff-review` (checklist trục, §2b khi nghi) và ghi
+`screens/<man>/findings.json` + `screens/<man>/result.json`. Phiên chính **không tự chấm**.
 
-**⑦ Thống kê + report**:
+**⑦ Thống kê + report** — chạy SAU KHI mọi judge ở ⑥ đã xong (đủ `findings.json` +
+`result.json` cho mọi màn có cặp):
 ```bash
 python3 ~/.claude/skills/ui-diff/scripts/aggregate.py --run <run> --pass-score 95
 ```

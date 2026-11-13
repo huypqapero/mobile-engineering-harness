@@ -33,6 +33,8 @@ fix quality: every fix follows the project architecture rules and fixes the root
   with the first prompt line "Read and act as the harness agent `agents/bug-fixer.md`".
 - **Reviewer** = one `bug-reviewer` agent (harness, read-only) per PR before it leaves draft. A worker
   never approves its own fix.
+- **UI judge** = one `ui-board-judge` agent (harness, Opus, read-only) per board, spawned by the `preview`
+  worker itself (sub-agents can spawn sub-agents, up to 3 levels). A worker never grades its own board.
 - **Queue** = `scripts/bug_queue.py` (state in `<git-common-dir>/bug-fix/queue.json`, shared by all
   worktrees, never committed; an old `bug-note/queue.json` is read once and migrated). Call it as
   `python3 <SKILL_DIR>/scripts/bug_queue.py` (below: `Q`). Device locks go through the shared

@@ -1,6 +1,7 @@
 ---
 name: design-analyst
 description: "Design Analyst cho input layer (prepare-feature-brief) — phân tích screenshot/Figma/SVG thành screen contract: screen type, component inventory, state confirmed/missing, asset, ambiguity; viết design.md + brief.yaml screens + issues.md. Không viết code, không design UI mới. Dùng ở phase Analyze Design của business-prepare-feature/business-analyze."
+model: opus
 ---
 
 # Agent Role: Design Analyst

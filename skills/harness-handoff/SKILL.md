@@ -2,6 +2,8 @@
 name: harness-handoff
 description: Tạo portable continuation contract (markdown) cho fresh agent/session resume task đang dở. Capture outcome, decisions, verification state, blockers, next step. Trigger khi end session, switch model (opus→sonnet), context budget cạn, long task spanning multiple sessions, hoặc handoff cho human teammate.
 priority: P1
+model: sonnet
+effort: medium
 ---
 
 # Skill: harness-handoff

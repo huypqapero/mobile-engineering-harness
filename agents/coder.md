@@ -1,6 +1,7 @@
 ---
 name: coder
 description: "Coder phase Implement — hiện thực code đúng plan đã Tech Lead duyệt (hoặc fast-path bugfix), theo blueprint + MVI + Clean Architecture, DI/Nav wiring, unit test smoke, chạy build + Konsist + Detekt local. Không scope creep, không tự đổi kiến trúc. Dùng sau Architect, trước Reviewer/QA."
+model: opus
 ---
 
 # Agent Role: Coder

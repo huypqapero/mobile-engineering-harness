@@ -85,7 +85,8 @@ Read overlay 1 lần ở đầu session (first task); subsequent tasks reuse cac
 | Reconcile conflict giữa spec + design | `business-analyze --phase reconcile` |
 | Validate Feature Brief qua 12 quality gates | `business-validate-brief` |
 | Run e2e regression test pipeline qua fixtures | `verify-e2e` workflow (bash + Python) |
-| Chấm UI compare screenshot vs Figma + spec | `ui-judge` agent |
+| Chấm UI compare screenshot vs Figma + spec | `ui-judge` agent (Opus) |
+| Chấm 1 board so sánh UI actual/preview vs Figma → `match_score` + verdict (vòng fix UI, report `ui-diff`, `bug-fix` `preview`) | `ui-board-judge` agent (Opus; quy tắc ở `ui-diff-review` §Người chấm) |
 | Write runner-neutral E2E step files JSON | `e2e-author` agent |
 | Distill tester bugs từ Jira/GitHub thành lessons | `lesson-miner` agent + `mine-lessons` workflow |
 | Orchestrate E2E runtime round (full/verify) với streaming bugs | `guard-round` workflow |
@@ -150,7 +151,8 @@ Nhiều task cross-cutting → gọi lần lượt, không chạy song song cùn
 - `reviewer.md` — Independent code audit, evidence-based findings
 - `qa.md` — Façade verification: Scope A (per-screen) + Scope B (full-flow E2E)
   - `e2e-author.md` — Subagent QA: write runner-neutral step files cho E2E
-  - `ui-judge.md` — Subagent QA: visual compare Figma vs app screenshot
+  - `ui-judge.md` — Subagent QA: visual compare Figma vs app screenshot (`model: opus`)
+  - `ui-board-judge.md` — Subagent read-only (`model: opus`): chấm 1 board so sánh UI theo `ui-diff-review` (`findings.json` + `result.json`, `match_score` + ngưỡng); 1 agent / board, song song; phiên chính hoặc lane/worker tự spawn
 - `bug-scout.md` — Native subagent read-only: scout 1 lần cho cả batch bug (Architect inspect), output scout.json tái dùng
 - `bug-fixer.md` — Native subagent lane worker: Architect + Coder cho 1 cụm bug (hoặc 1 bug của `bug-fix` mode note), 1 worktree = 1 PR; bắt buộc chuẩn fix gốc theo rule project, cấm fix ngọn
 - `bug-reviewer.md` — Native subagent read-only: review độc lập PR fix bug (checklist A–J coding-review + gốc hay ngọn), PR chỉ ready khi APPROVE
@@ -286,6 +288,7 @@ Nếu rule chỉ ở overlay → product-specific rule, không propagate upstrea
 - `agents/qa.md` — façade Scope A + Scope B verification
 - `agents/e2e-author.md` — subagent QA: step files
 - `agents/ui-judge.md` — subagent QA: visual compare
+- `agents/ui-board-judge.md` — subagent Opus: chấm 1 board so sánh UI (match_score + verdict)
 - `agents/bug-scout.md` — native subagent: scout batch bug read-only
 - `agents/bug-fixer.md` — native subagent: lane fix cụm bug → PR
 - `agents/bug-reviewer.md` — native subagent: review độc lập PR fix bug

@@ -34,7 +34,7 @@ Agent chưa có trong danh sách → chạy `scripts/activate-claude-agents.sh` 
 ## Rule chung
 
 - **Chuẩn fix**: sửa đúng root cause ở đúng layer theo rule project (`agents/bug-fixer.md` §Chuẩn fix), cấm fix ngọn. Tốc độ chỉ cắt số vòng verify, không cắt chất lượng fix.
-- **Mức verify chung** `none / unit / preview / device`: `references/verify-tiers.md` (gồm quy tắc `preview` theo Figma: board + `ui-diff-review` ngưỡng 95, còn lệch → `ui-fix-loop` ≤ 3 vòng).
+- **Mức verify chung** `none / unit / preview / device`: `references/verify-tiers.md` (gồm quy tắc `preview` theo Figma: board + chấm bằng `ui-board-judge` (Opus; lane / worker tự spawn judge) ngưỡng 95, còn lệch → `ui-fix-loop` ≤ 3 vòng).
 - **Evidence chung**: `evidence.json` theo `skills/bug/schemas/evidence.schema.json`, kiểm bằng `python3 <harness>/skills/bug/scripts/validate_evidence.py` (batch: `<batch dir>`; note: `--evidence-dir <dir>`). Không có artifact thì không `PASS`.
 - **Khoá thiết bị chung**: `references/device-queue.md`; `scripts/devices.py` giữ `<git-common-dir>/bug-fix/devices.json`, holder `note:<BUG-ID>` / `batch:<batch-id>:<JOB>` → hai mode không bao giờ giữ cùng một serial.
 - **PR**: luôn mở draft, chỉ `gh pr ready` sau khi `bug-reviewer` APPROVE. Base `main` (hoặc base của batch), PR stack khi chung file. Không merge, không force-push, không push lên base, commit/PR không nhắc AI.

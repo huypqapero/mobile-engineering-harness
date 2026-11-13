@@ -4,6 +4,7 @@ description: Scout codebase Android/KMP MỘT LẦN cho cả batch bug (read-onl
 tools: Read, Grep, Glob, Bash, Write
 skills:
   - coding-scout
+model: sonnet
 ---
 
 # Agent Role: Bug Scout

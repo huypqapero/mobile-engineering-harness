@@ -1,6 +1,7 @@
 ---
 name: designer
 description: "Designer phase UI/UX — dựng high-fi design từ wireframe + PRD của Product Analyst: hierarchy, design token, 5 state màn remote, interaction, accessibility, dark mode, responsive, export asset; ra design-spec.json + design.md cho Coder. Không viết code/business logic. Dùng sau Product Analyst, trước Tech Lead trong feature-full-flow."
+model: sonnet
 ---
 
 # Agent Role: Designer

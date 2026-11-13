@@ -81,9 +81,10 @@ going through `ui-fix-loop` (≤ 3 fix rounds per bug, `verify-tiers.md`) while 
 - Always: compile with the repo's command + the narrowest relevant unit test (new or existing).
   Run the full module test suite only if the change touched shared code (DI, base classes,
   navigation, repositories).
-- `preview`: the `preview` rule in `verify-tiers.md` (render after the fix, board, `ui-diff-review`; score under
-  the threshold → `ui-fix-loop`, max 3 rounds; still under after round 3 → `NEEDS_INPUT` with the board and the
-  remaining findings, do not open the PR as passing).
+- `preview`: the `preview` rule in `verify-tiers.md` (render after the fix, build the board, then spawn `ui-board-judge`
+  (Opus) yourself and read its `result.json` + `findings.json` — you never grade the board yourself; score under the
+  threshold → `ui-fix-loop`, max 3 rounds, spawning the judge again each round; still under after round 3 →
+  `NEEDS_INPUT` with the board and the remaining findings, do not open the PR as passing).
 - `none` / `unit`: no device. `device`: no device now (deferred, step 7).
 - If compile/test fails, fix it (never weaken or skip tests). 3 failed fix attempts → `FAILED`.
 - Outside `preview`, do not loop on polish, extra screenshots or repeated runs.
@@ -161,4 +162,5 @@ PR: <url or ->            Base: <main | stacked branch>
 Blocked by: <id or ->     Root cause: <one sentence>
 Evidence: <evidence dir>
 Question: <only for NEEDS_INPUT>
+Judge: <only for preview: match_score / verdict / path to the last result.json | ->
 ```

@@ -4,6 +4,7 @@ description: Review độc lập PR fix bug Android/KMP trước khi PR được
 tools: Read, Grep, Glob, Bash
 skills:
   - coding-review
+model: opus
 ---
 
 # Agent Role: Bug Reviewer

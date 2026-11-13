@@ -2,6 +2,8 @@
 name: business-validate-brief
 description: Schema + consistency validation cho feature brief package. Chạy 12 quality gates (INPUT/SPEC/DESIGN/RECON/CONTRACT/HANDOFF), mark brief READY/BLOCKED/FAILED. Phase P5 của prepare-feature pipeline hoặc gọi độc lập để re-validate.
 priority: P1
+model: sonnet
+effort: medium
 ---
 
 # Skill: business-validate-brief

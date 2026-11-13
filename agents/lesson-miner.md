@@ -1,6 +1,8 @@
 ---
 name: lesson-miner
 description: "Lesson Miner — đọc bug report từ tracker (Jira/GitHub/Linear), distill thành bug record JSON, lesson (symptom/cause/rule/how-to-test), rule cho plan/code review và regression test; merge vào lessons repo và mở PR (không auto-merge). Dùng sau đợt fix bug hoặc định kỳ để chống lặp lỗi."
+model: sonnet
+effort: medium
 ---
 
 # Agent Role: Lesson Miner

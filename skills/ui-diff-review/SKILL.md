@@ -63,6 +63,17 @@ Node ④ **có điều kiện**: chỉ chạy khi diff ở mức component / mà
 structure. Case presence/absence rõ ngay ở board overview thì bỏ qua ④ để khỏi tốn
 bước. Chi tiết từng node ở phần Flow dưới.
 
+## Người chấm (agent `ui-board-judge`, Opus)
+
+Đây là chỗ DUY NHẤT mô tả quy tắc này; `ui-diff`, `ui-fix-loop`, `compare-ui-board`, `bug-fix` đều trỏ về đây.
+
+Bước ③–⑥ (đọc board, soi sát, chấm điểm, verdict — §2, §2b, §3 bên dưới) **luôn giao cho agent `ui-board-judge`** (`model: opus`, `agents/ui-board-judge.md`), không tự chấm trong phiên đang chạy (thường là Sonnet). Caller vẫn lo bước ①–② (lấy ảnh sạch, dựng board).
+
+- **Người đang dựng board** (phiên chính, hoặc agent con như lane `bug-fixer`, worker note, subagent lane của `ui-fix-loop`): tự spawn 1 `ui-board-judge` / board. Prompt truyền `Board:` (hoặc `Actual:` + `Expected:`), `Screen:`, `Threshold:` (mặc định 95), `Out dir:`, `Accepted:` nếu có. Nhiều board → spawn song song, `run_in_background`. Chờ xong rồi đọc `<Out dir>/result.json` (+ `findings.json`) và tự đi tiếp: dưới ngưỡng thì fix vòng kế theo `ui-fix-loop` (≤ 3 vòng), đạt ngưỡng hoặc hết vòng thì kết thúc. Người sửa code không tự chấm board (judge ≠ người fix).
+- **Agent con cũng spawn được judge** (tối đa 3 tầng dưới phiên chính, `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`). Môi trường không spawn được (vượt độ sâu / thiếu Agent tool) → dừng và báo người gọi (kèm board + lý do), không tự chấm.
+- **Chưa có agent `ui-board-judge`** trong danh sách agent: chạy `scripts/activate-claude-agents.sh` của harness và báo user reload session. Trong lúc chờ, chỉ tự chấm khi phiên hiện tại đang là Opus; không phải Opus thì dừng và báo user, không chấm thay.
+- Judge ghi `findings.json` + `result.json` (qua `verdict.py`); caller không sửa điểm. Muốn đổi ngưỡng thì truyền `Threshold:` lúc spawn, không chỉnh sau.
+
 ## Flow
 
 ### 1. Dựng board (tái dùng compare-ui-board)

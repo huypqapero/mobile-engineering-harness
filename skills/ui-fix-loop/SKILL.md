@@ -14,7 +14,7 @@ Trả lời bằng ngôn ngữ của user. Không bịa số px/dp; lấy từ F
 
 | Việc | Skill / tool |
 |---|---|
-| Chấm điểm + verdict + checklist trục + đo màu | `ui-diff-review` (`verdict.py`, `sample_region.py`) |
+| Chấm điểm + verdict + checklist trục + đo màu | `ui-diff-review` (`verdict.py`, `sample_region.py`), người chấm = agent `ui-board-judge` (Opus) |
 | Dựng board actual\|expected | `compare-ui-board/scripts/create_board.py` |
 | Render Compose headless ra PNG | `android preview render` (xem `testing-preview/references/android-reference.md`) |
 | Lấy node + tải asset Figma | MCP `framelink-figma`: `get_figma_data`, `download_figma_images` |
@@ -68,7 +68,7 @@ android preview render :app --fqn=<preview_fqn> --component-tree --format=json \
 Module có product flavor (lỗi `Variant 'debug' does not exist`) thì thay `:app` bằng `":app@<flavorBuildType>"`, ví dụ `":app@appDevDebug"`, ở cả `list` lẫn `render`. Chi tiết ở `testing-preview/references/android-reference.md`, mục "Product flavors".
 `<N>` = 0 baseline, 1..3 các vòng fix. Đọc JSON ra đường dẫn PNG; PNG rỗng/lỗi build -> sửa lỗi build/preview trong cùng vòng (không tính là vòng fix mới nếu chưa render được), không bịa ảnh. `component-tree` dùng để xác định source location của node lệch.
 
-**Board + chấm**: ghép bằng `create_board.py --mode pair --actual <render.png> --expected docs/design-refs/<screen>/<screen>-design.png`, rồi chạy quy trình `ui-diff-review` (đọc board 1 lượt, checklist trục, pass 2 zoom + `sample_region.py` khi nghi màu/component). Luật bỏ qua giữ nguyên: khác ngôn ngữ, data/state, status bar không trừ điểm. Với preview dùng fixture, state/data của fixture lệch design = không trừ; chỉnh fixture cho gần design nếu cần so cho công bằng.
+**Board + chấm**: ghép bằng `create_board.py --mode pair --actual <render.png> --expected docs/design-refs/<screen>/<screen>-design.png`, rồi **chấm qua agent `ui-board-judge` (Opus)** theo mục "Người chấm" của `ui-diff-review` (judge đọc board 1 lượt, checklist trục, pass 2 zoom + `sample_region.py` khi nghi màu/component; ghi `result.json` + `findings.json` vào `<RUN>/bugs/<bug-id>/r<N>/`) rồi đọc `result.json`; không tự chấm trong phiên Sonnet. Chạy bên trong lane `bug-fix` hay subagent lane cũng tự spawn judge (agent con spawn được agent con, tối đa 3 tầng; xem "Người chấm"), đọc `result.json` + `findings.json` rồi mới `bug-record` và fix/dừng. Luật bỏ qua giữ nguyên: khác ngôn ngữ, data/state, status bar không trừ điểm. Với preview dùng fixture, state/data của fixture lệch design = không trừ; chỉnh fixture cho gần design nếu cần so cho công bằng.
 
 **Ghi vòng**:
 ```bash
@@ -77,6 +77,7 @@ python3 $SKILL_DIR/scripts/uifix_state.py bug-record --state-dir <RUN>/bugs --id
 python3 ~/.claude/skills/ui-diff-review/scripts/verdict.py --score <n> --threshold 95 \
   --screen <screen> --board <board.png> --out <RUN>/bugs/<bug-id>/r<N>/result.json --reason "..."
 ```
+`verdict.py` do judge chạy; `--score` trong `bug-record` lấy từ `result.json` của judge, caller không tự chỉnh điểm.
 
 **Quy tắc fix**
 - Mỗi vòng chỉ sửa finding còn `lệch`, theo thứ tự severity rồi confidence. Sửa tối thiểu, đúng pattern/token của repo (theme/colors/dimens có sẵn), không refactor ngoài phạm vi.
@@ -90,7 +91,7 @@ python3 ~/.claude/skills/ui-diff-review/scripts/verdict.py --score <n> --thresho
 - Gom bug theo file source: bug cùng file/composable -> **cùng 1 lane** (tuần tự) để không đè sửa nhau.
 - Lane khác file -> giao subagent song song, mỗi lane = 1 bug-id, chỉ được sửa file đã khai báo. Ưu tiên mỗi lane 1 git worktree (`ak:worktree`) rồi merge sau; nếu dùng chung working tree thì phải disjoint file.
 - `android preview render` đi qua Gradle -> **chạy render tuần tự** giữa các lane trong cùng working tree (Gradle khóa project). Worktree riêng thì render song song được nhưng tốn RAM; tối đa 2-3 lane cùng lúc.
-- Prompt giao subagent phải có: bug-id, screen, đường dẫn refs entry, file được sửa, ngưỡng 95, max 3 vòng, RUN dir, và yêu cầu kết thúc bằng `Status: DONE|DONE_WITH_CONCERNS|BLOCKED` + bảng điểm từng vòng. Controller giữ việc merge và báo cáo.
+- Prompt giao subagent phải có: bug-id, screen, đường dẫn refs entry, file được sửa, ngưỡng 95, max 3 vòng, RUN dir, và yêu cầu kết thúc bằng `Status: DONE|DONE_WITH_CONCERNS|BLOCKED` + bảng điểm từng vòng. Controller giữ việc merge và báo cáo. Subagent lane tự spawn `ui-board-judge` để chấm board của mình (mục "Người chấm" của `ui-diff-review`); không tự chấm.
 - Dùng `uifix_state.py bug-status --state-dir <RUN>/bugs` để xem tổng.
 
 ## Quy tắc môi trường

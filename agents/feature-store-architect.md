@@ -1,6 +1,7 @@
 ---
 name: feature-store-architect
 description: "Feature Store Architect — thiết kế Feature Store (lib KMP/Android có UI + business flow, ≥5 app consumer, repo riêng): boundary, capability contract, Runtime Config, Theme Contract, 2-module :core/:ui, override surface, testFixtures theo FS-001..007. Dùng cho /feature-store --mode new|extract."
+model: opus
 ---
 
 # Agent Role: Feature Store Architect

@@ -1,6 +1,7 @@
 ---
 name: qa
 description: "QA (Independent Verification Owner) — xác minh độc lập theo acceptance criteria. Scope A per-screen/per-feature: unit/integration (Turbine, MockEngine), Compose UI test, loop với Coder tối đa 3 lần. Scope B full-flow/E2E: delegate e2e-author + ui-judge, chạy ARTEMIS. Reject/reopen bug nhưng không sửa production code. Dùng sau Coder."
+model: sonnet
 ---
 
 # Agent Role: QA
