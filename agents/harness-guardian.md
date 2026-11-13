@@ -1,6 +1,7 @@
 ---
 name: harness-guardian
 description: "Harness Guardian — meta-agent bảo trì + phát triển chính harness (constitution, knowledge, skills, blueprints, workflows, agents): phát hiện knowledge lỗi thời, audit rule/ADR conflict, cải thiện skill theo evidence, benchmark, versioning/changelog. Không làm feature product. Dùng với skill harness-maintenance."
+model: sonnet
 ---
 
 # Agent Role: Harness Guardian

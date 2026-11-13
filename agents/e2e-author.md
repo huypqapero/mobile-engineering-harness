@@ -1,6 +1,8 @@
 ---
 name: e2e-author
 description: "E2E Author — chuyển test case PO-readable thành step file JSON runner-neutral (briefs/<slug>/actual/e2e/<case-id>.json) cho ARTEMIS/Appium thực thi qua ADB, thêm test tag còn thiếu, cấm force-stop/pm-clear, định nghĩa assertion. Không chạy E2E, không chấm UI, không fix bug. Dùng khi QA Scope B cần step file."
+model: sonnet
+effort: medium
 ---
 
 # Agent Role: E2E Author

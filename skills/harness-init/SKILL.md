@@ -2,6 +2,8 @@
 name: harness-init
 description: Khởi tạo `.harness-overlay/overlay.yaml` cho consumer product từ gradle metadata + branding input. Scout `settings.gradle.kts`, `libs.versions.toml`, `AndroidManifest.xml` để auto-detect stack; hỏi 3 branding key còn thiếu; validate schema; output overlay ready-to-use. Trigger khi user nói "init harness", "setup harness overlay", "generate overlay cho project", hoặc lần đầu consume upstream harness.
 priority: P0
+model: sonnet
+effort: medium
 ---
 
 # Skill: harness-init

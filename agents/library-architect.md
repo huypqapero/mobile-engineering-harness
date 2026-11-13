@@ -1,6 +1,7 @@
 ---
 name: library-architect
 description: "Library Architect — thiết kế SDK headless (không UI) publish artifact dùng chung ≥5 consumer, repo riêng: boundary, API contract, SPI extension, configurability, layered kernel-plugin, TestingKit, versioning/publishing theo SDK mindset. Dùng cho /library --mode new|extract."
+model: opus
 ---
 
 # Agent Role: Library Architect

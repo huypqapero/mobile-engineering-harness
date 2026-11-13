@@ -16,6 +16,8 @@ rồi tự so 2 đoạn text → mất chi tiết, hay "ảo" khác biệt. Thay
 cả ảnh liên quan vào 1 canvas có nhãn rõ**, model nhìn một lần và chỉ ra lệch trực
 tiếp trên cùng khung tham chiếu. EXPECTED / FIGMA là nguồn chuẩn (source of truth).
 
+> Kết quả đọc board dùng để **chấm điểm / pass-fail** → theo quy tắc "Người chấm" của `ui-diff-review` (agent `ui-board-judge`, Opus); đọc board chỉ để liệt kê diff thô thì caller tự đọc.
+
 ## Khi nào dùng
 
 - So actual app vs design (detect bug UI "khác design").

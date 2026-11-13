@@ -2,6 +2,8 @@
 name: business-fetch
 description: Fetch spec/design từ nguồn upstream (Confluence qua mcp-atlassian, Figma qua framelink-figma/TalkToFigma) và normalize snapshot vào briefs/<slug>/assets/sources/. Adapter fetch-only, không analyze. Phase P1 của prepare-feature pipeline. Dispatcher theo --source.
 priority: P1
+model: sonnet
+effort: medium
 ---
 
 # Skill: business-fetch
