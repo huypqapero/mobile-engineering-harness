@@ -34,7 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/huypqapero/mobile-engineering-harne
 Script tự:
 - Clone upstream vào `~/.mobile-engineering-harness/`
 - Symlink CLI thành `mehcli` ở `~/.local/bin/`
-- Check prerequisites (git, python3, PyYAML)
+- Check prerequisites (git, python3, PyYAML; `graphify` tuỳ chọn cho code graph — `uv tool install graphifyy`)
 - Warn nếu PATH chưa chứa `~/.local/bin`
 
 ### Quick start cho product mới (3 lệnh)

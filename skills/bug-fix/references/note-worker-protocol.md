@@ -23,6 +23,11 @@ Speed beats ceremony: the user tests on device later in one pass. Find the cause
 first; touch the device only when the code alone cannot prove the cause.
 
 - Scout the code for the screen/feature named in the report; read project rules first.
+  Graph first: `G=$(<harness>/scripts/code-graph.sh ensure "$WT")` (exit ≠ 0 → skip, Grep as usual), then
+  `graphify query|explain|path|affected … --graph "$G"` per `<harness>/skills/coding-scout/references/code-graph.md`
+  to find the Screen/Contract/ViewModel and call chain. The graph is a map: Read every `file:line` you cite.
+  Before changing a signature / state / Contract, list its callers with `graphify affected` + Grep (DI, routes,
+  resources) in `fix-design.md` (step 3).
 - Prove the root cause as **file:line + why** (quote the wrong line). This is mandatory for every bug.
 - Pick **one verify level** from `verify-tiers.md` (record it in report.md, evidence.json and the PR):
 

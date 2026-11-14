@@ -120,6 +120,7 @@ Mapping tìm được trong batch phải về lại repo, batch sau không scout
 
 ```
 Repo (đọc tại đây): <repo>-worktrees/bfo-<batch-id>-scout  (detached @ <base_commit>, KHÔNG sửa)
+Graph: <đường dẫn graph.json từ code-graph.sh ensure | unavailable>  (cách tra: <harness>/skills/coding-scout/references/code-graph.md)
 Batch: <B>   Bugs: B/bugs.json   Spec: B/context/spec.md
 Figma index: B/context/figma-index.json   References: B/context/references.md
 Cache dùng lại (không scout lại các area này): <dán area + notes>

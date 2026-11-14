@@ -56,7 +56,7 @@ Theo `intake-and-context.md`: nguồn Jira (§1), hoặc report `ui-diff` (§1b:
 
 ## Phase 2 — Scout một lần (agent `bug-scout`)
 
-Kiểm cache trước (`intake-and-context.md` §Scout cache): area không đổi từ commit cache → tái dùng, chỉ scout area mới/đổi. ≤ 25 bug → **1** `bug-scout`; nhiều hơn → chia theo area, mỗi `bug-scout` một nhóm area (song song, cùng đọc `R`), leader gộp → `B/scout.json` + `B/scout-report.md` + `B/registry-delta.json` (mapping spec ↔ Figma ↔ code theo màn, `intake-and-context.md` §7), cập nhật cache. Scout cũng đánh dấu bug **đã được fix ở base** (PR merge sau ngày tạo bug) và bug trùng PR đang mở. Lane sau đó nhận phần scout của mình, **không scout lại toàn repo**.
+Leader build graph một lần: `<harness>/scripts/code-graph.sh ensure R` → đường dẫn `graph.json` (lỗi / chưa cài → bỏ qua, scout bằng Grep). Truyền `Graph: <path>` cho mọi `bug-scout`, lane và `bug-reviewer` của batch (cùng `base_commit`). Kiểm cache trước (`intake-and-context.md` §Scout cache): area không đổi từ commit cache → tái dùng, chỉ scout area mới/đổi. ≤ 25 bug → **1** `bug-scout`; nhiều hơn → chia theo area, mỗi `bug-scout` một nhóm area (song song, cùng đọc `R`), leader gộp → `B/scout.json` + `B/scout-report.md` + `B/registry-delta.json` (mapping spec ↔ Figma ↔ code theo màn, `intake-and-context.md` §7), cập nhật cache. Scout cũng đánh dấu bug **đã được fix ở base** (PR merge sau ngày tạo bug) và bug trùng PR đang mở. Lane sau đó nhận phần scout của mình, **không scout lại toàn repo**.
 
 ## Phase 3 — Phân loại, gom nhóm, xếp lane (leader)
 

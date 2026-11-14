@@ -13,6 +13,7 @@ Logcat repro (nếu bug repro_first): <B>/evidence/<KEY>/device/logcat.txt
 Bug của lane (group → issue → verify):
 <dán từ plan.json: key, title, kind, verify, actual/expected, screen, figma_node, preview_fqn>
 Scout của các bug này: <dán phần scout.json tương ứng: suspect file:line, call chain, files, unknowns>
+Graph (@ base_commit): <đường dẫn graph.json | unavailable>  — cách tra: <harness>/skills/coding-scout/references/code-graph.md
 Files được phép sửa: <lane.files>
 References: <B>/context/references.md   Spec: <B>/context/spec.md (mục liên quan: <…>)
 Build/test: <vd ./gradlew :app:compileAppDevDebugKotlin, :app:testAppDevDebugUnitTest, detekt nếu có>
@@ -38,7 +39,8 @@ Copy input build bị gitignore có ở main checkout (chỉ file tồn tại): 
 
 ## 2. Chốt root cause từng group (mindset Architect)
 
-- Đọc đúng dòng scout chỉ ra, xác nhận bằng code thật: ghi `file:line` + trích dòng sai + vì sao sai so với spec/Figma. Scout sai → tự tìm lại trong phạm vi area, ghi chú cho leader.
+- Đọc đúng dòng scout chỉ ra, xác nhận bằng code thật: ghi `file:line` + trích dòng sai + vì sao sai so với spec/Figma. Scout sai → tự tìm lại trong phạm vi area (có Graph: `graphify explain` / `path` trước, rồi Grep), ghi chú cho leader.
+- Trước khi đổi signature / state / Contract: `graphify affected "<symbol>" --graph <Graph> --depth 1` (+ Grep DI / route / resource) → ghi caller bị ảnh hưởng vào `fix-design.md`. Caller ngoài `lane.files` cần sửa theo → `NEEDS_CONTEXT` như dưới.
 - Liệt kê file sẽ sửa. File ngoài `lane.files` → **dừng**, status `NEEDS_CONTEXT` (file + lý do). Không sửa trước khi leader trả lời.
 - Đổi domain contract / migration / shared contract → `BLOCKED`, nêu lý do (scope guard).
 - Bug hóa ra spec-gap → `S issue B <KEY> status=blocked note="spec-gap: <câu hỏi>"`, bỏ qua bug đó, làm tiếp bug khác.

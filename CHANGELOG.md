@@ -6,6 +6,13 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 
 ## [Unreleased]
 
+### Added — Code graph (Graphify) cho scout / bug-fix
+
+- **`scripts/code-graph.sh`** (`ensure | path | prune <worktree>`): build graph Graphify code-only, offline (`GRAPHIFY_BACKEND=none`, tree-sitter AST, không gọi LLM) cho HEAD của worktree vào `<git-common-dir>/graphify/<commit>/graphify-out/graph.json`. Ngoài cây làm việc nên không commit nhầm; mọi worktree cùng commit dùng chung; seed AST cache từ bản trước (commit mới ~10s thay vì ~30s trên repo 4.5k file); khoá `mkdir` khi nhiều worker build cùng commit; worktree dirty → key riêng, build lại; giữ 3 bản mới nhất (~65MB/bản). Chưa cài graphify → exit 2, skill fallback grep.
+- **`skills/coding-scout/references/code-graph.md`**: nguồn duy nhất cách tra (`explain`, `affected`, `path --undirected`, `query --budget`, exit 3/4), đọc `EXTRACTED`/`INFERRED`, chỗ graph không thấy (Koin DSL binding, route `val`, resource, Gradle), graph là bản đồ không phải bằng chứng.
+- **Nối vào skill / agent**: `coding-scout` (Step 2 graph trước, caller bằng `affected`), `coding-diagnose` (D-02, cross-module), `bug-fix` (Rule chung + bảng script; batch: leader `ensure R` một lần ở Phase 2, truyền `Graph:` cho scout / lane / reviewer; note: worker `ensure "$WT"`), `bug-scout` (input `Graph:`, procedure bước 2), `bug-fixer` (bảng skill), `bug-reviewer` (kiểm caller bị bỏ sót bằng `affected`), lane-protocol (liệt kê caller vào `fix-design.md` trước khi đổi contract).
+- `bootstrap.sh` cảnh báo khi chưa cài `graphify` (tuỳ chọn).
+
 ### Added — Screen registry spec ↔ Figma ↔ code (ghi ngược vào repo)
 
 - **Registry một file / màn** `docs/references/screens/<screen-id>.json` (schema `skills/ui-fix-loop/references/screen-registry.md`): `node_id`, `figma_url`, `screenshot`, `spec[]` (`path#mục`), `source_files[]`, `previews[]`. Thay `docs/design-refs/figma-refs.json` một file chung (lane song song sửa cùng file sẽ conflict). `uifix_state.py`: `--refs` mặc định là thư mục registry, `ref-add` nhận `--name/--section/--screenshot`, `--spec`/`--preview-fqn` lặp được, thêm `ref-list`, `ref-merge` (gộp delta, chuyển đổi file cũ); đọc được format cũ; có test.

@@ -25,7 +25,7 @@ Mindset `agents/reviewer.md` áp cho PR fix bug: audit độc lập, chỉ raise
    - Root cause trong `fix-design.md` có khớp code thật không (đọc `file:line` được trích)?
    - Fix có nằm ở layer chứa root cause không? Có phương án sửa gốc rẻ hơn mà fixer bỏ qua không?
    - Diff có mẫu nào trong bảng "Cấm fix ngọn" của `agents/bug-fixer.md` không (delay né race, catch nuốt lỗi, guard UI che contract sai, flag rời, `if` đặc cách, logic trong Composable, `@Suppress`…)?
-   - Fix có làm hỏng hoặc bỏ sót caller khác của code bị sửa không (grep usage)?
+   - Fix có làm hỏng hoặc bỏ sót caller khác của code bị sửa không? Với mỗi symbol / Contract bị đổi trong diff: `graphify affected "<symbol>" --graph <G> --depth 1` (`G` = `Graph:` trong prompt, không có thì `<harness>/scripts/code-graph.sh ensure <worktree>`; lỗi → bỏ qua) + grep usage (DI, route, resource). Caller graph liệt kê mà diff không xử lý → Read để xác nhận trước khi ghi finding.
 3. Checklist A–J của `skills/coding-review/SKILL.md` §Step 2 cho phần diff (không review code ngoài diff, trừ khi diff làm nó sai).
 4. Test: có test regression chứng minh hành vi bug (state/effect), không chỉ test chi tiết cài đặt; test không bị tắt/nới.
 5. Gates: chạy lại nhanh nếu rẻ (`konsist`, `detekt`, unit test module bị đụng) hoặc đọc log fixer ghi; số liệu không khớp → finding.
