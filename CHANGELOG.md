@@ -6,6 +6,14 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 
 ## [Unreleased]
 
+### Added — Screen registry spec ↔ Figma ↔ code (ghi ngược vào repo)
+
+- **Registry một file / màn** `docs/references/screens/<screen-id>.json` (schema `skills/ui-fix-loop/references/screen-registry.md`): `node_id`, `figma_url`, `screenshot`, `spec[]` (`path#mục`), `source_files[]`, `previews[]`. Thay `docs/design-refs/figma-refs.json` một file chung (lane song song sửa cùng file sẽ conflict). `uifix_state.py`: `--refs` mặc định là thư mục registry, `ref-add` nhận `--name/--section/--screenshot`, `--spec`/`--preview-fqn` lặp được, thêm `ref-list`, `ref-merge` (gộp delta, chuyển đổi file cũ); đọc được format cũ; có test.
+- **`bug-fix` ghi ngược mapping** (`intake-and-context.md` §7): `bug-scout` ghi `B/registry-delta.json`; file registry của màn vào `shared_files` của group (check-plan bắt hai lane cùng màn); lane cập nhật file màn trong cùng PR khi fix đổi source / preview / spec; Phase 6 một PR docs "registry sync" + `docs/references/README.md`. Mode note: worker `ref-add` cùng PR. Eval 15.
+- **Figma drift + spec chưa commit** (`intake-and-context.md` §2, §3 bước 3): trước khi chấm / phân loại bug UI, so PNG cache với Figma live (`context/figma-drift.md`), frame đổi thì thay ảnh mốc và chấm lại; thay đổi spec / quyết định PO chưa commit ở main checkout chép vào `spec-delta.md`, lane theo bản mới nhất.
+- **UI mới làm đổi luồng** (`classify-and-plan.md` §UI-diff, `flow_change: true`): bố cục Figma mới thêm / bỏ phần tử tương tác thì lane sửa cả luồng ở đúng layer theo spec + unit test, gỡ intent / string bị bỏ; spec im lặng → `spec-gap` / `needs-confirm`. `bug-scout` đánh dấu `flow_change` + `flow_note`.
+- **Adaptive** (`verify-tiers.md` §`preview` bước 2b): bug `preview` render thêm 360×640, 600×960 và `fontScale` 1.3, kiểm không cắt / tràn / chồng, ảnh vào evidence; bố cục không cố định theo frame Figma.
+
 ### Added — ui-board-judge (Opus) cho chấm board UI
 
 - **Agent `ui-board-judge`** (`agents/ui-board-judge.md`, `model: opus`, read-only + ghi file kết quả): chấm MỘT board so sánh UI (actual/preview vs Figma) theo quy trình `ui-diff-review` (§2 đọc board + checklist trục, §2b crop/zoom + `sample_region.py`, §3 `verdict.py`), ghi `findings.json` + `result.json`, trả một dòng `Score / Verdict / Critical`. 1 agent / board, nhiều board chạy song song.

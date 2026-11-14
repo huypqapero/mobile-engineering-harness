@@ -62,7 +62,7 @@ Một group = một root cause / một patch. Gom khi:
 2. Cùng cơ chế (vd 3 bug "tắt key remote X nhưng vẫn hiện" ở 3 màn cùng đọc 1 config provider), **hoặc**
 3. Cùng component dùng chung (vd mọi lỗi của `NativeFullAd` composable).
 
-Không gom chỉ vì cùng màn nếu root cause khác — đặt chung lane là đủ. Mỗi group ghi `files` (file sẽ sửa, phải tồn tại ở base; file mới → `new_files_ok: true`), `shared_files` (DI, NavHost, `strings.xml`, routes, Analytics… từ scout — script tính cả vào kiểm chồng file) và `cause` (giả thuyết 1 câu).
+Không gom chỉ vì cùng màn nếu root cause khác — đặt chung lane là đủ. Mỗi group ghi `files` (file sẽ sửa, phải tồn tại ở base; file mới → `new_files_ok: true`), `shared_files` (DI, NavHost, `strings.xml`, routes, Analytics… từ scout — script tính cả vào kiểm chồng file; **kèm file registry của màn** `docs/references/screens/<screen-id>.json`, chưa có ở base → `new_files_ok: true`, `intake-and-context.md` §7) và `cause` (giả thuyết 1 câu).
 
 Fix **độc lập** (group riêng, lane riêng nếu có thể): crash Highest, bug đụng shared contract, bug rủi ro cao (payment/IAP, migration) — để PR nhỏ, review và revert dễ.
 
@@ -78,6 +78,14 @@ Fix **độc lập** (group riêng, lane riêng nếu có thể): crash Highest,
 ## UI-diff — finding từ report `ui-diff`
 
 Bug `UI-<screen-slug>-<n>` (`intake-and-context.md` §1b) đã được `ui-diff` so ảnh actual với `design.png` của màn nên **bước 0 so spec đã có căn cứ**: `kind: ui`, `verify: preview`, `spec_verdict: confirmed`, `spec_ref` = `spec_ref_hint` trong `bugs.json`. Finding `confidence: low` hoặc `design.png` không rõ (nghi ảnh sai trạng thái) → `needs-confirm` + `question`. Gom group theo màn / component (cùng `source_hint`, cùng file); mỗi finding vẫn có `evidence.json` riêng. Không có Jira: không vào `jira-sync`.
+
+**Design phải là bản live**: trước khi phân loại, `design.png` phải khớp Figma live (`intake-and-context.md` §3 bước 3, `context/figma-drift.md`). Finding chấm trên ảnh design cũ → bỏ, chấm lại trên bản live.
+**UI mới làm đổi luồng (`flow_change: true`)**: bố cục Figma mới thêm / bỏ / đổi chỗ phần tử tương tác (nút, link, sheet, bước, điều hướng, trạng thái) thì không chỉ vẽ lại: luồng phải đi theo UI mới. Đọc spec của màn (bản live + `context/spec-delta.md`, gồm thay đổi spec chưa commit ở main checkout) và quyết định PO/DEC liên quan, rồi:
+- spec (hoặc DEC) mô tả hành vi mới → `kind: ui` + `flow_change: true` + `spec_ref` trích mục spec; lane sửa cả tầng logic đúng layer (Contract/Intent, ViewModel/reducer, UseCase, Navigation, analytics event nếu spec có), không nhét logic vào Composable; `verify`: `preview` + unit test cho reducer/navigation (ghi cả hai vào evidence);
+- spec im lặng / mâu thuẫn Figma (vd Figma bỏ "How it works" nhưng spec còn) → `spec-gap` hoặc `needs-confirm` kèm `question`, không tự đoán hành vi;
+- phần tử bị bỏ khỏi UI mà còn code (intent, string, event) → lane gỡ theo cùng PR, ghi trong `fix-design.md`.
+
+**Adaptive (mọi bug `preview`)**: fix phải đứng được ở nhiều cỡ màn, không chỉ cỡ frame Figma. Lane render thêm các cỡ theo `verify-tiers.md` §`preview` bước 2b; bố cục không được cố định chiều cao/toạ độ theo frame 420×912 (dùng weight / scroll / `BoxWithConstraints` / window size class theo quy ước repo).
 
 ## `plan.json`
 

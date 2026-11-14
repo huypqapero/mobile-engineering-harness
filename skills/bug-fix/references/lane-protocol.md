@@ -18,9 +18,11 @@ References: <B>/context/references.md   Spec: <B>/context/spec.md (mục liên q
 Build/test: <vd ./gradlew :app:compileAppDevDebugKotlin, :app:testAppDevDebugUnitTest, detekt nếu có>
 Preview: <vd android preview render ":app@appDevDebug" --fqn=…>
 Quy định repo: <CLAUDE.md, decisions-outside-spec phải cập nhật trong PR nếu tự quyết hành vi>
+Screen registry: docs/references/screens/<screen-id>.json của màn trong lane — nền: <B>/registry-delta.json; fix đổi source / thêm preview / thêm mục spec → `uifix_state.py ref-add` (hoặc `ref-merge` delta của màn) và commit cùng PR (intake-and-context.md §7)
 Ngôn ngữ PR/báo cáo: tiếng Việt. Timezone Asia/Saigon.
 Làm theo <SKILL_DIR>/references/lane-protocol.md từng bước; kết thúc bằng status block của agents/bug-fixer.md.
-Bug `preview`: không tự chấm board, tự spawn `ui-board-judge` theo `verify-tiers.md` §`preview` rồi đọc điểm.
+Bug `preview`: không tự chấm board, tự spawn `ui-board-judge` theo `verify-tiers.md` §`preview` rồi đọc điểm; render thêm cỡ adaptive (bước 2b).
+Bug `flow_change: true`: đọc spec của màn (kể cả <B>/context/spec-delta.md) trước khi sửa; đổi luồng ở đúng layer (Contract/ViewModel/UseCase/Navigation) + unit test, gỡ phần tử / intent / string bị bỏ (classify-and-plan.md §UI-diff).
 ```
 
 ## 1. Worktree
@@ -95,7 +97,7 @@ Không fabricate: không có artifact thì AC không được `PASS`. Redact tok
 
 ```bash
 cd "$WT"
-git add <chỉ file source/test/res đã sửa>          # không git add -A
+git add <chỉ file source/test/res + docs/references/screens/<id>.json đã sửa>   # không git add -A
 git diff --cached | grep -iE '^\+.*(api[_-]?key|secret|password|token)' && echo STOP
 git commit -m "fix(<scope>): <mô tả>" -m "Refs: <KEY>[, <KEY>]"   # 1 commit / group, không nhắc AI
 git push -u <remote> "$BRANCH"

@@ -63,19 +63,21 @@ S import-ui-diff B <run>/summary.json        # ghi/gộp B/bugs.json, chép ản
 
 - Ưu tiên `page_id` (URL `display/<SPACE>/<Title>` → `confluence_get_page(title, space_key)` 1 lần để lấy id; về sau dùng id). Docs của repo có thể ghi sẵn page id.
 - MCP không ghi file, nên **không chép lại cả trang**. `B/context/spec.md` = header (`pageId`, `version` lấy từ metadata, `fetched_at`) + các mục spec liên quan tới bug trong batch (trích nguyên văn, theo `screen_hint`). Cache `plans/bugfix-cache/spec-<pageId>.md` giữ cùng header; so field `version`: bằng nhau → dùng lại, không fetch.
+- **Spec trong repo đang sửa dở**: `git -C <main checkout> diff --stat -- docs/` (và file decisions). Có thay đổi chưa commit ở spec / quyết định PO → chép nguyên diff vào `B/context/spec-delta.md` mục "Chưa commit (main checkout)" và báo user trong `plan-summary.md`; đây thường là thay đổi mới nhất đi kèm Figma mới, lane phải theo nó (không theo bản ở `base_commit`). Mâu thuẫn với spec ở base → hỏi user.
 - **Preflight spec drift (luôn làm ở Phase 1, trước khi chốt bug "chờ BA")**: lấy `version` live của trang rồi so với version ghi trong docs của repo (`docs/references/*spec*summary*`, header map spec↔code, decisions). Bằng nhau → xong. Lệch → ghi cảnh báo vào `spec.md` + `plan-summary.md` và giao `general-purpose` dùng `confluence_get_page_diff` giữa hai version (hoặc đọc lại trang) → `B/context/spec-delta.md`: chỉ các mục đổi liên quan bug đang `needs-confirm` / `spec-gap` / `not-a-bug` / `already-fixed`, mỗi mục trích nguyên văn + số version. Bug "chờ BA" đã có câu trả lời trong delta → chuyển lại `confirmed` + `spec_ref` version mới; bug trích spec cũ → kiểm lại với bản live. Map spec↔code của repo có thể cũ ở các mục đổi.
 - Spec link tới trang con / sheet ads / sheet tracking: chỉ fetch khi bug cần (vd bug ads → sheet kịch bản ads). Google Sheet không đọc được qua MCP → ghi link vào context, không đoán nội dung.
 - Thứ tự ưu tiên khi lệch: lấy theo quy ước của repo (vd `docs/references/README.md`). Mặc định: **UI theo Figma live, hành vi theo Confluence**.
 
 ## 3. Figma
 
-1. Repo có screen registry (đọc ở `R`; vd `docs/references/*screen-registry.json`, `docs/design-refs/figma-refs.json` của `ui-fix-loop`) → dựng `figma-index.json`: `{screen_id: {name, section, node_id, figma_url, screenshot, previews: [{fqn, source}]}}`. Map field theo tên gần nghĩa (`figma_node_id`/`node_id` → `node_id`; `previews[].fqn`/`preview_fqn` → `previews`; `previews[].source`/`source_files` → `source`). `screen_hint` của bug ↔ `screen_id`: khớp tên màn hoặc section (không phân biệt hoa thường, bỏ dấu); không khớp → để trống, scout điền. Không gọi Figma ở bước này.
+1. Repo có screen registry (đọc ở `R`): chuẩn là `docs/references/screens/<screen-id>.json` (schema `ui-fix-loop/references/screen-registry.md`; `uifix_state.py ref-list --refs R/docs/references/screens`); bản cũ `docs/references/*screen-registry.json`, `docs/design-refs/figma-refs.json` vẫn đọc → dựng `figma-index.json`: `{screen_id: {name, section, node_id, figma_url, screenshot, spec, source_files, previews: [{fqn, source}]}}`. Map field theo tên gần nghĩa (`figma_node_id`/`node_id` → `node_id`; `previews[].fqn`/`preview_fqn` → `previews`; `previews[].source`/`source_files` → `source`). Registry chưa có (hoặc chỉ có bản cũ) → ghi vào `plan-summary.md` "registry sẽ được tạo ở Phase 6" (§7). `screen_hint` của bug ↔ `screen_id`: khớp tên màn hoặc section (không phân biệt hoa thường, bỏ dấu); không khớp → để trống, scout điền. Không gọi Figma ở bước này.
 2. Không có registry → `get_figma_data(fileKey, nodeId=<page node>, depth=1)` để lấy danh sách frame (tên + node id) rồi map tên frame ↔ `screen_hint`. Không tải cả cây file.
-3. Node chi tiết + ảnh thật chỉ tải **trong lane** cho bug tier `preview` (`get_figma_data` node màn, `download_figma_images` vào thư mục trong repo/evidence). Lỗi `403 Token expired` → báo user cập nhật token, không retry vòng.
+3. **Figma drift (bắt buộc khi so theo cache / registry)**: registry và cache PNG có thể cũ hơn Figma live. Trước khi chấm (ui-diff) hoặc phân loại bug UI: giao `general-purpose` lấy `get_figma_data(page, depth=1)` + export PNG live các frame liên quan, so với PNG cache → `B/context/figma-drift.md` (`unchanged` / `changed` / `removed` / `new`). Frame `changed`: thay ảnh mốc + cache + registry `screenshot`, finding chấm trên bản cũ phải chấm lại. Frame `new` thuộc tính năng đã có → thêm vào phạm vi.
+4. Node chi tiết + ảnh thật chỉ tải **trong lane** cho bug tier `preview` (`get_figma_data` node màn, `download_figma_images` vào thư mục trong repo/evidence). Lỗi `403 Token expired` → báo user cập nhật token, không retry vòng.
 
 ## 4. Docs tham chiếu của repo
 
-Đọc trong `R` (không phải main checkout) `docs/references/README.md` (hoặc tương đương) rồi các file nó trỏ tới: map spec↔Figma↔code, decisions-outside-spec, spec summary. Ghi `context/references.md` gồm: đường dẫn từng file, quy ước ưu tiên nguồn, lệnh render preview (variant flavor), lưu ý build (key cần trong `local.properties`). Lane đọc file này thay vì tự tìm.
+Đọc trong `R` (không phải main checkout) `docs/references/README.md` (hoặc tương đương) rồi các file nó trỏ tới: screen registry `docs/references/screens/` (map spec↔Figma↔code theo màn), decisions-outside-spec, spec summary. Ghi `context/references.md` gồm: đường dẫn từng file, quy ước ưu tiên nguồn, lệnh render preview (variant flavor), lưu ý build (key cần trong `local.properties`). Lane đọc file này thay vì tự tìm.
 
 Nếu repo có quy định "dev tự quyết hành vi ngoài spec phải ghi vào file decisions trong cùng PR" → đưa vào brief lane.
 
@@ -105,6 +107,15 @@ Trước Phase 2:
 
 Cache chỉ giúp tìm file nhanh; root cause của từng bug vẫn phải được lane xác nhận bằng dòng code thật.
 
+## 7. Ghi ngược screen registry (spec ↔ Figma ↔ code)
+
+Mapping tìm được trong batch phải về lại repo, batch sau không scout lại. Schema + lệnh: `ui-fix-loop/references/screen-registry.md` (`U` = `python3 <harness>/skills/ui-fix-loop/scripts/uifix_state.py`).
+
+1. **Phase 2 — scout**: `bug-scout` ghi `B/registry-delta.json` (`{"screens": {<screen-id>: entry}}`) cho mọi màn đã map: `node_id`, `figma_url`, `screenshot`, `spec[]` (`path#mục` trích được), `source_files[]`, `previews[]`. Màn đã có trong registry: chỉ ghi trường mới/khác. Không ghi vào repo.
+2. **Phase 3 — plan**: màn của bug trong lane → file `docs/references/screens/<screen-id>.json` vào `files` của lane (để `check-plan` bắt chồng file khi hai lane cùng màn). Brief lane nhắc mục 3.
+3. **Phase 4 — lane**: fix đổi source / thêm `@Preview` / tìm thêm mục spec của màn → `U ref-add --refs docs/references/screens …` trong worktree lane (lấy entry từ `B/registry-delta.json` làm nền: `U ref-merge` với delta lọc đúng màn đó), commit cùng PR.
+4. **Phase 6 — registry sync**: giao `general-purpose` tạo worktree từ `<remote>/<base>` mới nhất, `U ref-merge --delta B/registry-delta.json` (các màn lane đã ghi thì merge chỉ bổ sung list, không mất gì), chuyển file cũ nếu có (`U ref-merge --delta docs/design-refs/figma-refs.json`), thêm/cập nhật `docs/references/README.md` (đoạn hướng dẫn tra màn), mở **một** PR docs "registry sync" (draft → `bug-reviewer` APPROVE → ready như PR thường). Delta rỗng → bỏ qua.
+
 ## Brief cho `bug-scout`
 
 ```
@@ -117,5 +128,6 @@ Việc đang làm (tránh trùng): B/context/in-flight.md (PR mở, worktree kh�
 Mỗi bug thêm so 1-1 spec: spec_quote (trích nguyên văn + mục/node, hoặc "spec không nói"), code_behavior (file:line),
   spec_verdict_hint: confirmed | not-a-bug | suspect + 1 câu lý do (leader chốt ở Phase 3)
 Output: B/scout.json (hoặc B/scout-<area>.json khi chia) + B/scout-report.md theo agents/bug-scout.md
+  + B/registry-delta.json (hoặc B/registry-delta-<area>.json) theo intake-and-context.md §7 — mọi màn đã map, kể cả màn không có bug nếu đã đọc tới
 Ngôn ngữ báo cáo: tiếng Việt. Timezone Asia/Saigon.
 ```

@@ -149,7 +149,7 @@
       "files": [],
       "assertions": [
         {"id": "a-1", "text": "Chuyển sang `ui-fix-loop` (fix → render → compare lại), tối đa 3 vòng, không dừng sau 1 vòng"},
-        {"id": "a-2", "text": "Tra Figma của màn trong `docs/design-refs/figma-refs.json` (ref-get) trước khi tự tìm"},
+        {"id": "a-2", "text": "Tra màn trong screen registry `docs/references/screens/<id>.json` (ref-get) trước khi tự tìm"},
         {"id": "a-3", "text": "Sau vòng 3 vẫn dưới ngưỡng → báo `NEEDS_INPUT` kèm board + finding còn lại, không mở PR như đã pass"},
         {"id": "a-4", "text": "Ghi preview-before/after + board vào evidence.json"}
       ]
@@ -175,6 +175,18 @@
         {"id": "a-2", "text": "Mỗi finding thành một bug key `UI-<screen-slug>-<n>` kind ui, verify preview"},
         {"id": "a-3", "text": "Không gọi Jira / jira-sync / transition cho các bug này"},
         {"id": "a-4", "text": "Gom group theo màn hoặc component, mỗi finding có evidence.json riêng"}
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "Batch 6 bug ở 3 màn Home, Library, Level; repo chưa có docs/references/screens/ nhưng có docs/design-refs/figma-refs.json cũ. Hai lane chạy song song (Home, Library), Level không có lane vì bug là spec-gap. Mô tả việc ghi mapping spec ↔ Figma ↔ code từ đầu đến khi đóng batch.",
+      "expected_output": "Scout ghi B/registry-delta.json; file màn vào shared_files của lane; lane ref-add trong worktree, commit cùng PR; Phase 6 một PR registry sync merge delta + figma-refs.json cũ + README.",
+      "files": [],
+      "assertions": [
+        {"id": "a-1", "text": "bug-scout ghi `B/registry-delta.json` cho cả 3 màn (kể cả Level), không ghi vào repo"},
+        {"id": "a-2", "text": "Plan đặt `docs/references/screens/<id>.json` của Home / Library vào `shared_files` của group tương ứng với `new_files_ok: true`"},
+        {"id": "a-3", "text": "Lane cập nhật file registry của màn mình bằng `uifix_state.py ref-add`/`ref-merge` và commit trong PR của lane, không sửa file của màn lane khác"},
+        {"id": "a-4", "text": "Phase 6 mở một PR docs: `ref-merge` delta + `ref-merge --delta docs/design-refs/figma-refs.json`, thêm `docs/references/README.md`, qua `bug-reviewer`"}
       ]
     }
   ]

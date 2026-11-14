@@ -39,8 +39,9 @@ Ca `with_skill` phải được nạp đủ `SKILL.md` và `references/` (ca 0�
 | 9 | Link board: mode batch, preflight rồi init |
 | 10 | ≥ 2 key Jira: mode batch, không spawn nhiều worker note |
 | 11 | Đợt sau: `next-wave`, ghi `answer`, `--start`, tái dùng scout cache |
-| 12 | Note mode, `preview` còn lệch: `ui-fix-loop` ≤ 3 vòng, registry `figma-refs.json` |
+| 12 | Note mode, `preview` còn lệch: `ui-fix-loop` ≤ 3 vòng, screen registry `docs/references/screens/` |
 | 13 | Khoá thiết bị chung: note bị từ chối khi batch giữ serial |
 | 14 | Report ui-diff: `import-ui-diff`, bug `UI-<screen>-<n>`, không Jira |
+| 15 | Ghi ngược screen registry: delta của scout, file màn trong lane, PR registry sync ở Phase 6 |
 
 Thêm ca mới khi sửa quy trình: một hành vi, 3–4 assertion khách quan (hành động cụ thể, không "viết tốt").
