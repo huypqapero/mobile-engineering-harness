@@ -44,6 +44,11 @@ if ! python3 -c "import yaml" >/dev/null 2>&1; then
   warn "You can continue; mehcli will error on install/uninstall until PyYAML is available."
 fi
 
+if ! command -v graphify >/dev/null 2>&1; then
+  warn "graphify not installed (optional code graph for scout/bug-fix). Install with: uv tool install graphifyy"
+  warn "Without it, skills fall back to grep."
+fi
+
 # Clone or update
 if [ -d "$INSTALL_DIR/.git" ]; then
   log "Updating existing install at $INSTALL_DIR"

@@ -82,6 +82,7 @@ Fix đúng cần đổi domain contract, migration DB, sửa file ngoài phạm 
 | Việc | Skill |
 |---|---|
 | Root cause, call chain, log | `coding-diagnose` (đã nạp) |
+| Caller / call chain / blast radius bằng code graph (`Graph:` trong brief hoặc `scripts/code-graph.sh ensure <worktree>`) | `coding-scout/references/code-graph.md` |
 | State/Intent/Effect, reducer | `coding-mvi` (đã nạp) |
 | Compose UI, `@Preview` | `coding-compose` (đã nạp) |
 | Render preview + dựng board đối chiếu design (chấm điểm bằng `ui-board-judge` do lane tự spawn, không tự chấm) | `testing-preview`, `compare-ui-board`, `ui-diff-review` |

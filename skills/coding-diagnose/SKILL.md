@@ -87,6 +87,7 @@ git bisect bad HEAD
 git bisect good <known-good-commit>
 ```
 
+- Code graph (`coding-scout/references/code-graph.md`): `graphify path "<entry>" "<suspect>"` dựng call chain, `graphify affected "<suspect>"` biết ai cùng chịu ảnh hưởng — rồi Read xác nhận từng hop
 - Comment out code để shrink surface
 - Reduce input (binary search)
 - Try different device/OS → narrow platform-specific
@@ -290,6 +291,7 @@ ROUTE: implementer (fix cause: null check or non-null contract) + qa (regression
 ### Khi bug cross-module
 
 - Reproduce ở integration level trước
+- Dựng đường đi qua module bằng `graphify path` (code graph) thay vì grep từng tầng, rồi Read từng hop
 - Isolate per module via disable + mock
 - Fix tại module gốc, không spread patch
 

@@ -23,6 +23,11 @@ Speed beats ceremony: the user tests on device later in one pass. Find the cause
 first; touch the device only when the code alone cannot prove the cause.
 
 - Scout the code for the screen/feature named in the report; read project rules first.
+  Graph first: `G=$(<harness>/scripts/code-graph.sh ensure "$WT")` (exit ≠ 0 → skip, Grep as usual), then
+  `graphify query|explain|path|affected … --graph "$G"` per `<harness>/skills/coding-scout/references/code-graph.md`
+  to find the Screen/Contract/ViewModel and call chain. The graph is a map: Read every `file:line` you cite.
+  Before changing a signature / state / Contract, list its callers with `graphify affected` + Grep (DI, routes,
+  resources) in `fix-design.md` (step 3).
 - Prove the root cause as **file:line + why** (quote the wrong line). This is mandatory for every bug.
 - Pick **one verify level** from `verify-tiers.md` (record it in report.md, evidence.json and the PR):
 
@@ -30,7 +35,7 @@ first; touch the device only when the code alone cannot prove the cause.
 |---|---|---|---|
 | `none` | Obvious code/resource bug whose wrong → right is visible in the diff (wrong value/condition/missing call, text, dimen) | file:line before → after; compile (+ resource lint) | **No** e2e |
 | `unit` | Logic in ViewModel/UseCase/repository/mapper, or a navigation/flow sequence that is wrong | The exact wrong line(s) and, for flows, the call chain (A.kt:12 → B.kt:40); regression unit test (happy + ≥ 1 edge) | **No** e2e |
-| `preview` | Bug visible on a screen that has (or can get) an `@Preview` | The `preview` rule in `verify-tiers.md`: Figma ref from `docs/design-refs/figma-refs.json`, render before/after, `compare-ui-board` board, `ui-diff-review` threshold 95, still differs → `ui-fix-loop` ≤ 3 rounds | **No** e2e |
+| `preview` | Bug visible on a screen that has (or can get) an `@Preview` | The `preview` rule in `verify-tiers.md`: screen ref from `docs/references/screens/<screen-id>.json` (update it in the same PR when the fix changes source / previews), render before/after, `compare-ui-board` board, `ui-diff-review` threshold 95, still differs → `ui-fix-loop` ≤ 3 rounds | **No** e2e |
 | `device` | Needs real conditions (player/SDK, ads, billing, permissions, lifecycle, timing, network) | Fix by code reasoning + unit tests where possible | **Deferred**: add to the device-test queue (step 7), do not run now |
 
 - Device repro is allowed only if the cause cannot be proven from code (then take the lock as below,

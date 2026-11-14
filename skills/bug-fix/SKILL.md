@@ -38,6 +38,7 @@ Agent chưa có trong danh sách → chạy `scripts/activate-claude-agents.sh` 
 - **Evidence chung**: `evidence.json` theo `skills/bug/schemas/evidence.schema.json`, kiểm bằng `python3 <harness>/skills/bug/scripts/validate_evidence.py` (batch: `<batch dir>`; note: `--evidence-dir <dir>`). Không có artifact thì không `PASS`.
 - **Khoá thiết bị chung**: `references/device-queue.md`; `scripts/devices.py` giữ `<git-common-dir>/bug-fix/devices.json`, holder `note:<BUG-ID>` / `batch:<batch-id>:<JOB>` → hai mode không bao giờ giữ cùng một serial.
 - **PR**: luôn mở draft, chỉ `gh pr ready` sau khi `bug-reviewer` APPROVE. Base `main` (hoặc base của batch), PR stack khi chung file. Không merge, không force-push, không push lên base, commit/PR không nhắc AI.
+- **Code graph** (`skills/coding-scout/references/code-graph.md`): scout / worker / reviewer tra caller, call chain, blast radius bằng Graphify trước khi grep (`<harness>/scripts/code-graph.sh ensure <worktree>`, offline, graph theo commit ngoài cây làm việc). Graph chỉ là bản đồ: `file:line` trong scout / fix-design / review phải Read xác nhận. Chưa cài graphify → scout bằng Grep như cũ.
 - **Worktree riêng**: main checkout của user không bị đụng (không checkout / stash ở đó); worker không dùng `git stash` mà commit WIP.
 - Scope guard (hỏi user): đổi domain contract, migration DB, security/auth/payment, cross-feature contract.
 - Ngôn ngữ báo cáo/PR: tiếng Việt (hoặc ngôn ngữ của user). Timezone Asia/Saigon.
@@ -49,6 +50,7 @@ Agent chưa có trong danh sách → chạy `scripts/activate-claude-agents.sh` 
 | `scripts/bug_queue.py` | hàng đợi note: new/set/claim (chờ hoặc stack theo file)/waiters/sync-merged + `device-lock/unlock/release/list`; state `<git-common-dir>/bug-fix/queue.json` (đọc 1 lần từ `bug-note/queue.json` cũ nếu chưa có) |
 | `scripts/bfo` → `bfo_state.py` | state batch `plans/bugfix-batch-<id>/`: check/load plan, lane, device jobs, `jira-sync`, `next-wave`, `import-ui-diff`, `board` |
 | `scripts/devices.py` | khoá thiết bị chung hai mode |
+| `<harness>/scripts/code-graph.sh` | `ensure <worktree>` → đường dẫn `graph.json` của HEAD (build nếu chưa có, chung giữa worktree cùng commit) |
 
 Test: `cd scripts && python3 -m unittest -v`.
 

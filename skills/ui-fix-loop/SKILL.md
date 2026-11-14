@@ -30,22 +30,22 @@ Nếu chưa có bug mà chỉ có màn -> chạy `ui-diff-review` trước để
 
 ## Bước 0 — SCOUT & LƯU REFERENCE (bắt buộc, làm 1 lần / màn)
 
-Refs lưu ở **repo**: `<repo>/docs/design-refs/figma-refs.json` (commit được, không chứa secret). Nếu màn đã có ref -> đọc lại bằng `ref-get`, bỏ qua scout.
+Refs lưu ở **repo**: screen registry `<repo>/docs/references/screens/<screen-id>.json` (một file / màn; schema + ai ghi khi nào: `references/screen-registry.md`). Nếu màn đã có ref -> đọc lại bằng `ref-get`, bỏ qua scout. Repo còn `docs/design-refs/figma-refs.json` cũ -> `ref-merge --delta docs/design-refs/figma-refs.json` một lần.
 
 1. **Figma**: lấy URL frame của màn (có `node-id`). Chưa có -> hỏi user 1 lần (mỗi màn). Lưu ngay:
    ```bash
-   python3 $SKILL_DIR/scripts/uifix_state.py ref-add --refs docs/design-refs/figma-refs.json \
+   python3 $SKILL_DIR/scripts/uifix_state.py ref-add \
      --screen level --url "https://www.figma.com/design/<fileKey>/...?node-id=21-171"
    ```
    Script tách `fileKey` + `node_id` (`21-171` -> `21:171`).
 2. **Design data**: `get_figma_data(fileKey, nodeId)` -> màu, font, cỡ, bo góc, spacing, tên node con (icon/ảnh). Lưu bản tóm tắt vào `<RUN>/refs/<screen>/figma-data.json` (RUN ngoài repo).
-3. **Design ảnh chuẩn**: `download_figma_images(fileKey, nodes=[{nodeId, fileName:"<screen>-design.png"}], localPath="docs/design-refs/<screen>", pngScale=2)`. Ghi đè `design.png` cũ nếu design đổi.
-4. **Spec**: tìm trong `docs/`, `briefs/`, `plans/` theo tên màn/feature; thêm `--spec <path>`.
+3. **Design ảnh chuẩn**: `download_figma_images(fileKey, nodes=[{nodeId, fileName:"<screen>-design.png"}], localPath="docs/design-refs/<screen>", pngScale=2)`. Ghi đè `design.png` cũ nếu design đổi; `--screenshot <path>`.
+4. **Spec**: tìm trong `docs/`, `briefs/`, `plans/` theo tên màn/feature; thêm `--spec <path>#<mục>` (lặp được, trỏ đúng mục spec của màn/state).
 5. **Source**: `rg` composable của màn (Screen/Content/Row/Card, string resource, drawable), thêm `--source <path>` (lặp nhiều lần), `--module :app`.
 6. **Preview**: `android preview list :app --format=json`; tìm FQN preview của màn. Chưa có -> tạo `@Preview` (AndroidX annotation `androidx.compose.ui.tooling.preview.Preview`) render đúng production `Screen(state, onAction)` với fixture cố định, `widthDp=360, heightDp=800`, theme thật, ở file preview cạnh màn (theo `coding-compose`). Thêm `--preview-fqn`.
 7. **Asset thiếu**: nếu bug là icon/mascot/hình thiếu -> xác định node con trong `get_figma_data` (vector -> `.svg`, ảnh -> `.png` kèm `imageRef`), tải bằng `download_figma_images` rồi chuyển thành drawable đúng quy ước repo (vector `res/drawable`, hoặc ImageVector nếu repo dùng). Không dùng asset thay thế khi Figma có asset thật.
 
-Kết quả: mỗi màn có entry đầy đủ `figma_url, file_key, node_id, spec, source_files, module, preview_fqn`. Đây là thứ "tìm source là compare được".
+Kết quả: mỗi màn có file registry đầy đủ `figma_url, file_key, node_id, screenshot, spec[], source_files[], module, previews[]`, commit cùng PR. Đây là thứ "tìm source là compare được". Fix làm đổi source / thêm preview của màn → `ref-add` lại trong cùng PR.
 
 ## Vòng lặp cho MỖI bug
 
@@ -103,7 +103,7 @@ python3 ~/.claude/skills/ui-diff-review/scripts/verdict.py --score <n> --thresho
 
 ## Báo cáo cuối
 
-Bảng `bug | màn | baseline | v1 | v2 | v3 | trạng thái (PASS/STUCK/needs-decision)`, danh sách file đã sửa, asset đã tải/thêm, link `figma-refs.json`, finding còn lại kèm lý do. Kết thúc bằng `Status:` và câu hỏi còn mở.
+Bảng `bug | màn | baseline | v1 | v2 | v3 | trạng thái (PASS/STUCK/needs-decision)`, danh sách file đã sửa, asset đã tải/thêm, file registry đã thêm/sửa (`docs/references/screens/*.json`), finding còn lại kèm lý do. Kết thúc bằng `Status:` và câu hỏi còn mở.
 
 ## Gotchas
 

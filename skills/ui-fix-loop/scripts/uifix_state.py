@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
-"""uifix_state.py — registry Figma reference + bo dem vong fix cho ui-fix-loop.
+"""uifix_state.py — screen registry (spec <-> Figma <-> code) + bo dem vong fix cho ui-fix-loop.
 
 Chi LUU / DEM / ENFORCE tran 3 vong; KHONG cham diem (model cham qua ui-diff-review).
 
+Registry = THU MUC, moi man 1 file `<screen>.json` (mac dinh docs/references/screens),
+de nhieu lane song song sua man khac nhau khong conflict. Schema: ui-fix-loop/references/screen-registry.md.
+
 Lenh:
-  ref-add  --refs F.json --screen S --url FIGMA_URL [--spec P] [--source P ...]
-           [--module :app] [--preview-fqn FQN] [--note T]
-  ref-get  --refs F.json --screen S
+  ref-add   [--refs DIR] --screen S [--url FIGMA_URL] [--name T] [--section T] [--screenshot P]
+            [--spec P#muc ...] [--source P ...] [--module :app] [--preview-fqn FQN ...] [--note T]
+  ref-get   [--refs DIR] --screen S
+  ref-list  [--refs DIR]                       (bang screen | node | preview | spec)
+  ref-merge [--refs DIR] --delta F.json        (gop delta {"screens": {...}} hoac {screen: {...}};
+                                                nhan ca file figma-refs.json cu de chuyen doi)
   bug-new  --state-dir D --id BUG --screen S [--desc T] [--max-rounds 3] [--threshold 95]
   bug-record --state-dir D --id BUG --kind baseline|fix --score N [--board P] [--note T]
   bug-status --state-dir D [--id BUG]
@@ -45,26 +51,89 @@ def parse_figma(url):
     return m.group(1), node.replace("-", ":")
 
 
+DEFAULT_REFS = "docs/references/screens"
+SCALARS = ("name", "section", "figma_url", "file_key", "node_id", "screenshot", "module", "note")
+
+
+def screen_file(refs, screen):
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", screen):
+        sys.exit(f"screen id khong hop le (chi chu, so, . _ -): {screen}")
+    return Path(refs) / f"{screen}.json"
+
+
+def normalize(screen, e):
+    """Doc entry ca format cu (spec/preview_fqn la chuoi) lan moi (list)."""
+    e = dict(e)
+    e["screen"] = screen
+    spec = e.get("spec") or []
+    e["spec"] = [spec] if isinstance(spec, str) else list(spec)
+    previews = e.get("previews") or []
+    old_fqn = e.pop("preview_fqn", None)
+    if old_fqn:
+        previews = previews + [{"fqn": old_fqn}]
+    e["previews"] = previews
+    e["source_files"] = list(e.get("source_files") or [])
+    if e.get("figma_url") and not (e.get("file_key") and e.get("node_id")):
+        e["file_key"], e["node_id"] = parse_figma(e["figma_url"])
+    return e
+
+
+def merge_entry(cur, new):
+    """Scalar: gia tri moi khac rong thang. List: hop, preview gop theo fqn."""
+    for k in SCALARS:
+        if new.get(k):
+            cur[k] = new[k]
+    cur["spec"] = sorted(set(cur.get("spec", []) + new.get("spec", [])))
+    cur["source_files"] = sorted(set(cur.get("source_files", []) + new.get("source_files", [])))
+    by_fqn = {p["fqn"]: p for p in cur.get("previews", []) if p.get("fqn")}
+    for p in new.get("previews", []):
+        if p.get("fqn"):
+            by_fqn[p["fqn"]] = {**by_fqn.get(p["fqn"], {}), **{k: v for k, v in p.items() if v}}
+    cur["previews"] = [by_fqn[k] for k in sorted(by_fqn)]
+    cur["updated"] = now()
+    return cur
+
+
+def upsert(refs, screen, new):
+    p = screen_file(refs, screen)
+    cur = normalize(screen, load(p, {}))
+    save(p, merge_entry(cur, normalize(screen, new)))
+    return p
+
+
 def cmd_ref_add(a):
-    file_key, node_id = parse_figma(a.url)
-    refs = load(a.refs, {"screens": {}})
-    cur = refs["screens"].get(a.screen, {})
-    cur.update({"figma_url": a.url, "file_key": file_key, "node_id": node_id, "updated": now()})
-    for k, v in (("spec", a.spec), ("module", a.module), ("preview_fqn", a.preview_fqn), ("note", a.note)):
-        if v:
-            cur[k] = v
-    if a.source:
-        cur["source_files"] = sorted(set(cur.get("source_files", []) + a.source))
-    refs["screens"][a.screen] = cur
-    save(a.refs, refs)
-    print(json.dumps({a.screen: cur}, ensure_ascii=False, indent=2))
+    new = {"name": a.name, "section": a.section, "screenshot": a.screenshot, "module": a.module,
+           "note": a.note, "spec": a.spec or [], "source_files": a.source or [],
+           "previews": [{"fqn": f, "source": (a.source or [None])[0]} for f in (a.preview_fqn or [])]}
+    if a.url:
+        new["file_key"], new["node_id"] = parse_figma(a.url)
+        new["figma_url"] = a.url
+    p = upsert(a.refs, a.screen, new)
+    print(p.read_text(), end="")
 
 
 def cmd_ref_get(a):
-    cur = load(a.refs, {"screens": {}})["screens"].get(a.screen)
-    if not cur:
+    p = screen_file(a.refs, a.screen)
+    if not p.exists():
         sys.exit(f"chua co ref cho man '{a.screen}' trong {a.refs}")
-    print(json.dumps(cur, ensure_ascii=False, indent=2))
+    print(json.dumps(normalize(a.screen, load(p, {})), ensure_ascii=False, indent=2))
+
+
+def cmd_ref_list(a):
+    for f in sorted(Path(a.refs).glob("*.json")):
+        e = normalize(f.stem, load(f, {}))
+        fqn = ",".join(p["fqn"].rsplit(".", 1)[-1] for p in e["previews"]) or "-"
+        print(f"{f.stem:<36} {e.get('node_id') or '-':<10} {fqn:<40} {len(e['spec'])} spec")
+
+
+def cmd_ref_merge(a):
+    delta = load(a.delta, None)
+    if delta is None:
+        sys.exit(f"khong doc duoc {a.delta}")
+    screens = delta.get("screens", delta)
+    for screen, e in screens.items():
+        upsert(a.refs, screen, e)
+    print(f"merged {len(screens)} man vao {a.refs}")
 
 
 def bug_path(a):
@@ -119,10 +188,14 @@ def cmd_bug_status(a):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sp = ap.add_subparsers(dest="cmd", required=True)
-    s = sp.add_parser("ref-add"); s.add_argument("--refs", required=True); s.add_argument("--screen", required=True)
-    s.add_argument("--url", required=True); s.add_argument("--spec"); s.add_argument("--source", action="append")
-    s.add_argument("--module"); s.add_argument("--preview-fqn"); s.add_argument("--note"); s.set_defaults(f=cmd_ref_add)
-    s = sp.add_parser("ref-get"); s.add_argument("--refs", required=True); s.add_argument("--screen", required=True); s.set_defaults(f=cmd_ref_get)
+    s = sp.add_parser("ref-add"); s.add_argument("--refs", default=DEFAULT_REFS); s.add_argument("--screen", required=True)
+    s.add_argument("--url"); s.add_argument("--name"); s.add_argument("--section"); s.add_argument("--screenshot")
+    s.add_argument("--spec", action="append"); s.add_argument("--source", action="append")
+    s.add_argument("--module"); s.add_argument("--preview-fqn", action="append"); s.add_argument("--note"); s.set_defaults(f=cmd_ref_add)
+    s = sp.add_parser("ref-get"); s.add_argument("--refs", default=DEFAULT_REFS); s.add_argument("--screen", required=True); s.set_defaults(f=cmd_ref_get)
+    s = sp.add_parser("ref-list"); s.add_argument("--refs", default=DEFAULT_REFS); s.set_defaults(f=cmd_ref_list)
+    s = sp.add_parser("ref-merge"); s.add_argument("--refs", default=DEFAULT_REFS); s.add_argument("--delta", required=True)
+    s.set_defaults(f=cmd_ref_merge)
     s = sp.add_parser("bug-new"); s.add_argument("--state-dir", required=True); s.add_argument("--id", required=True)
     s.add_argument("--screen", required=True); s.add_argument("--desc", default="")
     s.add_argument("--max-rounds", type=int, default=3); s.add_argument("--threshold", type=int, default=95); s.set_defaults(f=cmd_bug_new)

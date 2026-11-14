@@ -45,9 +45,11 @@ Optional:
 | Feature slug | Glob `**/features/<slug>/**` |
 | Concept (e.g. "offline-first") | Grep keywords + knowledge/ cross-ref |
 
-### Step 2 — Parallel search
+### Step 2 — Graph trước, rồi parallel search
 
-**Rule:** chạy Glob + Grep + Read parallel trong 1 tool-call batch khi independent.
+**Graph (khi target là class/function/concept, cần caller / call chain / blast radius):** lấy graph theo `references/code-graph.md` (`<harness>/scripts/code-graph.sh ensure <repo>`, hoặc dùng `Graph: <path>` caller truyền sẵn), rồi `graphify explain` / `affected` / `path` / `query` để có danh sách file:line ứng viên. Graph chỉ là bản đồ: Read snippet xác nhận trước khi đưa vào report. Graph unavailable (exit 1/2) hoặc không có node (exit 4) → chỉ dùng Grep/Glob bên dưới.
+
+**Rule:** chạy Glob + Grep + Read parallel trong 1 tool-call batch khi independent. Luôn Grep cho literal / string UI / resource / DI DSL (graph không thấy).
 
 ```
 # Example: scout "BookRepository"
@@ -81,7 +83,8 @@ Flag violation nếu detect: domain import Android/iOS/Firebase (xem `knowledge/
 - Grep `UseCase(...)`, `Repository(...)` khởi tạo
 
 **Callers** (gì dùng X):
-- Grep `X(` + `X.` + `Inject X` + DI module reference
+- Có graph: `graphify affected "X" --graph G --depth 1` (tăng depth khi X là contract dùng chung)
+- Grep `X(` + `X.` + `Inject X` + DI module reference (bổ sung phần graph không thấy)
 - Count unique files
 
 ### Step 5 — Report
@@ -145,7 +148,7 @@ Never read full file in scout — chỉ snippet. Caller/orchestrator sẽ Read f
 
 - Target không match → trả về empty + suggest broader pattern
 - Match quá nhiều (>100 files) → báo cáo count + ask user narrow scope
-- Semantic search unavailable → fallback grep + warn
+- Graph unavailable (chưa cài graphify / build lỗi) → fallback grep + ghi `graph: unavailable`
 
 ## Anti-patterns
 
@@ -168,11 +171,10 @@ Scout result → caller skill:
 
 - Native `Glob`/`Grep`: dùng trực tiếp cho 1-2 query simple. Scout = wrapper + classify + report format.
 - `ak-scout` agent: parallel multi-query, dùng khi >5 query hoặc cần semantic search. Scout skill prefer native tools.
-- `ck-graphify`: build persistent knowledge graph. Dùng khi same codebase scout nhiều lần/tuần, không ad-hoc.
+- Graphify (`references/code-graph.md`): graph AST offline theo commit, dùng chung giữa worktree; harness dùng nó cho caller / call chain / blast radius thay vì grep lặp lại. `/graphify` (skill global) dùng cho khám phá tự do, không dùng trong pipeline harness.
 
 ## Future
 
-- Semantic search integration (gkg knowledge graph)
 - Visual callgraph output (markdown-mermaid)
 - Caching cho repeated scout cùng target
 

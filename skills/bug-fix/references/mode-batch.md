@@ -56,7 +56,7 @@ Theo `intake-and-context.md`: nguồn Jira (§1), hoặc report `ui-diff` (§1b:
 
 ## Phase 2 — Scout một lần (agent `bug-scout`)
 
-Kiểm cache trước (`intake-and-context.md` §Scout cache): area không đổi từ commit cache → tái dùng, chỉ scout area mới/đổi. ≤ 25 bug → **1** `bug-scout`; nhiều hơn → chia theo area, mỗi `bug-scout` một nhóm area (song song, cùng đọc `R`), leader gộp → `B/scout.json` + `B/scout-report.md`, cập nhật cache. Scout cũng đánh dấu bug **đã được fix ở base** (PR merge sau ngày tạo bug) và bug trùng PR đang mở. Lane sau đó nhận phần scout của mình, **không scout lại toàn repo**.
+Leader build graph một lần: `<harness>/scripts/code-graph.sh ensure R` → đường dẫn `graph.json` (lỗi / chưa cài → bỏ qua, scout bằng Grep). Truyền `Graph: <path>` cho mọi `bug-scout`, lane và `bug-reviewer` của batch (cùng `base_commit`). Kiểm cache trước (`intake-and-context.md` §Scout cache): area không đổi từ commit cache → tái dùng, chỉ scout area mới/đổi. ≤ 25 bug → **1** `bug-scout`; nhiều hơn → chia theo area, mỗi `bug-scout` một nhóm area (song song, cùng đọc `R`), leader gộp → `B/scout.json` + `B/scout-report.md` + `B/registry-delta.json` (mapping spec ↔ Figma ↔ code theo màn, `intake-and-context.md` §7), cập nhật cache. Scout cũng đánh dấu bug **đã được fix ở base** (PR merge sau ngày tạo bug) và bug trùng PR đang mở. Lane sau đó nhận phần scout của mình, **không scout lại toàn repo**.
 
 ## Phase 3 — Phân loại, gom nhóm, xếp lane (leader)
 
@@ -99,7 +99,8 @@ Job xong → `S device-done B <JOB> --result pass|fail`, cập nhật PR (bỏ d
 ## Phase 6 — Đóng batch
 
 1. `python3 <harness>/skills/bug/scripts/validate_evidence.py B` — issue chưa PASS giữ `NEEDS_VERIFICATION`, không tuyên bố xong.
-2. Báo cáo `plans/reports/bugfix-batch-<id>.md`: bảng PR → bug → verify → kết quả; bug pending device + checklist test tay; bug bị loại + câu hỏi PO; scout cache path.
+2. **Registry sync**: giao `general-purpose` ghi `B/registry-delta.json` vào `docs/references/screens/` của repo + `docs/references/README.md`, mở một PR docs (`intake-and-context.md` §7 bước 4; draft → `bug-reviewer` → ready).
+3. Báo cáo `plans/reports/bugfix-batch-<id>.md`: bảng PR → bug → verify → kết quả (kể cả PR registry sync); bug pending device + checklist test tay; bug bị loại + câu hỏi PO; scout cache path.
 3. Jira: trạng thái theo §Jira status; comment link PR chỉ khi user cho phép rõ ràng.
 4. Learning bền (root cause lặp lại, pitfall SDK) → đề xuất `kb_push`, không tự push.
 
