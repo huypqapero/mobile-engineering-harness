@@ -36,6 +36,8 @@ Script tự:
 - Symlink CLI thành `mehcli` ở `~/.local/bin/`
 - Check prerequisites (git, python3, PyYAML; `graphify` tuỳ chọn cho code graph — `uv tool install graphifyy`)
 - Warn nếu PATH chưa chứa `~/.local/bin`
+- Cài thông báo bản mới: mỗi phiên Claude Code nhắc khi harness có bản mới (kiểm tra nền mỗi ngày). Bỏ qua bằng `MEH_UPDATE_CHECK=0`; muốn tự cập nhật thì thêm `MEH_AUTO_UPDATE=1` (xem [Update to latest](#update-to-latest))
+- Cài hook skill telemetry vào `~/.claude/settings.json` và nhập lượt dùng cũ từ transcript (ghi tên skill + toàn văn prompt gọi skill, che credential). Bỏ qua bằng `MEH_TELEMETRY=0`, gỡ bằng `mehcli telemetry uninstall`. Chi tiết: [docs/skill-telemetry.md](docs/skill-telemetry.md)
 
 ### Quick start cho product mới (3 lệnh)
 
@@ -104,6 +106,19 @@ Workflow cập nhật harness lên version mới nhất trong product repo đang
 
 - Product repo đã có `.harness-overlay/overlay.yaml` (từ `mehcli init`).
 - Upstream location đã install qua `bootstrap.sh` (symlink) hoặc git submodule.
+
+### Kiểm tra bản mới và tự cập nhật
+
+```bash
+mehcli check-update          # fetch ngay, báo đang chậm bao nhiêu commit / tag mới nhất
+mehcli auto-update on        # cho phép kiểm tra hằng ngày tự `git pull --ff-only`
+mehcli auto-update status
+mehcli update-hook status    # hook thông báo bản mới đã cài chưa
+```
+
+- **Thông báo**: `bootstrap.sh` (và `harness-init`) cài hook `SessionStart` cấp user. Mỗi phiên mới in `HARNESS UPDATE: ...` khi đã biết có bản mới; việc fetch chạy nền, tối đa một lần mỗi ngày (`MEH_UPDATE_INTERVAL` giây), không làm chậm phiên. Tắt: `MEH_UPDATE_CHECK=0` hoặc `mehcli update-hook uninstall`.
+- **Tự cập nhật** (opt-in): chỉ chạy khi bản cài đang ở branch `main` (`MEH_UPDATE_BRANCH`) và không có file đang sửa. Bản pin tag (`MEH_REF=v0.x.y`, detached HEAD) hoặc branch khác chỉ được thông báo, không bị đổi. Sau khi tự cập nhật, phiên kế tiếp nhắc một lần.
+- **Không tự làm**: render lại template trong repo app. Skill và agent symlink về upstream nên có bản mới ngay; template đã render (`verify.sh`, `ArchitectureRulesTest.kt`, `harness.yaml`) vẫn cần `mehcli update --overlay .harness-overlay` rồi review diff và commit như các bước dưới.
 
 ### Workflow (symlink mode — default bootstrap.sh)
 

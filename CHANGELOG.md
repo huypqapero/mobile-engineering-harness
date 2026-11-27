@@ -6,6 +6,13 @@ Format tuân theo [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) và s
 
 ## [Unreleased]
 
+### Added — Skill telemetry và thông báo bản mới
+
+- **`scripts/skill-telemetry/telemetry.py`** (stdlib, `hook | backfill | inventory | report | sync`): hook Claude Code cấp user (`UserPromptSubmit`, `PreToolUse:Skill`, `SessionStart`) ghi mỗi lượt gọi skill kèm GitHub login, repo, toàn văn prompt (che credential) vào `~/.meh-telemetry/events/<yyyy-mm>.jsonl`. `backfill` nhập lượt dùng cũ từ transcript, chạy lại không sinh bản trùng; `inventory` liệt kê skill đã cài (tên thư mục, tên frontmatter, `plugin:name`); `report` tách skill với lệnh built-in; `sync` đẩy về repo GitHub private. Tắt bằng `MEH_TELEMETRY=0`. Chi tiết: `docs/skill-telemetry.md`.
+- **`scripts/update-check.sh`** (`check | notify | auto on|off|status`): fetch upstream nền tối đa một lần mỗi ngày, hook `SessionStart` in `HARNESS UPDATE: ...` khi có bản mới. Tự cập nhật là opt-in, chỉ `git pull --ff-only` khi đang ở `main` và cây sạch; bản pin tag chỉ được báo.
+- **`scripts/lib/settings_hooks.py`**: patch `~/.claude/settings.json` idempotent cho cả hai hook, nhận hook của mình qua hai phần cuối đường dẫn script, giữ hook còn script, trỏ lại hook mất script, bỏ bản trùng, backup một lần.
+- **`bootstrap.sh`** cài cả hai hook (bỏ qua bằng `MEH_TELEMETRY=0`, `MEH_UPDATE_CHECK=0`; `MEH_AUTO_UPDATE=1` bật tự cập nhật). **`mehcli`** thêm `telemetry`, `check-update`, `auto-update`, `update-hook`. **`harness-init`** thêm Step 8b, 8c.
+
 ### Added — Code graph (Graphify) cho scout / bug-fix
 
 - **`scripts/code-graph.sh`** (`ensure | path | prune <worktree>`): build graph Graphify code-only, offline (`GRAPHIFY_BACKEND=none`, tree-sitter AST, không gọi LLM) cho HEAD của worktree vào `<git-common-dir>/graphify/<commit>/graphify-out/graph.json`. Ngoài cây làm việc nên không commit nhầm; mọi worktree cùng commit dùng chung; seed AST cache từ bản trước (commit mới ~10s thay vì ~30s trên repo 4.5k file); khoá `mkdir` khi nhiều worker build cùng commit; worktree dirty → key riêng, build lại; giữ 3 bản mới nhất (~65MB/bản). Chưa cài graphify → exit 2, skill fallback grep.

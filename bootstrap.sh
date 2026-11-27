@@ -11,6 +11,9 @@
 #   MEH_INSTALL_DIR   Target dir (default: $HOME/.mobile-engineering-harness)
 #   MEH_BIN_DIR       Target symlink dir (default: $HOME/.local/bin)
 #   MEH_REF           Git ref to checkout (default: main)
+#   MEH_TELEMETRY     Set to 0 to skip installing the skill-telemetry hook (default: install)
+#   MEH_UPDATE_CHECK  Set to 0 to skip the daily "new harness version" notice (default: install)
+#   MEH_AUTO_UPDATE   Set to 1 to let that daily check also `git pull --ff-only` on main
 
 set -euo pipefail
 
@@ -69,6 +72,33 @@ chmod +x "$INSTALL_DIR/install.sh"
 mkdir -p "$BIN_DIR"
 ln -sf "$INSTALL_DIR/install.sh" "$BIN_DIR/$CLI_NAME"
 success "Linked $BIN_DIR/$CLI_NAME → $INSTALL_DIR/install.sh"
+
+# Skill telemetry: user-level Claude Code hook, one per machine (docs/skill-telemetry.md)
+if [ "${MEH_TELEMETRY:-1}" = "0" ]; then
+  warn "Skipped skill telemetry (MEH_TELEMETRY=0). Enable later: $CLI_NAME telemetry install"
+elif "$INSTALL_DIR/scripts/install-telemetry-hook.sh" install >/dev/null; then
+  python3 "$INSTALL_DIR/scripts/skill-telemetry/telemetry.py" backfill >/dev/null 2>&1 || true
+  success "Skill telemetry hook installed in ~/.claude/settings.json"
+  echo "   Records skill name + full prompt of each skill call (credentials masked) to ~/.meh-telemetry."
+  echo "   Opt out: $CLI_NAME telemetry uninstall  ·  details: $INSTALL_DIR/docs/skill-telemetry.md"
+else
+  warn "Could not install skill telemetry hook. Retry: $CLI_NAME telemetry install"
+fi
+
+# Update notice: user-level SessionStart hook, checks upstream once a day in the background
+if [ "${MEH_UPDATE_CHECK:-1}" = "0" ]; then
+  warn "Skipped update notice (MEH_UPDATE_CHECK=0). Enable later: $CLI_NAME update-hook install"
+elif "$INSTALL_DIR/scripts/install-update-hook.sh" install >/dev/null; then
+  success "Update notice installed: new Claude Code sessions mention a newer harness (checked daily)"
+  if [ "${MEH_AUTO_UPDATE:-0}" = "1" ]; then
+    MEH_UPSTREAM_DIR="$INSTALL_DIR" "$INSTALL_DIR/scripts/update-check.sh" auto on >/dev/null
+    success "Auto-update on: the daily check fast-forwards $INSTALL_DIR on main"
+  else
+    echo "   Auto-update is off. Turn on: $CLI_NAME auto-update on"
+  fi
+else
+  warn "Could not install update notice. Retry: $CLI_NAME update-hook install"
+fi
 
 # PATH check
 case ":$PATH:" in

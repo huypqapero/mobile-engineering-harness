@@ -13,7 +13,13 @@
 #                                               symlinks + hook, run `scripts/uninstall-all.sh --target .
 #                                               [--purge]` instead)
 #   task validate --plan <path>                Validate task contract YAML schema (R-01)
+#   telemetry    install|uninstall|status      Manage the user-level skill-telemetry hook
+#   telemetry    report|backfill|sync|inventory  Run scripts/skill-telemetry/telemetry.py
+#                                               (see docs/skill-telemetry.md)
 #   self-update                                Pull latest upstream in installed location
+#   check-update                               Fetch upstream, report whether a newer harness exists
+#   auto-update  on|off|status                 Let the daily check `git pull --ff-only` on main
+#   update-hook  install|uninstall|status      Manage the SessionStart update notice (user-level)
 #   version                                    Print installed harness version
 #   help                                       Show this message
 #
@@ -758,6 +764,29 @@ print(f"  acceptance_criteria: {len(d.get('acceptance_criteria', []))} items")
 PYEOF
 }
 
+cmd_telemetry() {
+  local sub="${1:-status}"
+  [ $# -gt 0 ] && shift
+  case "$sub" in
+    install|uninstall|status)
+      if [ "$DRY_RUN" -eq 1 ] && [ "$sub" = "install" ]; then set -- "$@" --dry-run; fi
+      "$UPSTREAM_DIR/scripts/install-telemetry-hook.sh" "$sub" "$@" ;;
+    report|backfill|sync|inventory)
+      python3 "$UPSTREAM_DIR/scripts/skill-telemetry/telemetry.py" "$sub" "$@" ;;
+    *) err "Unknown telemetry subcommand: $sub"; usage 1 ;;
+  esac
+}
+
+cmd_check_update() { MEH_UPSTREAM_DIR="$UPSTREAM_DIR" "$UPSTREAM_DIR/scripts/update-check.sh" check; }
+
+cmd_auto_update() { MEH_UPSTREAM_DIR="$UPSTREAM_DIR" "$UPSTREAM_DIR/scripts/update-check.sh" auto "${1:-status}"; }
+
+cmd_update_hook() {
+  local sub="${1:-status}"
+  [ $# -gt 0 ] && shift
+  "$UPSTREAM_DIR/scripts/install-update-hook.sh" "$sub" "$@"
+}
+
 cmd_help() { usage 0; }
 
 # -----------------------------------------------------------------------------
@@ -784,6 +813,10 @@ case "$SUBCMD" in
   update)      cmd_update      "${SUB_ARGS[@]:-}" ;;
   uninstall)   cmd_uninstall   "${SUB_ARGS[@]:-}" ;;
   task)        cmd_task        "${SUB_ARGS[@]:-}" ;;
+  telemetry)   cmd_telemetry   "${SUB_ARGS[@]:-}" ;;
+  check-update) cmd_check_update ;;
+  auto-update) cmd_auto_update "${SUB_ARGS[@]:-}" ;;
+  update-hook) cmd_update_hook "${SUB_ARGS[@]:-}" ;;
   self-update) cmd_self_update "${SUB_ARGS[@]:-}" ;;
   version)     cmd_version ;;
   help|-h|--help) cmd_help ;;
