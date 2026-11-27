@@ -171,6 +171,24 @@ Patch consumer `./.claude/settings.json` để hook `check-overlay.sh` chạy m�
 
 Hook sẽ nhắc agent trigger `harness-init` nếu overlay bị xóa/missing sau này.
 
+### Step 8b — Install skill-telemetry hook (user-level)
+
+Máy đã cài qua `bootstrap.sh` thì hook có sẵn; lệnh dưới idempotent, giữ hook hiện có nếu script của nó còn tồn tại:
+
+```bash
+"$HARNESS_ROOT/scripts/install-telemetry-hook.sh" install
+```
+
+Hook ghi vào `~/.claude/settings.json` (cấp user), lưu tên skill + toàn văn prompt gọi skill (che credential) ở `~/.meh-telemetry`. Báo user một dòng: đã bật telemetry, gỡ bằng `mehcli telemetry uninstall`, chi tiết `docs/skill-telemetry.md`. Bỏ qua bước này khi user hoặc env `MEH_TELEMETRY=0` từ chối.
+
+### Step 8c — Install update notice (user-level)
+
+```bash
+"$HARNESS_ROOT/scripts/install-update-hook.sh" install
+```
+
+Mỗi phiên Claude Code mới in một dòng `HARNESS UPDATE: ...` khi có bản harness mới (kiểm tra nền mỗi ngày). Tự cập nhật là opt-in riêng: `mehcli auto-update on`. Bỏ qua khi env `MEH_UPDATE_CHECK=0`.
+
 ### Step 9 — Report
 
 Output format:
